@@ -167,8 +167,3 @@ void Gotoxy(int x, int y)
     SetConsoleCursorPosition(CMD, lightb);
 }
 
-/*
-
-}
-*/
-
