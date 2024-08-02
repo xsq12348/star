@@ -1,102 +1,174 @@
 #pragma once
 #include <stdio.h>
-#include<conio.h>
-#include <windows.h>
-#include <math.h>
+#include<Windows.h>
 #include<stdlib.h>
+#include<math.h>
 
-//��Ϣ��������
-LRESULT CALLBACK WndPorc(HWND hwnd, UINT msgid, WPARAM  wparam, LPARAM lparam)
+
+
+void CMDwindow(LPCSTR name, unsigned int width, unsigned int height, int Character_width, int Character_height)
 {
-
-	HDC hdc = GetDC(hwnd);
-
-	switch (msgid)
-	{
-		//�رմ���ʱ˳���������
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
-		//�滭
-	case WM_PAINT:
-
-		break;
-	}
+    //获取当前控制台的句柄
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 
-	return DefWindowProc(hwnd, msgid, wparam, lparam);
+    //得知显示器像素数,以后维护时可能有用
+    int nScreenWidth, nScreenHeight;
+    nScreenWidth = GetSystemMetrics(SM_CXSCREEN);
+    nScreenHeight = GetSystemMetrics(SM_CYSCREEN);
 
-}
+
+    //字符大小
+    CONSOLE_FONT_INFOEX cfi;
+    cfi.cbSize = sizeof(cfi);
+    cfi.nFont = 0;
+    cfi.dwFontSize.X = Character_width;
+    cfi.dwFontSize.Y = Character_height;
+    cfi.FontFamily = FF_DONTCARE;
+    cfi.FontWeight = FW_NORMAL;
+    SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
+
+
+    //设置窗口大小
+    char command[256];
+    snprintf(command, sizeof(command), "mode con: cols=%d lines=%d", width, height);
+    int result = system(command);
 
 
 
-//��������
-void Window(
-	HWND hwnd	/*���*/,
-	int w		/*���ڿ���*/,
-	int h		/*���ڸ߶�*/,
-	int x		/*����ˮƽ����*/,
-	int y		/*������ֱ����*/
-)
-{
 
-	HINSTANCE hinstance = GetModuleHandle(NULL);
 
-	//ע�ᴰ����
-	WNDCLASS wndclass = { 0 };
+    /*
+    以后维护时可能有用
+    //屏幕缓冲区
+    COORD Size;
+    Size.X = 1;
+    Size.Y = 1;
+    SetConsoleScreenBufferSize(hConsole, Size);
 
-	wndclass.cbClsExtra = 0;
+    //设置控制台窗口的大小
+    SMALL_RECT windowSize;
+    windowSize.Left = 0;
+    windowSize.Top = 0;
+    windowSize.Right = width - 1;  // 窗口的右边界
+    windowSize.Bottom = height - 1; // 窗口的下边界
+    SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
+    */
 
-	wndclass.cbWndExtra = 0;
 
-	//��ȡ��ˢ ��䱳��
-	wndclass.hbrBackground = (HBRUSH)GetStockObject(0);
 
-	//���ָ��
-	wndclass.hCursor = NULL;
+    //更改窗口标题
+    SetConsoleTitle(name);
 
-	//ϵͳĬ��ͼ��
-	wndclass.hIcon = NULL;
+    // 禁止改变窗口大小
+    LONG style = GetWindowLong(GetConsoleWindow(), GWL_STYLE);
 
-	//������
-	wndclass.hInstance = hinstance;
+    // 移除可调整大小的样式
+    style &= ~WS_SIZEBOX;
+    SetWindowLong(GetConsoleWindow(), GWL_STYLE, style);
 
-	wndclass.lpfnWndProc = WndPorc;
-
-	//����
-	wndclass.lpszClassName = TEXT("main");
-
-	//�˵�
-	wndclass.lpszMenuName = NULL;
-
-	//������ʽ
-	wndclass.style = CS_HREDRAW | CS_VREDRAW;
-
-	RegisterClass(&wndclass);
-
-	//��������
-	hwnd = CreateWindow(TEXT("main"), TEXT(" ")/*����*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, x, y, w, h, NULL, NULL, hinstance, NULL);
-	
-	//��ʾ����
-	ShowWindow(hwnd, SW_SHOW);
-	UpdateWindow(hwnd);
+    //隐藏滚动条
+    ShowScrollBar(GetConsoleWindow(), SB_VERT, FALSE);
+    ShowScrollBar(GetConsoleWindow(), SB_HORZ, FALSE);
 
 
 
 }
 
-//��Ϣѭ��
-void RunWindow()
+
+//设置文字出现的坐标
+void Text(LPCSTR text, int x, int y, int color)
 {
-	//��Ϣѭ��
-	MSG msg = { 0 };
-	while (GetMessage(&msg, NULL, 0, 0))
-	{
-		TranslateMessage(&msg);
+    /*
+    颜色属性由两个十六进制数字指定, 第一个为背景色, 第二个为前景色。
+    每个数字可以为下列值之一：
+    黑色 = 0 蓝色 = 1 绿色 = 2 湖蓝色 = 3
+    红色 = 4 紫色 = 5 黄色 = 6 白色 = 7
+    灰色 = 8 淡蓝色=9 淡绿色=A 白色=C
+    淡紫色=D 淡黄色=E 亮白色=F
+    */
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, color);
+    COORD lightb;
+    lightb.X = x;
+    lightb.Y = y;
+    HANDLE CMD = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleCursorPosition(CMD, lightb);
+    printf(text);
+    SetConsoleTextAttribute(hConsole, 0x07);
+}
 
-		DispatchMessage(&msg);
 
-	}
+//画一条从linexa，lineya到linexb，lineyb的直线,字符为p
+void Linea(LPCSTR p, int x0, int y0, int x1, int y1, int color)
+{
+    double k = (y1 - y0) * 1.0 / (x1 - x0);
+    double y = y0;
+    auto x = x0;
+    while (x <= x1)
+    {
+        Text(p, x, y, color);
+        y += k;
+        x++;
+    }
+}
+
+
+
+//画一条从linexa，lineya到linexb，lineyb的直线,字符为p
+void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
+{
+    //获取当前控制台的句柄
+    HWND hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    double a = x1 - x0;
+    double b = y1 - y0;
+    double c = sqrt(pow(a, 2) + pow(b, 2));
+    double x = (a * 1.0) / c;
+    double y = (b * 1.0) / c;
+    RECT rect;
+    do
+    {
+        GetWindowRect(hconsole, &rect);
+        Text(p, x0, y0, color);
+        x0 = x0 + x;
+        y0 = y0 + y;
+
+    } while (x0 <= x1 && y0 <= y1 || y0 <= y1 && x0 <= x1);
 
 }
+
+
+
+void Clear()
+{
+    system("cls");
+}
+
+
+typedef struct
+{
+    // 获取窗口的宽度和高度
+    int x_;
+    int y_;
+    char m_buffe[];
+
+}VIEP;
+
+//移动光标
+void Gotoxy(int x, int y)
+{
+
+
+    COORD lightb;
+    lightb.X = x;
+    lightb.Y = y;
+    HANDLE CMD = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleCursorPosition(CMD, lightb);
+}
+
+/*
+
+}
+*/
 
