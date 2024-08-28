@@ -234,7 +234,7 @@ void Music(_In_z_ char const* _FileName,int time)
         music = 0;
     Vsn;    int dddd = time;
 
-    while (arrMusic[dd] == 'x')
+    while (arrMusic[dd] ！= 'x')
     {
 
         time = dddd;
