@@ -224,19 +224,25 @@ int Random(int A, int B)
 
 
 //音乐编辑器
-void Music(_In_z_ char const* _FileName, int time)
+void Music(_In_z_ char const* _FileName,int time)
 {
 
     FILE* fp = fopen(_FileName, "r");
     char arrMusic[300];
     fscanf(fp, "%s", arrMusic);
     int dd, music = 0; Vsn;
-
+    int dddd = time;
     while (arrMusic[dd] == 'x')
     {
 
+        time = dddd;
+
     switch (arrMusic[dd])
     {
+
+    case '_':
+        time = 500;
+        break;
     case 1:
         music = 262;
         break;
@@ -321,7 +327,7 @@ void Music(_In_z_ char const* _FileName, int time)
         music = 1976;
         break;
     }
-    Beep(Music, 100);
+    Beep(Music, time);
     }
 
 
