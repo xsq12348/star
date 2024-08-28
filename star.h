@@ -230,8 +230,10 @@ void Music(_In_z_ char const* _FileName,int time)
     FILE* fp = fopen(_FileName, "r");
     char arrMusic[300];
     fscanf(fp, "%s", arrMusic);
-    int dd, music = 0; Vsn;
-    int dddd = time;
+    int dd = 0,
+        music = 0;
+    Vsn;    int dddd = time;
+
     while (arrMusic[dd] == 'x')
     {
 
@@ -328,6 +330,7 @@ void Music(_In_z_ char const* _FileName,int time)
         break;
     }
     Beep(Music, time);
+    dd++;
     }
 
 
