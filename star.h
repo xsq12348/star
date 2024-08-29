@@ -7,6 +7,7 @@
 #include<time.h>
 #include<mmsystem.h>
 #include<conio.h>
+#include<string.h>
 
 
 #pragma comment( lib,"Winmm.lib")
@@ -20,7 +21,8 @@ void Vsn(int A)
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
     //版本信息：0.9
-    /*版本更新内容
+    /*    
+    *     版本更新内容
     * 0.1 实现了窗口创建函数
     * 0.2 完善了窗口创建函数，实现了特定位置输出文字函数
     * 0.3 实现了划线函数，移动光标函数，清屏函数
@@ -30,6 +32,7 @@ void Vsn(int A)
     * 0.7 增加了音乐编辑器函数 
     * 0.8 增加了字符画显示函数
     * 0.9 更新了音乐编辑器函数,使其能读取乐谱
+    * 1.0 更改音乐编辑器函数为音乐播放函数,增加了加法函数。
     */
 
     /*
@@ -217,132 +220,28 @@ void Box(LPCSTR p, double x_1, double y_1, double x_2, double y_2, int color)
 //随机数
 int Random(int A, int B)
 {
-    Vsn;
     A = rand() % B + A;
-    return A;
+    Vsn; return A;
 }
 
 
 //音乐编辑器
-void Music(_In_z_ char const* _FileName,int time)
+void Music(const char* _FileName)
 {
-
-    FILE* fp = fopen(_FileName, "r");
-    char arrMusic[300];
-    fscanf(fp, "%s", arrMusic);
-    int dd = 0,
-        music = 0;
-    Vsn;    int dddd = time;
-
-    while (arrMusic[dd] ！= 'x')
-    {
-
-        time = dddd;
-
-    switch (arrMusic[dd])
-    {
-
-    case '_':
-        time = 500;
-        break;
-    case 1:
-        music = 262;
-        break;
-
-    case 'd':
-        music = 523;
-        break;
-
-    case 'D':
-        music = 1046;
-        break;
-
-    case 2:
-        music = 294;
-        break;
-
-    case 'e':
-        music = 587;
-        break;
-
-    case 'E':
-        music = 1175;
-        break;
-
-    case 3:
-        music = 330;
-        break;
-
-    case 'f':
-        music = 659;
-        break;
-
-    case 'F':
-        music = 1318;
-        break;
-
-    case 4:
-        music = 349;
-        break;
-
-    case 'g':
-        music = 698;
-        break;
-
-    case 'G':
-        music = 1397;
-        break;
-
-    case 5:
-        music = 392;
-        break;
-
-    case 'a':
-        music = 784;
-        break;
-
-    case 'A':
-        music = 1568;
-        break;
-
-    case 6:
-        music = 440;
-        break;
-
-    case 'b':
-        music = 880;
-        break;
-
-    case 'B':
-        music = 1760;
-        break;
-
-    case 7:
-        music = 494;
-        break;
-
-    case 'c':
-        music = 988;
-        break;
-
-    case 'C':
-        music = 1976;
-        break;
-    }
-    Beep(Music, time);
-    dd++;
-    }
-
-
+    char file[100] = { 0 };
+    sprintf(file, L"open %d alias bgm", _FileName);
+    mciSendString(file, NULL, 0, NULL);
+    mciSendString("play bgm", NULL, 0, NULL);
 
 }
+
 
 //图片显示器
 void ColorImg(_In_z_ char const* _FileName,int x, int y)
 {
     FILE* fp = fopen(_FileName, "r");
     char bu[300];
-    int dd = 0;
+    int dd = 0;Vsn;
     fscanf(fp, "%s", bu);
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     Gotoxy(x, y, 0x07);
@@ -446,12 +345,13 @@ void ColorImg(_In_z_ char const* _FileName,int x, int y)
     }
 
     fclose(fp);
-
+    SetConsoleTextAttribute(hConsole, 0x07);
 }
 
+//加法函数
 int Add(int a,int b)
 {
     int c = a + b;
-    return c;
+    Vsn;return c;
 }
 
