@@ -20,8 +20,8 @@ int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：1.02
-    /*    
+    //版本信息：1.03
+    /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
     * 0.2 完善了窗口创建函数，实现了特定位置输出文字函数
@@ -29,12 +29,13 @@ int Vsn(int A)
     * 0.4 实现了颜色分配
     * 0.5 实现了随机数和矩形函数
     * 0.6 实现了隐藏光标函数
-    * 0.7 增加了音乐编辑器函数 
+    * 0.7 增加了音乐编辑器函数
     * 0.8 增加了字符画显示函数
     * 0.9 更新了音乐编辑器函数,使其能读取乐谱
     * 1.0 更改音乐编辑器函数为音乐播放函数,增加了加法函数。
     * 1.01 将颜色选项从Gotoxy函数中分离，使之成为独立的函数。Music函数维修中
     * 1.02 修复了部分错误
+    * 1.03 更新了Line函数
     */
 
     /*
@@ -77,7 +78,7 @@ void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Charac
     SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
 
     //设置窗口大小
-    char command[256];Vsn;
+    char command[256]; Vsn;
     snprintf(command, sizeof(command), "mode con: cols=%d lines=%d", width, height);
     int result = system(command);
 
@@ -151,17 +152,13 @@ void Linea(LPCSTR p, int x0, int y0, int x1, int y1, int color)
 //画一条从linexa，lineya到linexb，lineyb的直线,字符为p
 void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
 {
-    //获取当前控制台的句柄
-    HWND hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
     double a = x1 - x0;
     double b = y1 - y0;
     double c = sqrt(pow(a, 2) + pow(b, 2));
     double x = (a * 1.0) / c;
-    double y = (b * 1.0) / c;
-    RECT rect; Vsn;
+    double y = (b * 1.0) / c;Vsn;
     do
     {
-        GetWindowRect(hconsole, &rect);
         Text(p, x0, y0, color);
         x0 = x0 + x;
         y0 = y0 + y;
@@ -174,7 +171,7 @@ void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
 
 void Clear()
 {
-  system("cls");Vsn;
+    system("cls"); Vsn;
 }
 
 
@@ -306,7 +303,7 @@ void Music(const char* _FileName)
 
 
 //图片显示器
-void ColorImg(_In_z_ char const* _FileName,int x, int y)
+void ColorImg(_In_z_ char const* _FileName, int x, int y)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     FILE* fp = fopen(_FileName, "r");
@@ -319,7 +316,7 @@ void ColorImg(_In_z_ char const* _FileName,int x, int y)
         return 0;
     }
     char bu[300];
-    int dd = 0;Vsn;
+    int dd = 0; Vsn;
     fscanf(fp, "%s", bu);
     Gotoxy(x, y);
     Color(0x07);
@@ -420,7 +417,7 @@ void ColorImg(_In_z_ char const* _FileName,int x, int y)
 
 
         dd++;
-        
+
     }
 
     fclose(fp);
@@ -428,10 +425,10 @@ void ColorImg(_In_z_ char const* _FileName,int x, int y)
 }
 
 //加法函数
-int Add(int a,int b)
+int Add(int a, int b)
 {
     int c = a + b;
-    Vsn;return c;
+    Vsn; return c;
 }
 
 int Color(int color)
