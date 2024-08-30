@@ -13,14 +13,14 @@
 #pragma comment( lib,"Winmm.lib")
 
 
-void Vsn(int A)
+int Vsn(int A)
 {
     //作者: xsq1234
     //未经作者授权，禁止转载
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：0.9
+    //版本信息：1.02
     /*    
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -34,6 +34,7 @@ void Vsn(int A)
     * 0.9 更新了音乐编辑器函数,使其能读取乐谱
     * 1.0 更改音乐编辑器函数为音乐播放函数,增加了加法函数。
     * 1.01 将颜色选项从Gotoxy函数中分离，使之成为独立的函数。Music函数维修中
+    * 1.02 修复了部分错误
     */
 
     /*
@@ -49,7 +50,7 @@ void Vsn(int A)
 
 
 
-void CMDwindow(LPCSTR name, unsigned int width, unsigned int height, int Character_width, int Character_height)
+void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Character_width, int Character_height)
 {
 
     //name 窗口名称
@@ -320,7 +321,8 @@ void ColorImg(_In_z_ char const* _FileName,int x, int y)
     char bu[300];
     int dd = 0;Vsn;
     fscanf(fp, "%s", bu);
-    Gotoxy(x, y, 0x07);
+    Gotoxy(x, y);
+    Color(0x07);
     while (dd != 300)
     {
 
@@ -331,7 +333,8 @@ void ColorImg(_In_z_ char const* _FileName,int x, int y)
         switch (bu[dd])
         {
         case 'h':
-            Gotoxy(x, y++, 0x07);
+            Gotoxy(x, y++);
+            Color(0x07);
             break;
 
         case 'k':
@@ -431,7 +434,7 @@ int Add(int a,int b)
     Vsn;return c;
 }
 
-Color(int color)
+int Color(int color)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color);
