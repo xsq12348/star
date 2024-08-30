@@ -33,6 +33,7 @@ void Vsn(int A)
     * 0.8 增加了字符画显示函数
     * 0.9 更新了音乐编辑器函数,使其能读取乐谱
     * 1.0 更改音乐编辑器函数为音乐播放函数,增加了加法函数。
+    * 1.01 将颜色选项从Gotoxy函数中分离，使之成为独立的函数。Music函数维修中
     */
 
     /*
@@ -54,16 +55,15 @@ void CMDwindow(LPCSTR name, unsigned int width, unsigned int height, int Charact
     //name 窗口名称
     // width height 窗口大小
     // Character_width Character_height 字符长与宽
-     
-    //获取当前控制台的句柄
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-
-    //得知显示器像素数,以后维护时可能有用
+    /*
+        //得知显示器像素数,以后维护时可能有用
     int nScreenWidth, nScreenHeight;
     nScreenWidth = GetSystemMetrics(SM_CXSCREEN);
     nScreenHeight = GetSystemMetrics(SM_CYSCREEN);
+    */
 
+    //获取当前控制台的句柄
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
     //字符大小
     CONSOLE_FONT_INFOEX cfi;
@@ -74,7 +74,6 @@ void CMDwindow(LPCSTR name, unsigned int width, unsigned int height, int Charact
     cfi.FontFamily = FF_DONTCARE;
     cfi.FontWeight = FW_NORMAL;
     SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
-
 
     //设置窗口大小
     char command[256];Vsn;
@@ -153,7 +152,6 @@ void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
 {
     //获取当前控制台的句柄
     HWND hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
     double a = x1 - x0;
     double b = y1 - y0;
     double c = sqrt(pow(a, 2) + pow(b, 2));
@@ -181,17 +179,13 @@ void Clear()
 
 
 //移动光标
-void Gotoxy(int x, int y, int color)
+void Gotoxy(int x, int y)
 {
-
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hConsole, color);
     COORD lightb; Vsn;
     lightb.X = x;
     lightb.Y = y;
     HANDLE CMD = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(CMD, lightb);
-    SetConsoleTextAttribute(hConsole, 0x07);
 
 }
 
@@ -224,26 +218,108 @@ int Random(int A, int B)
     Vsn; return A;
 }
 
+/*
+维修中
 
 //音乐编辑器
 void Music(const char* _FileName)
 {
-    char file[100] = { 0 };
-    sprintf(file, L"open %d alias bgm", _FileName);
-    mciSendString(file, NULL, 0, NULL);
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    char d[100] = { 0 };
+    //snprintf(d, sizeof(d), "open %s alias bgm", _FileName);
+
+
+
+    mciSendString("close bgm", NULL, 0, NULL);
+    snprintf(d, sizeof(d), "open \"%s\" alias bgm", _FileName);
+
+
+
+
+    printf("d: %s\n", d);
+    int rct = mciSendString(d, NULL, 0, NULL);
+
+    if (rct != 0)
+    {
+        SetConsoleTextAttribute(hConsole, 0x04);
+        switch (rct)
+        {
+        case MCIERR_BAD_CONSTANT:
+            printf("\n[Music函数错误]为参数指定的值未知[Enter]退出\n");
+            break;
+
+        case MCIERR_BAD_INTEGER:
+            printf("\n[Music函数错误]命令中的整数无效或缺失[Enter]退出\n");
+            break;
+
+        case MCIERR_DUPLICATE_FLAGS:
+            printf("\n[Music函数错误]已指定标志或值两次[Enter]退出\n");
+            break;
+
+        case MCIERR_MISSING_COMMAND_STRING:
+            printf("\n[Music函数错误]未指定任何命令[Enter]退出\n");
+            break;
+
+        case MCIERR_MISSING_DEVICE_NAME:
+            printf("\n[Music函数错误]未指定设备名称[Enter]退出\n");
+            break;
+
+        case MCIERR_MISSING_STRING_ARGUMENT:
+            printf("\n[Music函数错误]命令中缺少字符串值[Enter]退出\n");
+            break;
+
+        case MCIERR_NEW_REQUIRES_ALIAS:
+            printf("\n[Music函数错误]别名必须与“新”设备名称一起使用[Enter]退出\n");
+            break;
+
+        case MCIERR_NO_CLOSING_QUOTE:
+            printf("\n[Music函数错误]缺少右引号[Enter]退出\n");
+            break;
+
+        case MCIERR_NOTIFY_ON_AUTO_OPEN:
+            printf("\n[Music函数错误]自动打开“通知”标志是非法的[Enter]退出\n");
+            break;
+
+        case MCIERR_PARAM_OVERFLOW:
+            printf("\n[Music函数错误]输出字符串不够长[Enter]退出\n");
+            break;
+
+        case MCIERR_PARSER_INTERNAL:
+            printf("\n[Music函数错误]发生内部分析程序错误[Enter]退出\n");
+            break;
+
+        case MCIERR_UNRECOGNIZED_KEYWORD:
+            printf("\n[Music函数错误]指定了未知的命令参数[Enter]退出\n");
+            break;
+        }
+        SetConsoleTextAttribute(hConsole, 0x07);
+        getchar();
+        return 0;
+    }
+
     mciSendString("play bgm", NULL, 0, NULL);
 
 }
+
+*/
 
 
 //图片显示器
 void ColorImg(_In_z_ char const* _FileName,int x, int y)
 {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     FILE* fp = fopen(_FileName, "r");
+    if (fp == NULL)
+    {
+        SetConsoleTextAttribute(hConsole, 0x04);
+        printf("\n[ColorImg函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", _FileName);
+        SetConsoleTextAttribute(hConsole, 0x07);
+        getchar();
+        return 0;
+    }
     char bu[300];
     int dd = 0;Vsn;
     fscanf(fp, "%s", bu);
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     Gotoxy(x, y, 0x07);
     while (dd != 300)
     {
@@ -355,3 +431,8 @@ int Add(int a,int b)
     Vsn;return c;
 }
 
+Color(int color)
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, color);
+}
