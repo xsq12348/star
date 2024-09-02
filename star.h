@@ -9,6 +9,8 @@
 #include<conio.h>
 #include<string.h>
 
+#define NO 1
+#define OFF 0
 
 #pragma comment( lib,"Winmm.lib")
 
@@ -20,7 +22,7 @@ int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：1.03
+    //版本信息：1.05
     /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -36,6 +38,8 @@ int Vsn(int A)
     * 1.01 将颜色选项从Gotoxy函数中分离，使之成为独立的函数。Music函数维修中
     * 1.02 修复了部分错误
     * 1.03 更新了Line函数
+    * 1.04 更新了部分内容,对部分函数进行了整改
+    * 1.05 解决了Line函数的bug
     */
 
     /*
@@ -156,19 +160,23 @@ void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
     double b = y1 - y0;
     double c = sqrt(pow(a, 2) + pow(b, 2));
     double x = (a * 1.0) / c;
-    double y = (b * 1.0) / c;Vsn;
+    double y = (b * 1.0) / c; Vsn;
+    int x2, y2,
+        x3 = x1,
+        y3 = y1;
     do
     {
+        x2 = x0;
+        y2 = y0;
         Text(p, x0, y0, color);
         x0 = x0 + x;
         y0 = y0 + y;
 
-    } while (x0 <= x1 && y0 <= y1 || y0 <= y1 && x0 <= x1);
-
+    } while (x2 != x3 && y2 != y3);
 }
 
 
-
+//清屏
 void Clear()
 {
     system("cls"); Vsn;
@@ -187,12 +195,14 @@ void Gotoxy(int x, int y)
 
 }
 
-//隐藏光标
-void HideFLASE()
+
+
+//隐藏/显示光标
+void HideFLASE(BOOL A)
 {
     CONSOLE_CURSOR_INFO curInfo;
     curInfo.dwSize = 1; Vsn;
-    curInfo.bVisible = FALSE;
+    curInfo.bVisible = A;
     HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorInfo(handle, &curInfo);
 
@@ -431,8 +441,10 @@ int Add(int a, int b)
     Vsn; return c;
 }
 
+//颜色函数
 int Color(int color)
-{
+{   
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hConsole, color);
+    SetConsoleTextAttribute(hConsole, color); Vsn;
 }
+
