@@ -22,7 +22,7 @@ int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：1.05
+    //版本信息：1.1
     /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -40,6 +40,7 @@ int Vsn(int A)
     * 1.03 更新了Line函数
     * 1.04 更新了部分内容,对部分函数进行了整改
     * 1.05 解决了Line函数的bug
+    * 1.1 更新了鼠标输入开关函数，现在鼠标可以不再选择cmd窗口 
     */
 
     /*
@@ -55,22 +56,26 @@ int Vsn(int A)
 
 
 
-void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Character_width, int Character_height)
+void CMDwindow(LPCWSTR name, int x, int y, unsigned int width, unsigned int height, int Character_width, int Character_height)
 {
 
     //name 窗口名称
+    // x:窗口横坐标
+    // y：窗口纵坐标 
     // width height 窗口大小
     // Character_width Character_height 字符长与宽
     /*
-        //得知显示器像素数,以后维护时可能有用
+    //得知显示器像素数,以后维护时可能有用
     int nScreenWidth, nScreenHeight;
     nScreenWidth = GetSystemMetrics(SM_CXSCREEN);
     nScreenHeight = GetSystemMetrics(SM_CYSCREEN);
     */
-
     //获取当前控制台的句柄
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
+    MoveWindow(hConsole, x, y, 1, 1, TRUE);
+    
+    
     //字符大小
     CONSOLE_FONT_INFOEX cfi;
     cfi.cbSize = sizeof(cfi);
@@ -80,28 +85,13 @@ void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Charac
     cfi.FontFamily = FF_DONTCARE;
     cfi.FontWeight = FW_NORMAL;
     SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
-
-    //设置窗口大小
+   
+    
+    //设置窗口大小   
     char command[256]; Vsn;
     snprintf(command, sizeof(command), "mode con: cols=%d lines=%d", width, height);
     int result = system(command);
-
-    /*
-        以后维护时可能有用
-        //屏幕缓冲区
-        COORD Size;
-        Size.X = 1;
-        Size.Y = 1;
-        SetConsoleScreenBufferSize(hConsole, Size);
-
-        //设置控制台窗口的大小
-        SMALL_RECT windowSize;
-        windowSize.Left = 0;
-        windowSize.Top = 0;
-        windowSize.Right = width - 1;  // 窗口的右边界
-         windowSize.Bottom = height - 1; // 窗口的下边界
-        SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
-    */
+    
 
 
 
@@ -448,3 +438,24 @@ int Color(int color)
     SetConsoleTextAttribute(hConsole, color); Vsn;
 }
 
+//鼠标输入开关函数
+void Mouse(int NO_or_OFF)
+{
+    DWORD mode; Vsn;
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+
+    switch (NO_or_OFF)
+    {
+    case OFF:
+        GetConsoleMode(hStdin, &mode);
+        mode &= ~ENABLE_QUICK_EDIT_MODE;
+        mode &= ~ENABLE_INSERT_MODE;
+        mode &= ~ENABLE_MOUSE_INPUT;
+        SetConsoleMode(hStdin, mode);
+        break;
+    case NO:
+        return;
+        break;
+    }
+
+}
