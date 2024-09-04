@@ -14,6 +14,48 @@
 
 #pragma comment( lib,"Winmm.lib")
 
+    /*
+    颜色属性由两个十六进制数字指定, 第一个为背景色, 第二个为前景色。
+    每个数字可以为下列值之一：
+    黑色 = 0 蓝色 = 1 绿色 = 2 湖蓝色 = 3
+    红色 = 4 紫色 = 5 黄色 = 6 白色 = 7
+    灰色 = 8 淡蓝色=9 淡绿色=A 淡红色=C
+    淡紫色=D 淡黄色=E 亮白色=F
+    */
+
+
+#define Black   0x00
+#define Green   0x02
+#define T_Green 0x0a
+#define T_Blue  0x09
+#define L_blue  0x03
+#define Red     0x04
+#define T_Red   0x0c
+#define Purple  0x05
+#define T_Purple 0x0d
+#define Yellow   0x06
+#define T_Yellow 0x0e
+#define Wite     0x07
+#define B_Wite   0x0f
+#define Grey     0x08
+
+
+//可以用于背景调色的颜色
+#define B_GREEN BACKGROUND_GREEN
+#define B_RED BACKGROUND_RED
+#define B_BLUE BACKGROUND_BLUE
+
+//可以用于前景调色的颜色
+#define F_GREEN FOREGROUND_GREEN
+#define F_RED   FOREGROUND_RED
+#define F_BLUE  FOREGROUND_BLUE
+
+/*
+    利用管道连接符可以进行调色
+    例如
+        RED|BLUE|GREEN 黑色
+*/
+
 
 int Vsn(int A)
 {
@@ -22,7 +64,7 @@ int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：1.1
+    //版本信息：1.2
     /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -41,15 +83,8 @@ int Vsn(int A)
     * 1.04 更新了部分内容,对部分函数进行了整改
     * 1.05 解决了Line函数的bug
     * 1.1 更新了鼠标输入开关函数，现在鼠标可以不再选择cmd窗口 
-    */
-
-    /*
-    颜色属性由两个十六进制数字指定, 第一个为背景色, 第二个为前景色。
-    每个数字可以为下列值之一：
-    黑色 = 0 蓝色 = 1 绿色 = 2 湖蓝色 = 3
-    红色 = 4 紫色 = 5 黄色 = 6 白色 = 7
-    灰色 = 8 淡蓝色=9 淡绿色=A 白色=C
-    淡紫色=D 淡黄色=E 亮白色=F
+    * 1.11 更新了调色板
+    * 1.2 增加了获取鼠标在Cmd窗口中坐标的函数
     */
     return A;
 }
@@ -58,7 +93,6 @@ int Vsn(int A)
 
 void CMDwindow(LPCWSTR name, int x, int y, unsigned int width, unsigned int height, int Character_width, int Character_height)
 {
-
     //name 窗口名称
     // x:窗口横坐标
     // y：窗口纵坐标 
@@ -71,11 +105,7 @@ void CMDwindow(LPCWSTR name, int x, int y, unsigned int width, unsigned int heig
     nScreenHeight = GetSystemMetrics(SM_CYSCREEN);
     */
     //获取当前控制台的句柄
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    MoveWindow(hConsole, x, y, 1, 1, TRUE);
-    
-    
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);    
     //字符大小
     CONSOLE_FONT_INFOEX cfi;
     cfi.cbSize = sizeof(cfi);
@@ -84,27 +114,19 @@ void CMDwindow(LPCWSTR name, int x, int y, unsigned int width, unsigned int heig
     cfi.dwFontSize.Y = Character_height;
     cfi.FontFamily = FF_DONTCARE;
     cfi.FontWeight = FW_NORMAL;
+    wcscpy(cfi.FaceName, L"Terminal");
     SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
-   
-    
     //设置窗口大小   
     char command[256]; Vsn;
     snprintf(command, sizeof(command), "mode con: cols=%d lines=%d", width, height);
     int result = system(command);
-    
-
-
-
     //更改窗口标题
     SetConsoleTitle(name);
-
     // 禁止改变窗口大小
     LONG style = GetWindowLong(GetConsoleWindow(), GWL_STYLE);
-
     // 移除可调整大小的样式
     style &= ~WS_SIZEBOX;
     SetWindowLong(GetConsoleWindow(), GWL_STYLE, style);
-
     //隐藏滚动条
     ShowScrollBar(GetConsoleWindow(), SB_VERT, FALSE);
     ShowScrollBar(GetConsoleWindow(), SB_HORZ, FALSE);
@@ -114,7 +136,6 @@ void CMDwindow(LPCWSTR name, int x, int y, unsigned int width, unsigned int heig
 //设置文字出现的坐标
 void Text(LPCSTR text, int x, int y, int color)
 {
-
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color);
     COORD lightb;
@@ -432,8 +453,8 @@ int Add(int a, int b)
 }
 
 //颜色函数
-int Color(int color)
-{   
+int Color(WORD color)
+{
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color); Vsn;
 }
@@ -443,7 +464,6 @@ void Mouse(int NO_or_OFF)
 {
     DWORD mode; Vsn;
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-
     switch (NO_or_OFF)
     {
     case OFF:
@@ -458,4 +478,31 @@ void Mouse(int NO_or_OFF)
         break;
     }
 
+}
+//获取鼠标横坐标
+int Mouse_x(LPCSTR WindowName, int Character_width)
+{
+    POINT p;
+    GetCursorPos(&p);
+    //得知显示器像素数
+    int nScreenWidth = GetSystemMetrics(SM_CXSCREEN);
+    HWND hwnd = FindWindow(NULL, WindowName);
+    RECT rect;
+    GetWindowRect(hwnd, &rect);
+    int x = (p.x - rect.left) / Character_width;
+    return x;
+}
+
+//获取鼠标纵坐标
+int Mouse_y(LPCSTR WindowName,int Character_height)
+{
+    POINT p;
+    GetCursorPos(&p);
+    //得知显示器像素数
+    int nScreenHeight = GetSystemMetrics(SM_CYSCREEN);
+    HWND hwnd = FindWindow(NULL, WindowName);
+    RECT rect;
+    GetWindowRect(hwnd, &rect);
+    int y = (p.y - rect.top) / Character_height;
+    return y;
 }
