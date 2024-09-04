@@ -85,6 +85,7 @@ int Vsn(int A)
     * 1.1 更新了鼠标输入开关函数，现在鼠标可以不再选择cmd窗口 
     * 1.11 更新了调色板
     * 1.2 增加了获取鼠标在Cmd窗口中坐标的函数
+    * 1.21 修复了Line函数在某些角度不能绘制的问题
     */
     return A;
 }
@@ -167,23 +168,21 @@ void Linea(LPCSTR p, int x0, int y0, int x1, int y1, int color)
 //画一条从linexa，lineya到linexb，lineyb的直线,字符为p
 void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
 {
+
     double a = x1 - x0;
     double b = y1 - y0;
     double c = sqrt(pow(a, 2) + pow(b, 2));
-    double x = (a * 1.0) / c;
-    double y = (b * 1.0) / c; Vsn;
-    int x2, y2,
-        x3 = x1,
-        y3 = y1;
+    int d;
+    double x = (a * 1.0) / c; Vsn;
+    double y = (b * 1.0) / c;
     do
     {
-        x2 = x0;
-        y2 = y0;
         Text(p, x0, y0, color);
-        x0 = x0 + x;
-        y0 = y0 + y;
-
-    } while (x2 != x3 && y2 != y3);
+        x0 += x;
+        y0 += y;
+        d = sqrt(pow(x0 - x1, 2) + pow(y0 - y1, 2));
+    } while ( d > 0);
+    Text(p, x1, y1, color);
 }
 
 
@@ -484,7 +483,6 @@ int Mouse_x(LPCSTR WindowName, int Character_width)
 {
     POINT p;
     GetCursorPos(&p);
-    //得知显示器像素数
     int nScreenWidth = GetSystemMetrics(SM_CXSCREEN);
     HWND hwnd = FindWindow(NULL, WindowName);
     RECT rect;
@@ -498,7 +496,6 @@ int Mouse_y(LPCSTR WindowName,int Character_height)
 {
     POINT p;
     GetCursorPos(&p);
-    //得知显示器像素数
     int nScreenHeight = GetSystemMetrics(SM_CYSCREEN);
     HWND hwnd = FindWindow(NULL, WindowName);
     RECT rect;
