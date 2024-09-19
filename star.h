@@ -50,6 +50,7 @@
 #define F_RED   FOREGROUND_RED
 #define F_BLUE  FOREGROUND_BLUE
 
+
 /*
     利用管道连接符可以进行调色
     例如
@@ -64,7 +65,7 @@ int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：1.2
+    //版本信息：1.22
     /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -86,13 +87,14 @@ int Vsn(int A)
     * 1.11 更新了调色板
     * 1.2 增加了获取鼠标在Cmd窗口中坐标的函数
     * 1.21 修复了Line函数在某些角度不能绘制的问题
+    * 1.22 修复了Line函数在窗口外绘制的bug
     */
     return A;
 }
 
 
 
-void CMDwindow(LPCWSTR name, int x, int y, unsigned int width, unsigned int height, int Character_width, int Character_height)
+void CMDwindow(LPCSTR name, unsigned int width, unsigned int height, int Character_width, int Character_height)
 {
     //name 窗口名称
     // x:窗口横坐标
@@ -106,7 +108,7 @@ void CMDwindow(LPCWSTR name, int x, int y, unsigned int width, unsigned int heig
     nScreenHeight = GetSystemMetrics(SM_CYSCREEN);
     */
     //获取当前控制台的句柄
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);    
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     //字符大小
     CONSOLE_FONT_INFOEX cfi;
     cfi.cbSize = sizeof(cfi);
@@ -168,6 +170,11 @@ void Linea(LPCSTR p, int x0, int y0, int x1, int y1, int color)
 //画一条从linexa，lineya到linexb，lineyb的直线,字符为p
 void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
 {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
+    int width = consoleInfo.srWindow.Right - consoleInfo.srWindow.Left + 1;
+    int height = consoleInfo.srWindow.Bottom - consoleInfo.srWindow.Top + 1;
 
     double a = x1 - x0;
     double b = y1 - y0;
@@ -177,11 +184,15 @@ void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
     double y = (b * 1.0) / c;
     do
     {
-        Text(p, x0, y0, color);
+        if (x0 > 0 && x0 < width && y0>0 && y < height)
+        {
+            Text(p, x0, y0, color);
+        }
+
         x0 += x;
         y0 += y;
         d = sqrt(pow(x0 - x1, 2) + pow(y0 - y1, 2));
-    } while ( d > 0);
+    } while (d > 0);
     Text(p, x1, y1, color);
 }
 
@@ -485,7 +496,7 @@ int Mouse_x(LPCSTR WindowName, int Character_width)
     GetCursorPos(&p);
     int nScreenWidth = GetSystemMetrics(SM_CXSCREEN);
     HWND hwnd = FindWindow(NULL, WindowName);
-    RECT rect;
+    RECT rect; Vsn;
     GetWindowRect(hwnd, &rect);
     int x = (p.x - rect.left) / Character_width;
     return x;
@@ -498,8 +509,76 @@ int Mouse_y(LPCSTR WindowName,int Character_height)
     GetCursorPos(&p);
     int nScreenHeight = GetSystemMetrics(SM_CYSCREEN);
     HWND hwnd = FindWindow(NULL, WindowName);
-    RECT rect;
+    RECT rect; Vsn;
     GetWindowRect(hwnd, &rect);
     int y = (p.y - rect.top) / Character_height;
-    return y;
+    return y;   
+}
+
+//画板
+void Drawing_Board(char Draw[20][30])
+{
+
+    CMDwindow(TEXT("画板"), 20, 32, 10, 10);
+    Gotoxy(0, 0);
+    int x = Mouse_x,
+        y = Mouse_y;
+    while (1)
+    {
+        Color(0x00);
+        printf("▌");
+
+        Color(0x01);
+        printf("▌");
+
+        Color(0x02);
+        printf("▌");
+
+        Color(0x03);
+        printf("▌");
+
+        Color(0x04);
+        printf("▌");
+
+        Color(0x05);
+        printf("▌");
+
+        Color(0x06);
+        printf("▌");
+
+        Color(0x07);
+        printf("▌");
+
+        Color(0x08);
+        printf("▌");
+
+        Color(0x09);
+        printf("▌");
+
+        Color(0x0a);
+        printf("▌");
+
+        Color(0x0c);
+        printf("▌");
+
+        Color(0x0d);
+        printf("▌");
+
+        Color(0x0e);
+        printf("▌");
+
+        Color(0x0f);
+        printf("▌");
+
+
+
+        for (int i = 0; i <= 19; i++)
+        {
+            printf("\n");
+            for (int o = 0; o <= 29; i++)
+            {
+                printf("%s", Draw[i][o]);
+            }
+        }
+    }
 }
