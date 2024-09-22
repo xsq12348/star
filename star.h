@@ -14,14 +14,14 @@
 
 #pragma comment( lib,"Winmm.lib")
 
-    /*
-    颜色属性由两个十六进制数字指定, 第一个为背景色, 第二个为前景色。
-    每个数字可以为下列值之一：
-    黑色 = 0 蓝色 = 1 绿色 = 2 湖蓝色 = 3
-    红色 = 4 紫色 = 5 黄色 = 6 白色 = 7
-    灰色 = 8 淡蓝色=9 淡绿色=A 淡红色=C
-    淡紫色=D 淡黄色=E 亮白色=F
-    */
+/*
+颜色属性由两个十六进制数字指定, 第一个为背景色, 第二个为前景色。
+每个数字可以为下列值之一：
+黑色 = 0 蓝色 = 1 绿色 = 2 湖蓝色 = 3
+红色 = 4 紫色 = 5 黄色 = 6 白色 = 7
+灰色 = 8 淡蓝色=9 淡绿色=A 淡红色=C
+淡紫色=D 淡黄色=E 亮白色=F
+*/
 
 
 #define Black   0x00
@@ -36,7 +36,7 @@
 #define Yellow   0x06
 #define T_Yellow 0x0e
 #define Wite     0x07
-#define B_Wite   0x0f
+#define T_Wite   0x0f
 #define Grey     0x08
 
 
@@ -65,7 +65,7 @@ int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：1.22
+    //版本信息：1.3
     /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -83,11 +83,13 @@ int Vsn(int A)
     * 1.03 更新了Line函数
     * 1.04 更新了部分内容,对部分函数进行了整改
     * 1.05 解决了Line函数的bug
-    * 1.1 更新了鼠标输入开关函数，现在鼠标可以不再选择cmd窗口 
+    * 1.1 更新了鼠标输入开关函数，现在鼠标可以不再选择cmd窗口
     * 1.11 更新了调色板
     * 1.2 增加了获取鼠标在Cmd窗口中坐标的函数
     * 1.21 修复了Line函数在某些角度不能绘制的问题
     * 1.22 修复了Line函数在窗口外绘制的bug
+    * 1.3实现了暂停函数
+    * 1.31 删除了一些不能正常使用的函数，修复了一些bug
     */
     return A;
 }
@@ -247,91 +249,6 @@ int Random(int A, int B)
     Vsn; return A;
 }
 
-/*
-维修中
-
-//音乐编辑器
-void Music(const char* _FileName)
-{
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    char d[100] = { 0 };
-    //snprintf(d, sizeof(d), "open %s alias bgm", _FileName);
-
-
-
-    mciSendString("close bgm", NULL, 0, NULL);
-    snprintf(d, sizeof(d), "open \"%s\" alias bgm", _FileName);
-
-
-
-
-    printf("d: %s\n", d);
-    int rct = mciSendString(d, NULL, 0, NULL);
-
-    if (rct != 0)
-    {
-        SetConsoleTextAttribute(hConsole, 0x04);
-        switch (rct)
-        {
-        case MCIERR_BAD_CONSTANT:
-            printf("\n[Music函数错误]为参数指定的值未知[Enter]退出\n");
-            break;
-
-        case MCIERR_BAD_INTEGER:
-            printf("\n[Music函数错误]命令中的整数无效或缺失[Enter]退出\n");
-            break;
-
-        case MCIERR_DUPLICATE_FLAGS:
-            printf("\n[Music函数错误]已指定标志或值两次[Enter]退出\n");
-            break;
-
-        case MCIERR_MISSING_COMMAND_STRING:
-            printf("\n[Music函数错误]未指定任何命令[Enter]退出\n");
-            break;
-
-        case MCIERR_MISSING_DEVICE_NAME:
-            printf("\n[Music函数错误]未指定设备名称[Enter]退出\n");
-            break;
-
-        case MCIERR_MISSING_STRING_ARGUMENT:
-            printf("\n[Music函数错误]命令中缺少字符串值[Enter]退出\n");
-            break;
-
-        case MCIERR_NEW_REQUIRES_ALIAS:
-            printf("\n[Music函数错误]别名必须与“新”设备名称一起使用[Enter]退出\n");
-            break;
-
-        case MCIERR_NO_CLOSING_QUOTE:
-            printf("\n[Music函数错误]缺少右引号[Enter]退出\n");
-            break;
-
-        case MCIERR_NOTIFY_ON_AUTO_OPEN:
-            printf("\n[Music函数错误]自动打开“通知”标志是非法的[Enter]退出\n");
-            break;
-
-        case MCIERR_PARAM_OVERFLOW:
-            printf("\n[Music函数错误]输出字符串不够长[Enter]退出\n");
-            break;
-
-        case MCIERR_PARSER_INTERNAL:
-            printf("\n[Music函数错误]发生内部分析程序错误[Enter]退出\n");
-            break;
-
-        case MCIERR_UNRECOGNIZED_KEYWORD:
-            printf("\n[Music函数错误]指定了未知的命令参数[Enter]退出\n");
-            break;
-        }
-        SetConsoleTextAttribute(hConsole, 0x07);
-        getchar();
-        return 0;
-    }
-
-    mciSendString("play bgm", NULL, 0, NULL);
-
-}
-
-*/
-
 
 //图片显示器
 void ColorImg(_In_z_ char const* _FileName, int x, int y)
@@ -346,12 +263,12 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
         getchar();
         return 0;
     }
-    char bu[300];
+    char bu[30000];
     int dd = 0; Vsn;
     fscanf(fp, "%s", bu);
     Gotoxy(x, y);
     Color(0x07);
-    while (dd != 300)
+    while (dd != 30000)
     {
 
         if (bu[dd] == 'x')
@@ -445,10 +362,7 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
             break;
 
         }
-
-
         dd++;
-
     }
 
     fclose(fp);
@@ -503,7 +417,7 @@ int Mouse_x(LPCSTR WindowName, int Character_width)
 }
 
 //获取鼠标纵坐标
-int Mouse_y(LPCSTR WindowName,int Character_height)
+int Mouse_y(LPCSTR WindowName, int Character_height)
 {
     POINT p;
     GetCursorPos(&p);
@@ -512,73 +426,11 @@ int Mouse_y(LPCSTR WindowName,int Character_height)
     RECT rect; Vsn;
     GetWindowRect(hwnd, &rect);
     int y = (p.y - rect.top) / Character_height;
-    return y;   
+    return y;
 }
 
-//画板
-void Drawing_Board(char Draw[20][30])
+//暂停函数
+void Time_Out()
 {
-
-    CMDwindow(TEXT("画板"), 20, 32, 10, 10);
-    Gotoxy(0, 0);
-    int x = Mouse_x,
-        y = Mouse_y;
-    while (1)
-    {
-        Color(0x00);
-        printf("▌");
-
-        Color(0x01);
-        printf("▌");
-
-        Color(0x02);
-        printf("▌");
-
-        Color(0x03);
-        printf("▌");
-
-        Color(0x04);
-        printf("▌");
-
-        Color(0x05);
-        printf("▌");
-
-        Color(0x06);
-        printf("▌");
-
-        Color(0x07);
-        printf("▌");
-
-        Color(0x08);
-        printf("▌");
-
-        Color(0x09);
-        printf("▌");
-
-        Color(0x0a);
-        printf("▌");
-
-        Color(0x0c);
-        printf("▌");
-
-        Color(0x0d);
-        printf("▌");
-
-        Color(0x0e);
-        printf("▌");
-
-        Color(0x0f);
-        printf("▌");
-
-
-
-        for (int i = 0; i <= 19; i++)
-        {
-            printf("\n");
-            for (int o = 0; o <= 29; i++)
-            {
-                printf("%s", Draw[i][o]);
-            }
-        }
-    }
+    getchar();
 }
