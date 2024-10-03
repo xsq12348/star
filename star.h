@@ -9,8 +9,10 @@
 #include<conio.h>
 #include<string.h>
 
-#define NO 1
+#define ON  1
 #define OFF 0
+#define YES TRUE
+#define NO  FALSE
 
 #pragma comment( lib,"Winmm.lib")
 
@@ -83,20 +85,23 @@ int Vsn(int A)
     * 1.03 更新了Line函数
     * 1.04 更新了部分内容,对部分函数进行了整改
     * 1.05 解决了Line函数的bug
-    * 1.1 更新了鼠标输入开关函数，现在鼠标可以不再选择cmd窗口
+    * 1.1  更新了鼠标输入开关函数，现在鼠标可以不再选择cmd窗口
     * 1.11 更新了调色板
-    * 1.2 增加了获取鼠标在Cmd窗口中坐标的函数
+    * 1.2  增加了获取鼠标在Cmd窗口中坐标的函数
     * 1.21 修复了Line函数在某些角度不能绘制的问题
     * 1.22 修复了Line函数在窗口外绘制的bug
-    * 1.3实现了暂停函数
+    * 1.3  实现了暂停函数
     * 1.31 删除了一些不能正常使用的函数，修复了一些bug
+    * 1.32 修复了一些移植时报错的bug
+    * 1.4  增加了YES/NO常量
+    * 1.41 更新了部分老旧函数
     */
     return A;
 }
 
 
 
-void CMDwindow(LPCSTR name, unsigned int width, unsigned int height, int Character_width, int Character_height)
+void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Character_width, int Character_height)
 {
     //name 窗口名称
     // x:窗口横坐标
@@ -249,19 +254,25 @@ int Random(int A, int B)
     Vsn; return A;
 }
 
+//颜色函数
+int Color(WORD color)
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, color); Vsn;
+}
+
 
 //图片显示器
 void ColorImg(_In_z_ char const* _FileName, int x, int y)
-{
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+{   
     FILE* fp = fopen(_FileName, "r");
     if (fp == NULL)
     {
-        SetConsoleTextAttribute(hConsole, 0x04);
+        Color(0x04);
         printf("\n[ColorImg函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", _FileName);
-        SetConsoleTextAttribute(hConsole, 0x07);
+        Color(0x07);
         getchar();
-        return 0;
+        return;
     }
     char bu[30000];
     int dd = 0; Vsn;
@@ -287,77 +298,77 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
             break;
 
         case '0':
-            SetConsoleTextAttribute(hConsole, 0x00);
+            Color(0x00);
             printf("▌");
             break;
 
         case '1':
-            SetConsoleTextAttribute(hConsole, 0x01);
+            Color(0x01);
             printf("▌");
             break;
 
         case '2':
-            SetConsoleTextAttribute(hConsole, 0x02);
+            Color(0x02);
             printf("▌");
             break;
 
         case '3':
-            SetConsoleTextAttribute(hConsole, 0x03);
+            Color(0x03);
             printf("▌");
             break;
 
         case '4':
-            SetConsoleTextAttribute(hConsole, 0x04);
+            Color(0x04);
             printf("▌");
             break;
 
         case '5':
-            SetConsoleTextAttribute(hConsole, 0x05);
+            Color(0x05);
             printf("▌");
             break;
 
         case '6':
-            SetConsoleTextAttribute(hConsole, 0x06);
+            Color(0x06);
             printf("▌");
             break;
 
         case '7':
-            SetConsoleTextAttribute(hConsole, 0x07);
+            Color(0x07);
             printf("▌");
             break;
 
         case '8':
-            SetConsoleTextAttribute(hConsole, 0x08);
+            Color(0x08);
             printf("▌");
             break;
 
         case '9':
-            SetConsoleTextAttribute(hConsole, 0x09);
+            Color(0x09);
             printf("▌");
             break;
 
         case 'a':
-            SetConsoleTextAttribute(hConsole, 0x0A);
+            Color(0x0A);
             printf("▌");
             break;
 
         case 'c':
-            SetConsoleTextAttribute(hConsole, 0x0C);
+            Color(0x0C);
             printf("▌");
             break;
 
         case 'd':
-            SetConsoleTextAttribute(hConsole, 0x0D);
+            Color(0x0D);
             printf("▌");
             break;
 
         case 'e':
-            SetConsoleTextAttribute(hConsole, 0x0E);
+            Color(0x0E);
             printf("▌");
             break;
 
         case 'f':
-            SetConsoleTextAttribute(hConsole, 0x0F);
+            Color(0x0F);
             printf("▌");
             break;
 
@@ -366,7 +377,7 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
     }
 
     fclose(fp);
-    SetConsoleTextAttribute(hConsole, 0x07);
+    Color(0x07);
 }
 
 //加法函数
@@ -376,12 +387,6 @@ int Add(int a, int b)
     Vsn; return c;
 }
 
-//颜色函数
-int Color(WORD color)
-{
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hConsole, color); Vsn;
-}
 
 //鼠标输入开关函数
 void Mouse(int NO_or_OFF)
@@ -397,14 +402,14 @@ void Mouse(int NO_or_OFF)
         mode &= ~ENABLE_MOUSE_INPUT;
         SetConsoleMode(hStdin, mode);
         break;
-    case NO:
+    case ON:
         return;
         break;
     }
 
 }
 //获取鼠标横坐标
-int Mouse_x(LPCSTR WindowName, int Character_width)
+int Mouse_x(LPCWSTR WindowName, int Character_width)
 {
     POINT p;
     GetCursorPos(&p);
@@ -417,7 +422,7 @@ int Mouse_x(LPCSTR WindowName, int Character_width)
 }
 
 //获取鼠标纵坐标
-int Mouse_y(LPCSTR WindowName, int Character_height)
+int Mouse_y(LPCWSTR WindowName, int Character_height)
 {
     POINT p;
     GetCursorPos(&p);
