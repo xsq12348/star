@@ -13,6 +13,7 @@
 #define OFF 0
 #define YES TRUE
 #define NO  FALSE
+#define Error FALSE
 
 #pragma comment( lib,"Winmm.lib")
 
@@ -95,6 +96,10 @@ int Vsn(int A)
     * 1.32 修复了一些移植时报错的bug
     * 1.4  增加了YES/NO常量
     * 1.41 更新了部分老旧函数
+    * 1.42 新增Error常量,将返回FALSE
+    * 1.5 新增获取背景色函数
+    * 1.6 新增获取前景色函数
+    * 1.7 新增获取缓冲区函数
     */
     return A;
 }
@@ -438,4 +443,92 @@ int Mouse_y(LPCWSTR WindowName, int Character_height)
 void Time_Out()
 {
     getchar();
+}
+
+//获取某一位置背景色
+int Back(unsigned int width, unsigned int height, COORD coord)
+{
+    int color = 0;
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (GetConsoleScreenBufferInfo(hConsole, &csbi))
+    {
+        WORD att = csbi.wAttributes;
+        DWORD back = att & 0xf0;
+        //DWORD fore = att & 0x0f;
+        color = back;
+    }
+    return color;
+}
+
+//获取某一位置前景色
+int Fore(unsigned int width, unsigned int height, COORD coord)
+{
+    int color = 0;
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (GetConsoleScreenBufferInfo(hConsole, &csbi))
+    {
+        WORD att = csbi.wAttributes;
+        //DWORD back = att & 0xf0;
+        DWORD fore = att & 0x0f;
+        color = fore;
+    }
+    return color;
+}
+
+//获取缓冲区
+void D_Buffer(int B_OR_F)
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    int height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+    int** arr;
+    arr = (int**)malloc(width * sizeof(int*));
+    if (arr == NULL)
+    {
+        Color(Red);
+        printf("\n[D_Buffer]函数发生错误!错误代码[0x01]\n");
+        return Error;
+    }
+    for (int i = 0; i < width; i++)
+    {
+        for (int o = 0; o < height; o++)
+        {
+            arr[i][o] = i * height + o;
+        }
+    }    
+    if (B_OR_F == 1)
+    {
+        COORD coord;
+        for (int i = 0; i <= width; i++)
+        {
+            for (int o = 0; o <= height; o++)
+            {
+                coord.X = o;
+                coord.Y = i;
+                arr[o][i] = Back(width, height, coord);
+            }
+        }
+    }
+    if (B_OR_F == 2)
+    {
+        COORD coord;
+        for (int i = 0; i <= width; i++)
+        {
+            for (int o = 0; o <= height; o++)
+            {
+                coord.X = o;
+                coord.Y = i;
+                arr[o][i] = Fore(width, height, coord);
+            }
+        }
+    }
+    for (int i = 0; i < width; i++)
+    {
+        free(arr[i]);
+    }
+    free(arr);
+    return arr;
 }
