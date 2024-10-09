@@ -100,6 +100,9 @@ int Vsn(int A)
     * 1.5 新增获取背景色函数
     * 1.6 新增获取前景色函数
     * 1.7 新增获取缓冲区函数
+    * 1.71 已将背景色函数,前景色函数,缓冲区函数整合至atcg拓展包
+    * 1.8 更新了按钮函数
+    * 1.81 更新了Mouse_x,Mouse_y函数
     */
     return A;
 }
@@ -281,19 +284,19 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
     }
     char bu[30000];
     int dd = 0; Vsn;
-    fscanf(fp, "%s", bu);
+    fgets(bu, 30000, fp);
     Gotoxy(x, y);
     Color(0x07);
     while (dd != 30000)
     {
 
-        if (bu[dd] == 'x')
+        if (bu[dd] == '\0')
         {
             break;
         }
         switch (bu[dd])
         {
-        case 'h':
+        case '\n':
             Gotoxy(x, y++);
             Color(0x07);
             break;
@@ -414,12 +417,11 @@ void Mouse(int NO_or_OFF)
 
 }
 //获取鼠标横坐标
-int Mouse_x(LPCWSTR WindowName, int Character_width)
+int Mouse_x(int Character_width)
 {
     POINT p;
     GetCursorPos(&p);
-    int nScreenWidth = GetSystemMetrics(SM_CXSCREEN);
-    HWND hwnd = FindWindow(NULL, WindowName);
+    HWND hwnd = GetConsoleWindow();
     RECT rect; Vsn;
     GetWindowRect(hwnd, &rect);
     int x = (p.x - rect.left) / Character_width;
@@ -427,12 +429,11 @@ int Mouse_x(LPCWSTR WindowName, int Character_width)
 }
 
 //获取鼠标纵坐标
-int Mouse_y(LPCWSTR WindowName, int Character_height)
+int Mouse_y(int Character_height)
 {
     POINT p;
     GetCursorPos(&p);
-    int nScreenHeight = GetSystemMetrics(SM_CYSCREEN);
-    HWND hwnd = FindWindow(NULL, WindowName);
+    HWND hwnd = GetConsoleWindow();
     RECT rect; Vsn;
     GetWindowRect(hwnd, &rect);
     int y = (p.y - rect.top) / Character_height;
@@ -440,95 +441,53 @@ int Mouse_y(LPCWSTR WindowName, int Character_height)
 }
 
 //暂停函数
-void Time_Out()
+void TimeOut()
 {
     getchar();
+    Vsn;
 }
 
-//获取某一位置背景色
-int Back(unsigned int width, unsigned int height, COORD coord)
+int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
 {
-    int color = 0;
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    if (GetConsoleScreenBufferInfo(hConsole, &csbi))
+    int a = NO;
+    int x = x1,
+        y = y1;
+    if (ON_OFF)
     {
-        WORD att = csbi.wAttributes;
-        DWORD back = att & 0xf0;
-        //DWORD fore = att & 0x0f;
-        color = back;
-    }
-    return color;
-}
-
-//获取某一位置前景色
-int Fore(unsigned int width, unsigned int height, COORD coord)
-{
-    int color = 0;
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    if (GetConsoleScreenBufferInfo(hConsole, &csbi))
-    {
-        WORD att = csbi.wAttributes;
-        //DWORD back = att & 0xf0;
-        DWORD fore = att & 0x0f;
-        color = fore;
-    }
-    return color;
-}
-
-//获取缓冲区
-void D_Buffer(int B_OR_F)
-{
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    int height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-    int** arr;
-    arr = (int**)malloc(width * sizeof(int*));
-    if (arr == NULL)
-    {
-        Color(Red);
-        printf("\n[D_Buffer]函数发生错误!错误代码[0x01]\n");
-        return Error;
-    }
-    for (int i = 0; i < width; i++)
-    {
-        for (int o = 0; o < height; o++)
+        if (!(x < mousex && mousex < x2 && y < mousey && mousey < y2))
         {
-            arr[i][o] = i * height + o;
-        }
-    }    
-    if (B_OR_F == 1)
-    {
-        COORD coord;
-        for (int i = 0; i <= width; i++)
+        Color(B_BLUE | B_GREEN | B_RED);
+        for (y1; y1 <= y2; y1++)
         {
-            for (int o = 0; o <= height; o++)
+            for (x1; x1 <= x2; x1++)
             {
-                coord.X = o;
-                coord.Y = i;
-                arr[o][i] = Back(width, height, coord);
+                Gotoxy(x1, y1);
+                printf(" ");
             }
+            x1 = x;
         }
     }
-    if (B_OR_F == 2)
+        }
+
+    if (x < mousex && mousex < x2 && y < mousey && mousey < y2)
     {
-        COORD coord;
-        for (int i = 0; i <= width; i++)
+        if (GetAsyncKeyState(1))
         {
-            for (int o = 0; o <= height; o++)
+            Color(B_RED);
+            a = YES;
+            for (y1; y1 <= y2; y1++)
             {
-                coord.X = o;
-                coord.Y = i;
-                arr[o][i] = Fore(width, height, coord);
+                for (x1; x1 <= x2; x1++)
+                {
+                    Gotoxy(x1, y1);
+                    printf(" ");
+                }
+                x1 = x;
             }
+            printf("鼠标在指定区域");
         }
+
     }
-    for (int i = 0; i < width; i++)
-    {
-        free(arr[i]);
-    }
-    free(arr);
-    return arr;
+    Color(0x07);
+    return a;
 }
