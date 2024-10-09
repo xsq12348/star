@@ -284,19 +284,19 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
     }
     char bu[30000];
     int dd = 0; Vsn;
-    fgets(bu, 30000, fp);
+    fscanf(bu, 30000, fp);
     Gotoxy(x, y);
     Color(0x07);
     while (dd != 30000)
     {
 
-        if (bu[dd] == '\0')
+        if (bu[dd] == 'x')
         {
             break;
         }
         switch (bu[dd])
         {
-        case '\n':
+        case 'h':
             Gotoxy(x, y++);
             Color(0x07);
             break;
