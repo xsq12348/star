@@ -103,6 +103,7 @@ int Vsn(int A)
     * 1.71 已将背景色函数,前景色函数,缓冲区函数整合至atcg拓展包
     * 1.8 更新了按钮函数
     * 1.81 更新了Mouse_x,Mouse_y函数
+    * 1.82 修复了Button函数的BUG
     */
     return A;
 }
@@ -272,7 +273,7 @@ int Color(WORD color)
 
 //图片显示器
 void ColorImg(_In_z_ char const* _FileName, int x, int y)
-{   
+{
     FILE* fp = fopen(_FileName, "r");
     if (fp == NULL)
     {
@@ -284,7 +285,7 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
     }
     char bu[30000];
     int dd = 0; Vsn;
-    fscanf(bu, 30000, fp);
+    fscanf(fp, "%S", bu);
     Gotoxy(x, y);
     Color(0x07);
     while (dd != 30000)
@@ -454,21 +455,21 @@ int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
         y = y1;
     if (ON_OFF)
     {
-        if (!(x < mousex && mousex < x2 && y < mousey && mousey < y2))
+        if (!GetAsyncKeyState(1))
         {
-        Color(B_BLUE | B_GREEN | B_RED);
-        for (y1; y1 <= y2; y1++)
-        {
-            for (x1; x1 <= x2; x1++)
+            Color(B_BLUE | B_GREEN | B_RED);
+            for (y1; y1 <= y2; y1++)
             {
-                Gotoxy(x1, y1);
-                printf(" ");
+                for (x1; x1 <= x2; x1++)
+                {
+                    Gotoxy(x1, y1);
+                    printf(" ");
+                }
+                x1 = x;
             }
-            x1 = x;
-        }
-    }
         }
 
+    }
     if (x < mousex && mousex < x2 && y < mousey && mousey < y2)
     {
         if (GetAsyncKeyState(1))
@@ -486,7 +487,6 @@ int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
             }
             printf("鼠标在指定区域");
         }
-
     }
     Color(0x07);
     return a;
