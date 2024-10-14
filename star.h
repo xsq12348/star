@@ -86,15 +86,15 @@ int Vsn(int A)
     * 1.03 更新了Line函数
     * 1.04 更新了部分内容,对部分函数进行了整改
     * 1.05 解决了Line函数的bug
-    * 1.1  更新了鼠标输入开关函数，现在鼠标可以不再选择cmd窗口
+    * 1.1 更新了鼠标输入开关函数，现在鼠标可以不再选择cmd窗口
     * 1.11 更新了调色板
     * 1.2  增加了获取鼠标在Cmd窗口中坐标的函数
     * 1.21 修复了Line函数在某些角度不能绘制的问题
     * 1.22 修复了Line函数在窗口外绘制的bug
-    * 1.3  实现了暂停函数
+    * 1.3 实现了暂停函数
     * 1.31 删除了一些不能正常使用的函数，修复了一些bug
     * 1.32 修复了一些移植时报错的bug
-    * 1.4  增加了YES/NO常量
+    * 1.4 增加了YES/NO常量
     * 1.41 更新了部分老旧函数
     * 1.42 新增Error常量,将返回FALSE
     * 1.5 新增获取背景色函数
@@ -104,6 +104,9 @@ int Vsn(int A)
     * 1.8 更新了按钮函数
     * 1.81 更新了Mouse_x,Mouse_y函数
     * 1.82 修复了Button函数的BUG
+    * 1.83 修复了Button函数的BUG
+    * 1.84 修复了Button函数的BUG
+    * 1.85 修复了Button函数的BUG
     */
     return A;
 }
@@ -285,7 +288,7 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
     }
     char bu[30000];
     int dd = 0; Vsn;
-    fscanf(fp, "%S", bu);
+    fscanf(fp, "%s", bu);
     Gotoxy(x, y);
     Color(0x07);
     while (dd != 30000)
@@ -453,7 +456,7 @@ int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
     int a = NO;
     int x = x1,
         y = y1;
-    if (ON_OFF)
+    if (ON_OFF == ON)
     {
         if (!GetAsyncKeyState(1))
         {
@@ -468,26 +471,28 @@ int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
                 x1 = x;
             }
         }
+        if (x <= mousex && mousex <= x2 && y <= mousey && mousey <= y2)
+        {
+            if (GetAsyncKeyState(1) & 0x8000)
+            {
+                Color(B_RED); printf("鼠标在指定区域");
+                for (y1; y1 <= y2; y1++)
+                {
+                    for (x1; x1 <= x2; x1++)
+                    {
+                        Gotoxy(x1, y1);
+                        printf(" ");
+                    }
+                    x1 = x;
+                }
+            }
+        }
 
     }
-    if (x < mousex && mousex < x2 && y < mousey && mousey < y2)
-    {
-        if (GetAsyncKeyState(1))
+        if (x <= mousex && mousex <= x2 && y <= mousey && mousey <= y2)
         {
-            Color(B_RED);
-            a = YES;
-            for (y1; y1 <= y2; y1++)
-            {
-                for (x1; x1 <= x2; x1++)
-                {
-                    Gotoxy(x1, y1);
-                    printf(" ");
-                }
-                x1 = x;
-            }
-            printf("鼠标在指定区域");
+            if (GetAsyncKeyState(1) & 0x8000) { a = YES; }
         }
-    }
     Color(0x07);
     return a;
 }
