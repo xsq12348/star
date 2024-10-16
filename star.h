@@ -8,6 +8,7 @@
 #include<mmsystem.h>
 #include<conio.h>
 #include<string.h>
+#include<ctype.h>
 
 #define ON  1
 #define OFF 0
@@ -107,6 +108,8 @@ int Vsn(int A)
     * 1.83 修复了Button函数的BUG
     * 1.84 修复了Button函数的BUG
     * 1.85 修复了Button函数的BUG
+    * 1.9 实现了全屏函数
+    * 2.0 将背景色函数,前景色函数,缓冲区函数重新整合至star.h，合并为一个函数
     */
     return A;
 }
@@ -489,10 +492,37 @@ int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
         }
 
     }
-        if (x <= mousex && mousex <= x2 && y <= mousey && mousey <= y2)
-        {
-            if (GetAsyncKeyState(1) & 0x8000) { a = YES; }
-        }
+    if (x <= mousex && mousex <= x2 && y <= mousey && mousey <= y2)
+    {
+        if (GetAsyncKeyState(1) & 0x8000) { a = YES; }
+    }
     Color(0x07);
     return a;
+}
+
+//全屏函数
+void FullScreen()
+{
+    INPUT input = { 0 };
+    input.type = INPUT_KEYBOARD;
+    input.ki.wVk = VK_F11;
+    SendInput(1, &input, sizeof(INPUT));
+    input.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &input, sizeof(INPUT));
+}
+
+//获取控制台某一出颜色,A==1时为前景色，A==2时为背景色
+int Butter(int x, int y,int A)
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
+    COORD coord = { x,y };
+    DWORD count;
+    WORD wa;
+    ReadConsoleOutputAttribute(hConsole, &wa, 1, coord, &count);
+    int f = wa & 0x0f;
+    int b = (wa >> 4) & 0x0f;
+    if (A == 1) { return f; }
+    if (A == 2) { return b; }
 }
