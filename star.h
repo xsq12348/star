@@ -110,6 +110,13 @@ int Vsn(int A)
     * 1.85 修复了Button函数的BUG
     * 1.9 实现了全屏函数
     * 2.0 将背景色函数,前景色函数,缓冲区函数重新整合至star.h，合并为一个函数
+    * 2.1 更新了ColorImg函数
+    * 3.0 正式开始win32测试内容
+    * 4.0 win32测试完毕,正式开始更新win32内容
+    * 4.1 更新了win32窗口中获取鼠标竖直位置函数
+    * 4.2 更新了win32窗口中获取鼠标水平位置函数
+    * 4.3 更新了win32鼠标光标隐藏开关函数
+    * 4.4 更新了win32窗口中线段函数
     */
     return A;
 }
@@ -318,72 +325,72 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
             break;
 
         case '1':
-            Color(0x01);
+            Color(0x11);
             printf("▌");
             break;
 
         case '2':
-            Color(0x02);
+            Color(0x22);
             printf("▌");
             break;
 
         case '3':
-            Color(0x03);
+            Color(0x33);
             printf("▌");
             break;
 
         case '4':
-            Color(0x04);
+            Color(0x44);
             printf("▌");
             break;
 
         case '5':
-            Color(0x05);
+            Color(0x55);
             printf("▌");
             break;
 
         case '6':
-            Color(0x06);
+            Color(0x66);
             printf("▌");
             break;
 
         case '7':
-            Color(0x07);
+            Color(0x77);
             printf("▌");
             break;
 
         case '8':
-            Color(0x08);
+            Color(0x88);
             printf("▌");
             break;
 
         case '9':
-            Color(0x09);
+            Color(0x99);
             printf("▌");
             break;
 
         case 'a':
-            Color(0x0A);
+            Color(0xAA);
             printf("▌");
             break;
 
         case 'c':
-            Color(0x0C);
+            Color(0xCC);
             printf("▌");
             break;
 
         case 'd':
-            Color(0x0D);
+            Color(0xDD);
             printf("▌");
             break;
 
         case 'e':
-            Color(0x0E);
+            Color(0xEE);
             printf("▌");
             break;
 
         case 'f':
-            Color(0x0F);
+            Color(0xFF);
             printf("▌");
             break;
 
@@ -512,7 +519,7 @@ void FullScreen()
 }
 
 //获取控制台某一出颜色,A==1时为前景色，A==2时为背景色
-int Butter(int x, int y,int A)
+int Butter(int x, int y, int A)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -526,3 +533,124 @@ int Butter(int x, int y,int A)
     if (A == 1) { return f; }
     if (A == 2) { return b; }
 }
+
+//---------------------------------------------------------------------------------------------以下为win32内容------------------------------------------------------------------------------------------------------//
+
+//在win32窗口中绘制线段
+void WinLine(HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
+{    
+    HPEN hpen = CreatePen(PS_SOLID, 1, color);
+    HPEN holdpen = (HPEN)SelectObject(hdc, hpen);
+    MoveToEx(hdc, x2, y2, NULL);
+    LineTo(hdc, x1, y1);
+    SelectObject(hdc, holdpen);
+    DeleteObject(hpen);
+}
+
+//在win32窗口中获取鼠标水平位置
+int WinMouseX()
+{
+    POINT p;
+    GetCursorPos(&p);
+    HWND hwnd = GetConsoleWindow();
+    RECT rect; Vsn;
+    GetWindowRect(hwnd, &rect);
+    int x = (p.x - rect.left);
+    return x;
+}
+
+//在win32窗口中获取鼠标竖直位置
+int WinMouseY()
+{
+    POINT p;
+    GetCursorPos(&p);
+    HWND hwnd = GetConsoleWindow();
+    RECT rect; Vsn;
+    GetWindowRect(hwnd, &rect);
+    int y = (p.y - rect.top);
+    return y;
+}
+
+//win32鼠标光标隐藏开关
+void WinMouse(BOOL ON_OR_OFF)
+{
+    if (ON_OR_OFF == OFF) { ShowCursor(FALSE); }
+    else { return; }
+}
+
+
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+//消息处理函数,请不要乱动此函数!!!
+void WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
+{
+    HDC hdc = GetDC(hwnd);
+    //UINT msgid = WM_PAINT;
+    switch (msgid)
+    {
+    //绘画
+    case WM_PAINT:
+        break;
+    }
+    return DefWindowProc(hwnd, msgid, wparam, lparam);
+}
+
+//创建窗口
+WINAPI Window(
+    HWND hwnd	 /*句柄*/,
+    LPCWSTR name /*窗口名称*/,
+    int w		 /*窗口宽度*/,
+    int h		 /*窗口高度*/,
+    int x		 /*窗口水平坐标*/,
+    int y		 /*窗口竖直坐标*/
+)
+{
+    HINSTANCE hinstance = GetModuleHandle(NULL);
+    //注册窗口类
+    WNDCLASS wndclass = { 0 };
+    wndclass.cbClsExtra = 0;
+    wndclass.cbWndExtra = 0;
+    //获取笔刷 填充背景
+    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);
+    //鼠标指针
+    wndclass.hCursor = NULL;
+    //系统默认图标
+    wndclass.hIcon = NULL;
+    //程序句柄
+    wndclass.hInstance = hinstance;
+    wndclass.lpfnWndProc = WndPorc;
+    //类名
+    wndclass.lpszClassName = TEXT("main");
+    //菜单
+    wndclass.lpszMenuName = NULL;
+    //窗口样式
+    wndclass.style = CS_HREDRAW | CS_VREDRAW;
+    RegisterClass(&wndclass);
+
+
+    //创建窗口
+    hwnd = CreateWindow(TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, x, y, w, h, NULL, NULL, hinstance, NULL);
+    //显示窗口
+    ShowWindow(hwnd, SW_SHOW);
+    UpdateWindow(hwnd);
+
+    HDC hdc = GetDC(hwnd);
+    return hdc;
+}
+
+//消息循环
+void RunWindow()
+{
+    //消息循环
+    MSG msg = { 0 };
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+        if (GetAsyncKeyState(VK_ESCAPE)) { printf("窗口已退出\n"); return; }
+    }
+}
+
+
+
