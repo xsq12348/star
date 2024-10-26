@@ -15,6 +15,7 @@
 #define YES TRUE
 #define NO  FALSE
 #define Error FALSE
+#define Pi 3.1415926
 
 #pragma comment( lib,"Winmm.lib")
 
@@ -113,10 +114,14 @@ int Vsn(int A)
     * 2.1 更新了ColorImg函数
     * 3.0 正式开始win32测试内容
     * 4.0 win32测试完毕,正式开始更新win32内容
-    * 4.1 更新了win32窗口中获取鼠标竖直位置函数
-    * 4.2 更新了win32窗口中获取鼠标水平位置函数
-    * 4.3 更新了win32鼠标光标隐藏开关函数
-    * 4.4 更新了win32窗口中线段函数
+    * 4.1 新增win32窗口中获取鼠标竖直位置函数
+    * 4.2 新增win32窗口中获取鼠标水平位置函数
+    * 4.3 新增win32鼠标光标开关函数
+    * 4.4 新增win32窗口中线段函数
+    * 4.5 新增win32窗口中绘制像素点函数
+    * 4.51 更新了Text函数
+    * 4.6 新增win32文本输出函数
+    * 4.7 增加了非阻塞式消息循环函数
     */
     return A;
 }
@@ -165,18 +170,31 @@ void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Charac
 }
 
 
-//设置文字出现的坐标
-void Text(LPCSTR text, int x, int y, int color)
+//移动光标
+void Gotoxy(int x, int y)
 {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hConsole, color);
-    COORD lightb;
+    COORD lightb; Vsn;
     lightb.X = x;
     lightb.Y = y;
     HANDLE CMD = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(CMD, lightb);
+
+}
+
+//颜色函数
+int Color(WORD color)
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, color); Vsn;
+}
+
+//设置文字出现的坐标
+void Text(LPCSTR text, int x, int y, int color)
+{
+    Gotoxy(x, y);
+    Color(color);
     printf(text);
-    SetConsoleTextAttribute(hConsole, 0x07); Vsn;
+    Color(0x07);Vsn;
 }
 
 
@@ -233,20 +251,6 @@ void Clear()
 }
 
 
-
-//移动光标
-void Gotoxy(int x, int y)
-{
-    COORD lightb; Vsn;
-    lightb.X = x;
-    lightb.Y = y;
-    HANDLE CMD = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(CMD, lightb);
-
-}
-
-
-
 //隐藏/显示光标
 void HideFLASE(BOOL A)
 {
@@ -274,13 +278,6 @@ int Random(int A, int B)
 {
     A = rand() % B + A;
     Vsn; return A;
-}
-
-//颜色函数
-int Color(WORD color)
-{
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hConsole, color); Vsn;
 }
 
 
@@ -571,13 +568,25 @@ int WinMouseY()
     return y;
 }
 
-//win32鼠标光标隐藏开关
+//win32鼠标光标开关
 void WinMouse(BOOL ON_OR_OFF)
 {
     if (ON_OR_OFF == OFF) { ShowCursor(FALSE); }
     else { return; }
 }
 
+//绘制像素点
+void Pix(HDC hdc,int x, int y,COLORREF color)
+{
+    SetPixel(hdc, x, y, color);
+}
+
+//win32文本输出
+void WinText(HDC hdc, int x, int y, LPCSTR text, COLORREF color)
+{
+    SetTextColor(hdc,color);
+    TextOut(hdc, x, y, text, wcslen(text));
+}
 
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
@@ -585,19 +594,24 @@ void WinMouse(BOOL ON_OR_OFF)
 //消息处理函数,请不要乱动此函数!!!
 void WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
 {
+    double t = 0;
     HDC hdc = GetDC(hwnd);
     //UINT msgid = WM_PAINT;
     switch (msgid)
     {
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
     //绘画
     case WM_PAINT:
         break;
     }
+    //return 0;
     return DefWindowProc(hwnd, msgid, wparam, lparam);
 }
 
 //创建窗口
-WINAPI Window(
+HWND Window(
     HWND hwnd	 /*句柄*/,
     LPCWSTR name /*窗口名称*/,
     int w		 /*窗口宽度*/,
@@ -627,30 +641,47 @@ WINAPI Window(
     //窗口样式
     wndclass.style = CS_HREDRAW | CS_VREDRAW;
     RegisterClass(&wndclass);
-
-
     //创建窗口
     hwnd = CreateWindow(TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, x, y, w, h, NULL, NULL, hinstance, NULL);
     //显示窗口
     ShowWindow(hwnd, SW_SHOW);
     UpdateWindow(hwnd);
-
-    HDC hdc = GetDC(hwnd);
-    return hdc;
+    return hwnd;
 }
 
-//消息循环
+//阻塞式消息循环，win32常用经典款,但做游戏不推荐，因为无法写进游戏循环会导致窗口未响应问题，写进去会导致系统资源无法释放最终内存泄漏
 void RunWindow()
 {
     //消息循环
     MSG msg = { 0 };
-    while (GetMessage(&msg, NULL, 0, 0))
+    if (GetMessage(&msg, NULL, 0, 0))
     {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
         if (GetAsyncKeyState(VK_ESCAPE)) { printf("窗口已退出\n"); return; }
     }
+    else
+    {
+        Sleep(1);
+    }
+
 }
 
+//非阻塞式窗口消息循环，推荐,只要写进游戏主循环就完全没有以上未响应问题，但系统资源无法释放问题仍然存在，不过非常轻，基本可忽略,此函数最好写在结尾
+void ClearWindow()
+{
+    MSG msg = { 0 };
+    for (int i = 0; i < 2; i++)
+    {
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            if (msg.message == WM_MOUSEMOVE) { continue; }
 
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
+    
+    //InvalidateRect(hwnd, NULL, TRUE);
+}
 
