@@ -9,6 +9,7 @@
 #include<conio.h>
 #include<string.h>
 #include<ctype.h>
+#include <xkeycheck.h>
 
 #define ON  1
 #define OFF 0
@@ -70,7 +71,7 @@ int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：1.3
+    //版本信息：4.7
     /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -122,6 +123,10 @@ int Vsn(int A)
     * 4.51 更新了Text函数
     * 4.6 新增win32文本输出函数
     * 4.7 增加了非阻塞式消息循环函数
+    * 4.71 版本更新函数已添加到各函数中
+    * 4.8 更新了win32矩形函数
+    * 4.85 终于解决了内存泄露的问题
+    * 4.9 更新了win32清屏
     */
     return A;
 }
@@ -194,7 +199,7 @@ void Text(LPCSTR text, int x, int y, int color)
     Gotoxy(x, y);
     Color(color);
     printf(text);
-    Color(0x07);Vsn;
+    Color(0x07); Vsn;
 }
 
 
@@ -499,7 +504,7 @@ int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
     if (x <= mousex && mousex <= x2 && y <= mousey && mousey <= y2)
     {
         if (GetAsyncKeyState(1) & 0x8000) { a = YES; }
-    }
+    }Vsn;
     Color(0x07);
     return a;
 }
@@ -509,7 +514,7 @@ void FullScreen()
 {
     INPUT input = { 0 };
     input.type = INPUT_KEYBOARD;
-    input.ki.wVk = VK_F11;
+    input.ki.wVk = VK_F11; Vsn;
     SendInput(1, &input, sizeof(INPUT));
     input.ki.dwFlags = KEYEVENTF_KEYUP;
     SendInput(1, &input, sizeof(INPUT));
@@ -523,7 +528,7 @@ int Butter(int x, int y, int A)
     GetConsoleScreenBufferInfo(hConsole, &csbi);
     COORD coord = { x,y };
     DWORD count;
-    WORD wa;
+    WORD wa; Vsn;
     ReadConsoleOutputAttribute(hConsole, &wa, 1, coord, &count);
     int f = wa & 0x0f;
     int b = (wa >> 4) & 0x0f;
@@ -534,14 +539,16 @@ int Butter(int x, int y, int A)
 //---------------------------------------------------------------------------------------------以下为win32内容------------------------------------------------------------------------------------------------------//
 
 //在win32窗口中绘制线段
-void WinLine(HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
-{    
+void WinLine(HWND hwnd, int x1, int y1, int x2, int y2, COLORREF color)
+{
+    HDC hdc = GetDC(hwnd);
     HPEN hpen = CreatePen(PS_SOLID, 1, color);
     HPEN holdpen = (HPEN)SelectObject(hdc, hpen);
     MoveToEx(hdc, x2, y2, NULL);
-    LineTo(hdc, x1, y1);
+    LineTo(hdc, x1, y1); Vsn;
     SelectObject(hdc, holdpen);
     DeleteObject(hpen);
+    ReleaseDC(hwnd, hdc);
 }
 
 //在win32窗口中获取鼠标水平位置
@@ -572,20 +579,47 @@ int WinMouseY()
 void WinMouse(BOOL ON_OR_OFF)
 {
     if (ON_OR_OFF == OFF) { ShowCursor(FALSE); }
-    else { return; }
+    else { return; }Vsn;
 }
 
 //绘制像素点
-void Pix(HDC hdc,int x, int y,COLORREF color)
+void Pix(HWND hwnd, int x, int y, COLORREF color)
 {
+    HDC hdc = GetDC(hwnd);
     SetPixel(hdc, x, y, color);
+    ReleaseDC(hwnd, hdc); Vsn;
 }
 
 //win32文本输出
-void WinText(HDC hdc, int x, int y, LPCSTR text, COLORREF color)
+void WinText(HWND hwnd, int x, int y, LPCSTR text, COLORREF color)
 {
-    SetTextColor(hdc,color);
+    HDC hdc = GetDC(hwnd);
+    SetTextColor(hdc, color);
     TextOut(hdc, x, y, text, wcslen(text));
+    ReleaseDC(hwnd, hdc); Vsn;
+}
+
+
+void WinBoxA(HWND hwnd, int x1, int y1, int x2, int y2, COLORREF color)
+{
+    HDC hdc = GetDC(hwnd);
+    HPEN hpen = CreatePen(PS_SOLID, 1, color);
+    HPEN holdpen = (HPEN)SelectObject(hdc, hpen);
+    Rectangle(hdc, x1, y1, x2, y2);
+    SelectObject(hdc, holdpen);
+    DeleteObject(hpen);
+    ReleaseDC(hwnd, hdc);
+}
+
+void WinBoxB(HWND hwnd, int x1, int y1, int x2, int y2, COLORREF color)
+{
+    HDC hdc = GetDC(hwnd);
+    PAINTSTRUCT ps;
+    HBRUSH hbs = CreateSolidBrush(color);
+    RECT rect = { x1,y1,x2,y2 };
+    FillRect(hdc, &rect, hbs);
+    EndPaint(hwnd, &ps);
+    ReleaseDC(hwnd, hdc);
 }
 
 
@@ -594,7 +628,6 @@ void WinText(HDC hdc, int x, int y, LPCSTR text, COLORREF color)
 //消息处理函数,请不要乱动此函数!!!
 void WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
 {
-    double t = 0;
     HDC hdc = GetDC(hwnd);
     //UINT msgid = WM_PAINT;
     switch (msgid)
@@ -602,11 +635,14 @@ void WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
-    //绘画
+    case WM_MOUSEMOVE:
+        // 忽略鼠标移动消息
+        return 0;
+        break;
+        //绘画
     case WM_PAINT:
         break;
-    }
-    //return 0;
+    }Vsn;
     return DefWindowProc(hwnd, msgid, wparam, lparam);
 }
 
@@ -639,8 +675,8 @@ HWND Window(
     //菜单
     wndclass.lpszMenuName = NULL;
     //窗口样式
-    wndclass.style = CS_HREDRAW | CS_VREDRAW;
-    RegisterClass(&wndclass);
+    wndclass.style = CS_HREDRAW | CS_CLASSDC;
+    RegisterClass(&wndclass); Vsn;
     //创建窗口
     hwnd = CreateWindow(TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, x, y, w, h, NULL, NULL, hinstance, NULL);
     //显示窗口
@@ -649,7 +685,7 @@ HWND Window(
     return hwnd;
 }
 
-//阻塞式消息循环，win32常用经典款,但做游戏不推荐，因为无法写进游戏循环会导致窗口未响应问题，写进去会导致系统资源无法释放最终内存泄漏
+//阻塞式消息循环，win32常用经典款,但做游戏不推荐，因为无法写进游戏循环会导致窗口未响应问题
 void RunWindow()
 {
     //消息循环
@@ -657,17 +693,12 @@ void RunWindow()
     if (GetMessage(&msg, NULL, 0, 0))
     {
         TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        DispatchMessage(&msg); Vsn;
         if (GetAsyncKeyState(VK_ESCAPE)) { printf("窗口已退出\n"); return; }
     }
-    else
-    {
-        Sleep(1);
-    }
-
 }
 
-//非阻塞式窗口消息循环，推荐,只要写进游戏主循环就完全没有以上未响应问题，但系统资源无法释放问题仍然存在，不过非常轻，基本可忽略,此函数最好写在结尾
+//完美解决上个函数的问题
 void ClearWindow()
 {
     MSG msg = { 0 };
@@ -675,13 +706,18 @@ void ClearWindow()
     {
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
-            if (msg.message == WM_MOUSEMOVE) { continue; }
-
             TranslateMessage(&msg);
-            DispatchMessage(&msg);
+            DispatchMessage(&msg); Vsn;
+            if (GetAsyncKeyState(VK_ESCAPE)) { printf("窗口已退出\n"); return; }
         }
     }
-    
-    //InvalidateRect(hwnd, NULL, TRUE);
 }
+
+//win32窗口清屏
+void WinClear(HWND hwnd)
+{
+    Vsn;
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
 
