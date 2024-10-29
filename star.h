@@ -126,7 +126,8 @@ int Vsn(int A)
     * 4.71 版本更新函数已添加到各函数中
     * 4.8 更新了win32矩形函数
     * 4.85 终于解决了内存泄露的问题
-    * 4.9 更新了win32清屏
+    * 4.86 修复了部分报错
+    * 4.9 增加了win32显示数字函数
     */
     return A;
 }
@@ -191,6 +192,7 @@ int Color(WORD color)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color); Vsn;
+    return 0;
 }
 
 //设置文字出现的坐标
@@ -591,7 +593,7 @@ void Pix(HWND hwnd, int x, int y, COLORREF color)
 }
 
 //win32文本输出
-void WinText(HWND hwnd, int x, int y, LPCSTR text, COLORREF color)
+void WinText(HWND hwnd, int x, int y, LPCWSTR text, COLORREF color)
 {
     HDC hdc = GetDC(hwnd);
     SetTextColor(hdc, color);
@@ -599,7 +601,7 @@ void WinText(HWND hwnd, int x, int y, LPCSTR text, COLORREF color)
     ReleaseDC(hwnd, hdc); Vsn;
 }
 
-
+//矩形函数
 void WinBoxA(HWND hwnd, int x1, int y1, int x2, int y2, COLORREF color)
 {
     HDC hdc = GetDC(hwnd);
@@ -611,10 +613,11 @@ void WinBoxA(HWND hwnd, int x1, int y1, int x2, int y2, COLORREF color)
     ReleaseDC(hwnd, hdc);
 }
 
+//矩形函数
 void WinBoxB(HWND hwnd, int x1, int y1, int x2, int y2, COLORREF color)
 {
     HDC hdc = GetDC(hwnd);
-    PAINTSTRUCT ps;
+    PAINTSTRUCT ps; Vsn;
     HBRUSH hbs = CreateSolidBrush(color);
     RECT rect = { x1,y1,x2,y2 };
     FillRect(hdc, &rect, hbs);
@@ -622,11 +625,23 @@ void WinBoxB(HWND hwnd, int x1, int y1, int x2, int y2, COLORREF color)
     ReleaseDC(hwnd, hdc);
 }
 
+//win32显示数字
+void WinDight(HWND hwnd, int x, int y, int dight, COLORREF color)
+{
+    HDC hdc = GetDC(hwnd);
+    int size;
+    TCHAR szText[256];
+    size = wsprintf(szText, TEXT("%d"),dight);
+    SetTextColor(hdc, color);
+    TextOut(hdc, 400, 300, szText, size);
+    ReleaseDC(hwnd, hdc);
+}
+
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 //消息处理函数,请不要乱动此函数!!!
-void WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
+LRESULT WINAPI WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
 {
     HDC hdc = GetDC(hwnd);
     //UINT msgid = WM_PAINT;
@@ -634,10 +649,6 @@ void WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
     {
     case WM_DESTROY:
         PostQuitMessage(0);
-        break;
-    case WM_MOUSEMOVE:
-        // 忽略鼠标移动消息
-        return 0;
         break;
         //绘画
     case WM_PAINT:
@@ -685,12 +696,12 @@ HWND Window(
     return hwnd;
 }
 
-//阻塞式消息循环，win32常用经典款,但做游戏不推荐，因为无法写进游戏循环会导致窗口未响应问题
+//阻塞式消息循环，win32常用经典款,但做游戏不推荐，因为无法写进游戏循环会导致窗口未响应问题，写进去会导致系统资源无法释放最终内存泄漏
 void RunWindow()
 {
     //消息循环
     MSG msg = { 0 };
-    if (GetMessage(&msg, NULL, 0, 0))
+    while (GetMessage(&msg, NULL, 0, 0))
     {
         TranslateMessage(&msg);
         DispatchMessage(&msg); Vsn;
@@ -698,7 +709,6 @@ void RunWindow()
     }
 }
 
-//完美解决上个函数的问题
 void ClearWindow()
 {
     MSG msg = { 0 };
