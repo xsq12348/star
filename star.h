@@ -128,6 +128,7 @@ int Vsn(int A)
     * 4.85 终于解决了内存泄露的问题
     * 4.86 修复了部分报错
     * 4.9 增加了win32显示数字函数
+    * 4.91 修复了WinMouseX和WinMouseY的bug
     */
     return A;
 }
@@ -554,11 +555,10 @@ void WinLine(HWND hwnd, int x1, int y1, int x2, int y2, COLORREF color)
 }
 
 //在win32窗口中获取鼠标水平位置
-int WinMouseX()
+int WinMouseX(HWND hwnd)
 {
     POINT p;
     GetCursorPos(&p);
-    HWND hwnd = GetConsoleWindow();
     RECT rect; Vsn;
     GetWindowRect(hwnd, &rect);
     int x = (p.x - rect.left);
@@ -566,11 +566,10 @@ int WinMouseX()
 }
 
 //在win32窗口中获取鼠标竖直位置
-int WinMouseY()
+int WinMouseY(HWND hwnd)
 {
     POINT p;
     GetCursorPos(&p);
-    HWND hwnd = GetConsoleWindow();
     RECT rect; Vsn;
     GetWindowRect(hwnd, &rect);
     int y = (p.y - rect.top);
