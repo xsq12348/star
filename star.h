@@ -129,6 +129,7 @@ int Vsn(int A)
     * 4.86 修复了部分报错
     * 4.9 增加了win32显示数字函数
     * 4.91 修复了WinMouseX和WinMouseY的bug
+    * 5.0 win32更新了默认光标
     */
     return A;
 }
@@ -636,6 +637,15 @@ void WinDight(HWND hwnd, int x, int y, int dight, COLORREF color)
     ReleaseDC(hwnd, hdc);
 }
 
+void WinCursor(HWND hwnd)
+{
+    int mousex = WinMouseX(hwnd);
+    int mousey = WinMouseY(hwnd);
+    Pix(hwnd, mousex, mousey, RGB(255, 255, 255));
+    WinLine(hwnd, mousex, mousey, mousex + 10, mousey + 7, RGB(255, 255, 255));
+    WinLine(hwnd, mousex, mousey, mousex + 3, mousey + 10, RGB(255, 255, 255));
+    WinLine(hwnd, mousex + 10, mousey + 7, mousex + 3, mousey + 10, RGB(255, 255, 255));
+}
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
