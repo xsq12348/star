@@ -130,6 +130,7 @@ int Vsn(int A)
     * 4.9 增加了win32显示数字函数
     * 4.91 修复了WinMouseX和WinMouseY的bug
     * 5.0 win32更新了默认光标
+    * 5.1 win32更新了Win32获取某一位置像素颜色
     */
     return A;
 }
@@ -637,14 +638,59 @@ void WinDight(HWND hwnd, int x, int y, int dight, COLORREF color)
     ReleaseDC(hwnd, hdc);
 }
 
+//默认光标
 void WinCursor(HWND hwnd)
 {
-    int mousex = WinMouseX(hwnd);
-    int mousey = WinMouseY(hwnd);
-    Pix(hwnd, mousex, mousey, RGB(255, 255, 255));
+    int mousex = WinMouseX(hwnd); Vsn;
+    int mousey = WinMouseY(hwnd) - 23;
     WinLine(hwnd, mousex, mousey, mousex + 10, mousey + 7, RGB(255, 255, 255));
     WinLine(hwnd, mousex, mousey, mousex + 3, mousey + 10, RGB(255, 255, 255));
     WinLine(hwnd, mousex + 10, mousey + 7, mousex + 3, mousey + 10, RGB(255, 255, 255));
+}
+
+//win32按钮函数
+int WinButton(HWND hwnd, int x, int y, int width, int height, int ON_OFF)
+{
+    int c = 0;
+    if (ON_OFF == ON)
+    {
+        if (x < WinMouseX(hwnd) && WinMouseX(hwnd) <= x + width && y < WinMouseY(hwnd) - 23 && WinMouseY(hwnd) - 23 <= y + height && GetAsyncKeyState(1) & 0x8000)
+        {
+            WinLine(hwnd, x, y, x + width, y, RGB(255, 0, 0));
+            WinLine(hwnd, x, y + height, x + width, y + height, RGB(255, 0, 0));
+            WinLine(hwnd, x, y, x, y + height, RGB(255, 0, 0));
+            WinLine(hwnd, x + width, y, x + width, y + height, RGB(255, 0, 0));
+            c = YES;
+        }
+        else
+        {
+            WinLine(hwnd, x, y, x + width, y, RGB(255, 255, 255));
+            WinLine(hwnd, x, y + height, x + width, y + height, RGB(255, 255, 255));
+            WinLine(hwnd, x, y, x, y + height, RGB(255, 255, 255));
+            WinLine(hwnd, x + width, y, x + width, y + height, RGB(255, 255, 255));
+            c = NO;
+        }
+    }
+    else
+        if (ON_OFF == OFF)
+        {
+            if (x < WinMouseX(hwnd) && WinMouseX(hwnd) <= x + width && y < WinMouseY(hwnd) - 23 && WinMouseY(hwnd) - 23 <= y + height && GetAsyncKeyState(1) & 0x8000)
+            {
+                c = YES;
+            }
+            else
+            {
+                c = NO;
+            }
+        }
+    return c;
+}
+
+//Win32获取某一位置像素颜色
+int WinGetColor(HWND hwnd, int x, int y)
+{
+    HDC hdc = GetDC(hwnd);
+    return GetPixel(hdc, x, y);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
@@ -652,6 +698,7 @@ void WinCursor(HWND hwnd)
 //消息处理函数,请不要乱动此函数!!!
 LRESULT WINAPI WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
 {
+    
     HDC hdc = GetDC(hwnd);
     //UINT msgid = WM_PAINT;
     switch (msgid)
