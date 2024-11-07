@@ -25,7 +25,7 @@ void MassifSixMap(HWND hwnd, int X, int Y, int Width, int Height, COLORREF color
     {
         for (int o = 0; o < Height; o++)
         {
-            int x = X + i * 28;
+            int x = X + i * 27;
             int y = (i % 2 == 0) ? Y1 + o * 35 : Y2 + o * 35;
             MassifSix(hwnd, x, y, color);
         }
