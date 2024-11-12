@@ -10,6 +10,8 @@
 #include<string.h>
 #include<ctype.h>
 #include <xkeycheck.h>
+#include <commctrl.h> 
+
 
 #define ON  1
 #define OFF 0
@@ -131,6 +133,7 @@ int Vsn(int A)
     * 4.91 修复了WinMouseX和WinMouseY的bug
     * 5.0 win32更新了默认光标
     * 5.1 win32更新了Win32获取某一位置像素颜色
+    * 5.2 win32更新了Win32显示图片函数
     */
     return A;
 }
@@ -632,7 +635,7 @@ void WinDight(HWND hwnd, int x, int y, int dight, COLORREF color)
     HDC hdc = GetDC(hwnd);
     int size;
     TCHAR szText[256];
-    size = wsprintf(szText, TEXT("%d"),dight);
+    size = wsprintf(szText, TEXT("%d"), dight);
     SetTextColor(hdc, color);
     TextOut(hdc, 400, 300, szText, size);
     ReleaseDC(hwnd, hdc);
@@ -693,12 +696,33 @@ int WinGetColor(HWND hwnd, int x, int y)
     return GetPixel(hdc, x, y);
 }
 
+//win32显示图片
+void WinImg(HWND hwnd, const wchar_t* File, int x, int y)
+{
+    HDC hdc = GetDC(hwnd);
+    HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, File, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    if (hBitmap)
+    {
+        HDC hdcMem = CreateCompatibleDC(hdc);
+        SelectObject(hdcMem, hBitmap);
+        BITMAP bitmap;
+        GetObject(hBitmap, sizeof(BITMAP), &bitmap);
+        BitBlt(hdc, x, y, bitmap.bmWidth, bitmap.bmHeight, hdcMem, 0, 0, SRCCOPY);
+        DeleteDC(hdcMem);
+        DeleteObject(hBitmap); // 释放位图资源
+    }
+    else
+    {
+        printf("[WinImg函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);
+    }
+}
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 //消息处理函数,请不要乱动此函数!!!
 LRESULT WINAPI WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
 {
-    
+
     HDC hdc = GetDC(hwnd);
     //UINT msgid = WM_PAINT;
     switch (msgid)
