@@ -637,7 +637,7 @@ void WinDight(HWND hwnd, int x, int y, int dight, COLORREF color)
     TCHAR szText[256];
     size = wsprintf(szText, TEXT("%d"), dight);
     SetTextColor(hdc, color);
-    TextOut(hdc, 400, 300, szText, size);
+    TextOut(hdc, x, y, szText, size);
     ReleaseDC(hwnd, hdc);
 }
 
