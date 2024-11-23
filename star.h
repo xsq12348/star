@@ -22,6 +22,8 @@
 
 #pragma comment( lib,"Winmm.lib")
 
+#pragma comment(lib, "Msimg32.lib")
+
 /*
 颜色属性由两个十六进制数字指定, 第一个为背景色, 第二个为前景色。
 每个数字可以为下列值之一：
@@ -135,6 +137,7 @@ int Vsn(int A)
     * 5.1 win32更新了Win32获取某一位置像素颜色
     * 5.2 win32更新了Win32显示图片函数
     * 5.3 win32更新了Win32删除窗口函数
+    * 5.4 win32新增了WinImgA函数变种，现在可以显示透明位图了，还可以改变位图放大倍数
     */
     return A;
 }
@@ -715,6 +718,29 @@ void WinImg(HWND hwnd, const wchar_t* File, int x, int y)
     else
     {
         printf("[WinImg函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);
+    }
+}
+
+//win32显示图片的变种，可以选择性不显示某种颜色，还可以改变图片放大倍数
+void WinImgA(HWND hwnd, const wchar_t* File, int x, int y,double widthbs,double heightbs,COLORREF color)
+{
+    HDC hdc = GetDC(hwnd);
+    if (widthbs <= 0) { widthbs = 1; }
+    if (heightbs <= 0) { heightbs = 1; }
+    HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, File, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    if (hBitmap)
+    {
+        HDC hdcMem = CreateCompatibleDC(hdc);
+        SelectObject(hdcMem, hBitmap);
+        BITMAP bitmap;
+        GetObject(hBitmap, sizeof(BITMAP), &bitmap);
+        TransparentBlt(hdc, x, y, bitmap.bmWidth * widthbs, bitmap.bmHeight * heightbs, hdcMem, 0, 0, bitmap.bmWidth, bitmap.bmHeight, color);
+        DeleteDC(hdcMem);
+        DeleteObject(hBitmap); // 释放位图资源
+    }
+    else
+    {
+        printf("[WinImgA函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);
     }
 }
 
