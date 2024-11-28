@@ -138,6 +138,7 @@ int Vsn(int A)
     * 5.2 win32更新了Win32显示图片函数
     * 5.3 win32更新了Win32删除窗口函数
     * 5.4 win32新增了WinImgA函数变种，现在可以显示透明位图了，还可以改变位图放大倍数
+    * 5.5 win32新增了全屏函数
     */
     return A;
 }
@@ -722,7 +723,7 @@ void WinImg(HWND hwnd, const wchar_t* File, int x, int y)
 }
 
 //win32显示图片的变种，可以选择性不显示某种颜色，还可以改变图片放大倍数
-void WinImgA(HWND hwnd, const wchar_t* File, int x, int y,double widthbs,double heightbs,COLORREF color)
+void WinImgA(HWND hwnd, const wchar_t* File, int x, int y, double widthbs, double heightbs, COLORREF color)
 {
     HDC hdc = GetDC(hwnd);
     if (widthbs <= 0) { widthbs = 1; }
@@ -748,6 +749,12 @@ void WinImgA(HWND hwnd, const wchar_t* File, int x, int y,double widthbs,double 
 void WinDelet(HWND hwnd)
 {
     DestroyWindow(hwnd);
+}
+
+//win32全屏函数
+void WinFullScreen(HWND hwnd)
+{
+    ShowWindow(hwnd, 3);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
