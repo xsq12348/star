@@ -753,10 +753,18 @@ void WinDelet(HWND hwnd)
     DestroyWindow(hwnd);
 }
 
+//win32全屏
 void WinFullScreen(HWND hwnd)
 {
     ShowWindow(hwnd, 3);
 }
+
+//win32隐藏标题栏
+void TitleBar(HWND hwnd,BOOL YES_OR_ON)
+{
+    SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION);
+}
+
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
