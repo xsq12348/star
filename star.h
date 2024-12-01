@@ -760,9 +760,9 @@ void WinFullScreen(HWND hwnd)
 }
 
 //win32隐藏标题栏
-void TitleBar(HWND hwnd,BOOL YES_OR_ON)
+void WinTitleBar(HWND hwnd, BOOL YES_OR_ON)
 {
-    SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION);
+    if (YES_OR_ON) { SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION); }
 }
 
 
