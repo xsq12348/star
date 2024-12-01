@@ -141,6 +141,7 @@ int Vsn(int A)
     * 5.5 win32新增了全屏函数
     * 5.6 win32新增了去除标题栏函数
     * 5.61 win32新增了鼠标处理消息
+    * 5.62 修复了一些小bug
     */
     return A;
 }
@@ -849,15 +850,11 @@ void RunWindow()
 void ClearWindow()
 {
     MSG msg = { 0 };
-    for (int i = 0; i < 2; i++)
-    {
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg); Vsn;
-            if (GetAsyncKeyState(VK_ESCAPE)) { printf("窗口已退出\n"); return; }
         }
-    }
 }
 
 //win32窗口清屏
