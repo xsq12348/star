@@ -139,6 +139,8 @@ int Vsn(int A)
     * 5.3 win32更新了Win32删除窗口函数
     * 5.4 win32新增了WinImgA函数变种，现在可以显示透明位图了，还可以改变位图放大倍数
     * 5.5 win32新增了全屏函数
+    * 5.6 win32新增了去除标题栏函数
+    * 5.61 win32新增了鼠标处理消息
     */
     return A;
 }
@@ -751,7 +753,6 @@ void WinDelet(HWND hwnd)
     DestroyWindow(hwnd);
 }
 
-//win32全屏函数
 void WinFullScreen(HWND hwnd)
 {
     ShowWindow(hwnd, 3);
@@ -773,6 +774,14 @@ LRESULT WINAPI WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
         //绘画
     case WM_PAINT:
         break;
+        //处理鼠标消息
+    case WM_SETCURSOR:
+        switch (LOWORD(lparam))
+        {
+        default:
+            SetCursor(LoadCursor(NULL, IDC_ARROW));
+            break;
+        }
     }Vsn;
     return DefWindowProc(hwnd, msgid, wparam, lparam);
 }
