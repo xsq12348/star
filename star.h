@@ -142,6 +142,7 @@ int Vsn(int A)
     * 5.6 win32新增了去除标题栏函数
     * 5.61 win32新增了鼠标处理消息
     * 5.62 修复了一些小bug
+    * 5.63 对部分函数进行了小改动
     */
     return A;
 }
@@ -652,10 +653,10 @@ void WinDight(HWND hwnd, int x, int y, int dight, COLORREF color)
 //默认光标
 void WinCursor(HWND hwnd)
 {
-    int mousex = WinMouseX(hwnd); Vsn;
-    int mousey = WinMouseY(hwnd) - 23;
+    int mousex = WinMouseX(hwnd); 
+    int mousey = WinMouseY(hwnd);
     WinLine(hwnd, mousex, mousey, mousex + 10, mousey + 7, RGB(255, 255, 255));
-    WinLine(hwnd, mousex, mousey, mousex + 3, mousey + 10, RGB(255, 255, 255));
+    WinLine(hwnd, mousex, mousey, mousex + 3, mousey + 10, RGB(255, 255, 255));Vsn;
     WinLine(hwnd, mousex + 10, mousey + 7, mousex + 3, mousey + 10, RGB(255, 255, 255));
 }
 
@@ -665,7 +666,7 @@ int WinButton(HWND hwnd, int x, int y, int width, int height, int ON_OFF)
     int c = 0;
     if (ON_OFF == ON)
     {
-        if (x < WinMouseX(hwnd) && WinMouseX(hwnd) <= x + width && y < WinMouseY(hwnd) - 23 && WinMouseY(hwnd) - 23 <= y + height && GetAsyncKeyState(1) & 0x8000)
+        if (x < WinMouseX(hwnd) && WinMouseX(hwnd) <= x + width && y < WinMouseY(hwnd) && WinMouseY(hwnd) <= y + height && GetAsyncKeyState(1) & 0x8000)
         {
             WinLine(hwnd, x, y, x + width, y, RGB(255, 0, 0));
             WinLine(hwnd, x, y + height, x + width, y + height, RGB(255, 0, 0));
@@ -685,7 +686,7 @@ int WinButton(HWND hwnd, int x, int y, int width, int height, int ON_OFF)
     else
         if (ON_OFF == OFF)
         {
-            if (x < WinMouseX(hwnd) && WinMouseX(hwnd) <= x + width && y < WinMouseY(hwnd) - 23 && WinMouseY(hwnd) - 23 <= y + height && GetAsyncKeyState(1) & 0x8000)
+            if (x < WinMouseX(hwnd) && WinMouseX(hwnd) <= x + width && y < WinMouseY(hwnd)  && WinMouseY(hwnd)  <= y + height && GetAsyncKeyState(1) & 0x8000)
             {
                 c = YES;
             }
