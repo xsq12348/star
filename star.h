@@ -143,6 +143,8 @@ int Vsn(int A)
     * 5.61 win32新增了鼠标处理消息
     * 5.62 修复了一些小bug
     * 5.63 对部分函数进行了小改动
+    * 5.7 新增了从txt任意一行读取数据的函数
+    * 5.71  更新了部分老旧函数
     */
     return A;
 }
@@ -298,8 +300,7 @@ void Box(LPCSTR p, double x_1, double y_1, double x_2, double y_2, int color)
 //随机数
 int Random(int A, int B)
 {
-    A = rand() % B + A;
-    Vsn; return A;
+    Vsn; return rand() % B + A;
 }
 
 
@@ -412,7 +413,6 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
             Color(0xFF);
             printf("▌");
             break;
-
         }
         dd++;
     }
@@ -424,8 +424,7 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
 //加法函数
 int Add(int a, int b)
 {
-    int c = a + b;
-    Vsn; return c;
+    Vsn; return a + b;
 }
 
 
@@ -516,7 +515,6 @@ int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
                 }
             }
         }
-
     }
     if (x <= mousex && mousex <= x2 && y <= mousey && mousey <= y2)
     {
@@ -551,6 +549,17 @@ int Butter(int x, int y, int A)
     int b = (wa >> 4) & 0x0f;
     if (A == 1) { return f; }
     if (A == 2) { return b; }
+}
+
+//从txt任意一行读取数据的函数
+int FILEFP(FILE* fp, int nLine)
+{
+    char buffer[1024 + 1];
+    fpos_t pos;
+    rewind(fp);
+    for (int i = 0; i < nLine; i++)fgets(buffer, 1024, fp);
+    fgetpos(fp, &pos);
+    return 0;
 }
 
 //---------------------------------------------------------------------------------------------以下为win32内容------------------------------------------------------------------------------------------------------//
@@ -593,8 +602,8 @@ int WinMouseY(HWND hwnd)
 //win32鼠标光标开关
 void WinMouse(BOOL ON_OR_OFF)
 {
-    if (ON_OR_OFF == OFF) { ShowCursor(FALSE); }
-    else { return; }Vsn;
+    Vsn;
+    ShowCursor(ON_OR_OFF);
 }
 
 //绘制像素点
@@ -653,10 +662,10 @@ void WinDight(HWND hwnd, int x, int y, int dight, COLORREF color)
 //默认光标
 void WinCursor(HWND hwnd)
 {
-    int mousex = WinMouseX(hwnd); 
+    int mousex = WinMouseX(hwnd);
     int mousey = WinMouseY(hwnd);
     WinLine(hwnd, mousex, mousey, mousex + 10, mousey + 7, RGB(255, 255, 255));
-    WinLine(hwnd, mousex, mousey, mousex + 3, mousey + 10, RGB(255, 255, 255));Vsn;
+    WinLine(hwnd, mousex, mousey, mousex + 3, mousey + 10, RGB(255, 255, 255)); Vsn;
     WinLine(hwnd, mousex + 10, mousey + 7, mousex + 3, mousey + 10, RGB(255, 255, 255));
 }
 
@@ -686,7 +695,7 @@ int WinButton(HWND hwnd, int x, int y, int width, int height, int ON_OFF)
     else
         if (ON_OFF == OFF)
         {
-            if (x < WinMouseX(hwnd) && WinMouseX(hwnd) <= x + width && y < WinMouseY(hwnd)  && WinMouseY(hwnd)  <= y + height && GetAsyncKeyState(1) & 0x8000)
+            if (x < WinMouseX(hwnd) && WinMouseX(hwnd) <= x + width && y < WinMouseY(hwnd) && WinMouseY(hwnd) <= y + height && GetAsyncKeyState(1) & 0x8000)
             {
                 c = YES;
             }
@@ -851,11 +860,11 @@ void RunWindow()
 void ClearWindow()
 {
     MSG msg = { 0 };
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg); Vsn;
-        }
+    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg); Vsn;
+    }
 }
 
 //win32窗口清屏
