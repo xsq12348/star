@@ -12,7 +12,6 @@
 #include <xkeycheck.h>
 #include <commctrl.h> 
 
-
 #define ON  1
 #define OFF 0
 #define YES TRUE
@@ -21,7 +20,6 @@
 #define Pi 3.1415926
 
 #pragma comment( lib,"Winmm.lib")
-
 #pragma comment(lib, "Msimg32.lib")
 
 /*
@@ -32,7 +30,6 @@
 灰色 = 8 淡蓝色=9 淡绿色=A 淡红色=C
 淡紫色=D 淡黄色=E 亮白色=F
 */
-
 
 #define Black   0x00
 #define Green   0x02
@@ -49,17 +46,14 @@
 #define T_Wite   0x0f
 #define Grey     0x08
 
-
 //可以用于背景调色的颜色
 #define B_GREEN BACKGROUND_GREEN
 #define B_RED BACKGROUND_RED
 #define B_BLUE BACKGROUND_BLUE
-
 //可以用于前景调色的颜色
 #define F_GREEN FOREGROUND_GREEN
 #define F_RED   FOREGROUND_RED
 #define F_BLUE  FOREGROUND_BLUE
-
 
 /*
     利用管道连接符可以进行调色
@@ -75,7 +69,7 @@ int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：4.7
+    //版本信息：5.72
     /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -145,11 +139,10 @@ int Vsn(int A)
     * 5.63 对部分函数进行了小改动
     * 5.7 新增了从txt任意一行读取数据的函数
     * 5.71  更新了部分老旧函数
+    * 5.72  更新了部分老旧函数
     */
     return A;
 }
-
-
 
 void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Character_width, int Character_height)
 {
@@ -201,7 +194,6 @@ void Gotoxy(int x, int y)
     lightb.Y = y;
     HANDLE CMD = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(CMD, lightb);
-
 }
 
 //颜色函数
@@ -236,8 +228,6 @@ void Linea(LPCSTR p, int x0, int y0, int x1, int y1, int color)
     }
 }
 
-
-
 //画一条从linexa，lineya到linexb，lineyb的直线,字符为p
 void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
 {
@@ -246,7 +236,6 @@ void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
     GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
     int width = consoleInfo.srWindow.Right - consoleInfo.srWindow.Left + 1;
     int height = consoleInfo.srWindow.Bottom - consoleInfo.srWindow.Top + 1;
-
     double a = x1 - x0;
     double b = y1 - y0;
     double c = sqrt(pow(a, 2) + pow(b, 2));
@@ -259,7 +248,6 @@ void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
         {
             Text(p, x0, y0, color);
         }
-
         x0 += x;
         y0 += y;
         d = sqrt(pow(x0 - x1, 2) + pow(y0 - y1, 2));
@@ -267,13 +255,11 @@ void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
     Text(p, x1, y1, color);
 }
 
-
 //清屏
 void Clear()
 {
     system("cls"); Vsn;
 }
-
 
 //隐藏/显示光标
 void HideFLASE(BOOL A)
@@ -283,7 +269,6 @@ void HideFLASE(BOOL A)
     curInfo.bVisible = A;
     HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorInfo(handle, &curInfo);
-
 }
 
 //画矩形
@@ -296,13 +281,11 @@ void Box(LPCSTR p, double x_1, double y_1, double x_2, double y_2, int color)
     Line(p, x_2, y_1, x_2, y_2, color);
 }
 
-
 //随机数
 int Random(int A, int B)
 {
     Vsn; return rand() % B + A;
 }
-
 
 //图片显示器
 void ColorImg(_In_z_ char const* _FileName, int x, int y)
@@ -323,100 +306,29 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
     Color(0x07);
     while (dd != 30000)
     {
-
-        if (bu[dd] == 'x')
-        {
-            break;
-        }
+        if (bu[dd] == 'x') { break; }
         switch (bu[dd])
         {
-        case 'h':
-            Gotoxy(x, y++);
-            Color(0x07);
-            break;
-
-        case 'k':
-            printf(" ");
-            break;
-
-        case '0':
-            Color(0x00);
-            printf("▌");
-            break;
-
-        case '1':
-            Color(0x11);
-            printf("▌");
-            break;
-
-        case '2':
-            Color(0x22);
-            printf("▌");
-            break;
-
-        case '3':
-            Color(0x33);
-            printf("▌");
-            break;
-
-        case '4':
-            Color(0x44);
-            printf("▌");
-            break;
-
-        case '5':
-            Color(0x55);
-            printf("▌");
-            break;
-
-        case '6':
-            Color(0x66);
-            printf("▌");
-            break;
-
-        case '7':
-            Color(0x77);
-            printf("▌");
-            break;
-
-        case '8':
-            Color(0x88);
-            printf("▌");
-            break;
-
-        case '9':
-            Color(0x99);
-            printf("▌");
-            break;
-
-        case 'a':
-            Color(0xAA);
-            printf("▌");
-            break;
-
-        case 'c':
-            Color(0xCC);
-            printf("▌");
-            break;
-
-        case 'd':
-            Color(0xDD);
-            printf("▌");
-            break;
-
-        case 'e':
-            Color(0xEE);
-            printf("▌");
-            break;
-
-        case 'f':
-            Color(0xFF);
-            printf("▌");
-            break;
+        case 'h':Gotoxy(x, y++); Color(0x07); break;
+        case 'k':printf(" "); break;
+        case '0':Color(0x00); printf("▌"); break;
+        case '1':Color(0x11); printf("▌"); break;
+        case '2':Color(0x22); printf("▌"); break;
+        case '3':Color(0x33); printf("▌"); break;
+        case '4':Color(0x44); printf("▌"); break;
+        case '5':Color(0x55); printf("▌"); break;
+        case '6':Color(0x66); printf("▌"); break;
+        case '7':Color(0x77); printf("▌"); break;
+        case '8':Color(0x88); printf("▌"); break;
+        case '9':Color(0x99); printf("▌"); break;
+        case 'a':Color(0xAA); printf("▌"); break;
+        case 'c':Color(0xCC); printf("▌"); break;
+        case 'd':Color(0xDD); printf("▌"); break;
+        case 'e':Color(0xEE); printf("▌"); break;
+        case 'f':Color(0xFF); printf("▌"); break;
         }
         dd++;
     }
-
     fclose(fp);
     Color(0x07);
 }
@@ -426,7 +338,6 @@ int Add(int a, int b)
 {
     Vsn; return a + b;
 }
-
 
 //鼠标输入开关函数
 void Mouse(int NO_or_OFF)
@@ -442,12 +353,10 @@ void Mouse(int NO_or_OFF)
         mode &= ~ENABLE_MOUSE_INPUT;
         SetConsoleMode(hStdin, mode);
         break;
-    case ON:
-        return;
-        break;
+    case ON:        return;        break;
     }
-
 }
+
 //获取鼠标横坐标
 int Mouse_x(int Character_width)
 {
@@ -602,8 +511,7 @@ int WinMouseY(HWND hwnd)
 //win32鼠标光标开关
 void WinMouse(BOOL ON_OR_OFF)
 {
-    Vsn;
-    ShowCursor(ON_OR_OFF);
+    Vsn; ShowCursor(ON_OR_OFF);
 }
 
 //绘制像素点
@@ -695,14 +603,8 @@ int WinButton(HWND hwnd, int x, int y, int width, int height, int ON_OFF)
     else
         if (ON_OFF == OFF)
         {
-            if (x < WinMouseX(hwnd) && WinMouseX(hwnd) <= x + width && y < WinMouseY(hwnd) && WinMouseY(hwnd) <= y + height && GetAsyncKeyState(1) & 0x8000)
-            {
-                c = YES;
-            }
-            else
-            {
-                c = NO;
-            }
+            if (x < WinMouseX(hwnd) && WinMouseX(hwnd) <= x + width && y < WinMouseY(hwnd) && WinMouseY(hwnd) <= y + height && GetAsyncKeyState(1) & 0x8000) { c = YES; }
+            else { c = NO; }
         }
     return c;
 }
@@ -710,8 +612,7 @@ int WinButton(HWND hwnd, int x, int y, int width, int height, int ON_OFF)
 //Win32获取某一位置像素颜色
 int WinGetColor(HWND hwnd, int x, int y)
 {
-    HDC hdc = GetDC(hwnd);
-    return GetPixel(hdc, x, y);
+    return GetPixel(GetDC(hwnd), x, y);
 }
 
 //win32显示图片
@@ -729,10 +630,7 @@ void WinImg(HWND hwnd, const wchar_t* File, int x, int y)
         DeleteDC(hdcMem);
         DeleteObject(hBitmap); // 释放位图资源
     }
-    else
-    {
-        printf("[WinImg函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);
-    }
+    else    {        printf("[WinImg函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);    }
 }
 
 //win32显示图片的变种，可以选择性不显示某种颜色，还可以改变图片放大倍数
@@ -752,10 +650,7 @@ void WinImgA(HWND hwnd, const wchar_t* File, int x, int y, double widthbs, doubl
         DeleteDC(hdcMem);
         DeleteObject(hBitmap); // 释放位图资源
     }
-    else
-    {
-        printf("[WinImgA函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);
-    }
+    else    {        printf("[WinImgA函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);    }
 }
 
 //删除窗口
@@ -784,15 +679,11 @@ LRESULT WINAPI WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
 {
 
     HDC hdc = GetDC(hwnd);
-    //UINT msgid = WM_PAINT;
     switch (msgid)
     {
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
+    case WM_DESTROY:        PostQuitMessage(0);        break;
         //绘画
-    case WM_PAINT:
-        break;
+    case WM_PAINT:        break;
         //处理鼠标消息
     case WM_SETCURSOR:
         switch (LOWORD(lparam))
@@ -844,7 +735,7 @@ HWND Window(
     return hwnd;
 }
 
-//阻塞式消息循环，win32常用经典款,但做游戏不推荐，因为无法写进游戏循环会导致窗口未响应问题，写进去会导致系统资源无法释放最终内存泄漏
+//阻塞式消息循环，win32常用经典款,常用于多线程游戏
 void RunWindow()
 {
     //消息循环
@@ -857,6 +748,7 @@ void RunWindow()
     }
 }
 
+//阻塞式消息循环，win32常用经典款,常用于单线程游戏
 void ClearWindow()
 {
     MSG msg = { 0 };
@@ -870,8 +762,5 @@ void ClearWindow()
 //win32窗口清屏
 void WinClear(HWND hwnd)
 {
-    Vsn;
-    InvalidateRect(hwnd, NULL, TRUE);
+    Vsn; InvalidateRect(hwnd, NULL, TRUE);
 }
-
-
