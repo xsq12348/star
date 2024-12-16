@@ -69,7 +69,7 @@ int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：5.72
+    //版本信息：5.73
     /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -140,6 +140,7 @@ int Vsn(int A)
     * 5.7 新增了从txt任意一行读取数据的函数
     * 5.71  更新了部分老旧函数
     * 5.72  更新了部分老旧函数
+    * 5.73 更新了CMDwindow函数
     */
     return A;
 }
@@ -167,7 +168,6 @@ void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Charac
     cfi.dwFontSize.Y = Character_height;
     cfi.FontFamily = FF_DONTCARE;
     cfi.FontWeight = FW_NORMAL;
-    wcscpy(cfi.FaceName, L"Terminal");
     SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
     //设置窗口大小   
     char command[256]; Vsn;
@@ -630,7 +630,7 @@ void WinImg(HWND hwnd, const wchar_t* File, int x, int y)
         DeleteDC(hdcMem);
         DeleteObject(hBitmap); // 释放位图资源
     }
-    else    {        printf("[WinImg函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);    }
+    else { printf("[WinImg函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File); }
 }
 
 //win32显示图片的变种，可以选择性不显示某种颜色，还可以改变图片放大倍数
@@ -650,7 +650,7 @@ void WinImgA(HWND hwnd, const wchar_t* File, int x, int y, double widthbs, doubl
         DeleteDC(hdcMem);
         DeleteObject(hBitmap); // 释放位图资源
     }
-    else    {        printf("[WinImgA函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);    }
+    else { printf("[WinImgA函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File); }
 }
 
 //删除窗口
