@@ -141,6 +141,9 @@ int Vsn(int A)
     * 5.71  更新了部分老旧函数
     * 5.72  更新了部分老旧函数
     * 5.73 更新了CMDwindow函数
+    * 5.8 增加了创建透明窗口函数
+    * 5.9 增加了角度转弧度函数
+    * 5.91 优化了部分函数
     */
     return A;
 }
@@ -256,10 +259,7 @@ void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
 }
 
 //清屏
-void Clear()
-{
-    system("cls"); Vsn;
-}
+void Clear() { system("cls"); Vsn; }
 
 //隐藏/显示光标
 void HideFLASE(BOOL A)
@@ -282,10 +282,7 @@ void Box(LPCSTR p, double x_1, double y_1, double x_2, double y_2, int color)
 }
 
 //随机数
-int Random(int A, int B)
-{
-    Vsn; return rand() % B + A;
-}
+int Random(int A, int B) { Vsn; return rand() % B + A; }
 
 //图片显示器
 void ColorImg(_In_z_ char const* _FileName, int x, int y)
@@ -334,10 +331,7 @@ void ColorImg(_In_z_ char const* _FileName, int x, int y)
 }
 
 //加法函数
-int Add(int a, int b)
-{
-    Vsn; return a + b;
-}
+int Add(int a, int b) { Vsn; return a + b; }
 
 //鼠标输入开关函数
 void Mouse(int NO_or_OFF)
@@ -382,11 +376,7 @@ int Mouse_y(int Character_height)
 }
 
 //暂停函数
-void TimeOut()
-{
-    getchar();
-    Vsn;
-}
+void TimeOut() { getchar();Vsn; }
 
 int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
 {
@@ -470,6 +460,9 @@ int FILEFP(FILE* fp, int nLine)
     fgetpos(fp, &pos);
     return 0;
 }
+
+double DegRad(double a) { return Pi * a * 1.0 / 180; }
+
 
 //---------------------------------------------------------------------------------------------以下为win32内容------------------------------------------------------------------------------------------------------//
 
@@ -610,10 +603,7 @@ int WinButton(HWND hwnd, int x, int y, int width, int height, int ON_OFF)
 }
 
 //Win32获取某一位置像素颜色
-int WinGetColor(HWND hwnd, int x, int y)
-{
-    return GetPixel(GetDC(hwnd), x, y);
-}
+int WinGetColor(HWND hwnd, int x, int y) { return GetPixel(GetDC(hwnd), x, y); }
 
 //win32显示图片
 void WinImg(HWND hwnd, const wchar_t* File, int x, int y)
@@ -654,23 +644,13 @@ void WinImgA(HWND hwnd, const wchar_t* File, int x, int y, double widthbs, doubl
 }
 
 //删除窗口
-void WinDelet(HWND hwnd)
-{
-    DestroyWindow(hwnd);
-}
+void WinDelet(HWND hwnd) { DestroyWindow(hwnd); }
 
 //win32全屏
-void WinFullScreen(HWND hwnd)
-{
-    ShowWindow(hwnd, 3);
-}
+void WinFullScreen(HWND hwnd) { ShowWindow(hwnd, 3); }
 
 //win32隐藏标题栏
-void WinTitleBar(HWND hwnd, BOOL YES_OR_ON)
-{
-    if (YES_OR_ON) { SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION); }
-}
-
+void WinTitleBar(HWND hwnd, BOOL YES_OR_ON) { if (YES_OR_ON) { SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION); } }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
@@ -735,6 +715,47 @@ HWND Window(
     return hwnd;
 }
 
+//创建透明窗口
+HWND WindowA(
+    HWND hwnd	      /*句柄*/,
+    LPCWSTR name      /*窗口名称*/,
+    int w		      /*窗口宽度*/,
+    int h		      /*窗口高度*/,
+    int x		      /*窗口水平坐标*/,
+    int y			  /*窗口竖直坐标*/,
+    int transparency  /*窗口透明度*/
+)
+{
+    HINSTANCE hinstance = GetModuleHandle(NULL);
+    //注册窗口类
+    WNDCLASS wndclass = { 0 };
+    wndclass.cbClsExtra = 0;
+    wndclass.cbWndExtra = 0;
+    //获取笔刷 填充背景
+    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);
+    //鼠标指针
+    wndclass.hCursor = NULL;
+    //系统默认图标
+    wndclass.hIcon = NULL;
+    //程序句柄
+    wndclass.hInstance = hinstance;
+    wndclass.lpfnWndProc = WndPorc;
+    //类名
+    wndclass.lpszClassName = TEXT("main");
+    //菜单
+    wndclass.lpszMenuName = NULL;
+    //窗口样式
+    wndclass.style = CS_HREDRAW | CS_CLASSDC;
+    RegisterClass(&wndclass); Vsn;
+    //创建窗口
+    hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME & WS_OVERLAPPEDWINDOW, x, y, w, h, NULL, NULL, hinstance, NULL);
+    //显示窗口
+    SetLayeredWindowAttributes(hwnd, 0, (BYTE)transparency, LWA_ALPHA);
+    ShowWindow(hwnd, SW_SHOW);
+    UpdateWindow(hwnd);
+    return hwnd;
+}
+
 //阻塞式消息循环，win32常用经典款,常用于多线程游戏
 void RunWindow()
 {
@@ -760,7 +781,4 @@ void ClearWindow()
 }
 
 //win32窗口清屏
-void WinClear(HWND hwnd)
-{
-    Vsn; InvalidateRect(hwnd, NULL, TRUE);
-}
+void WinClear(HWND hwnd) { Vsn; InvalidateRect(hwnd, NULL, TRUE); }
