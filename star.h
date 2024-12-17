@@ -144,6 +144,7 @@ int Vsn(int A)
     * 5.8 增加了创建透明窗口函数
     * 5.9 增加了角度转弧度函数
     * 5.91 优化了部分函数
+    * 6.0 增加了置顶窗口函数
     */
     return A;
 }
@@ -376,7 +377,7 @@ int Mouse_y(int Character_height)
 }
 
 //暂停函数
-void TimeOut() { getchar();Vsn; }
+void TimeOut() { getchar(); Vsn; }
 
 int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
 {
@@ -651,6 +652,13 @@ void WinFullScreen(HWND hwnd) { ShowWindow(hwnd, 3); }
 
 //win32隐藏标题栏
 void WinTitleBar(HWND hwnd, BOOL YES_OR_ON) { if (YES_OR_ON) { SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION); } }
+
+//win32置顶窗口
+void WinFirst(HWND hwnd)
+{
+    SetForegroundWindow(hwnd);
+    SetFocus(hwnd);
+}
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
