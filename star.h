@@ -658,6 +658,7 @@ int HardwareDetection()
         if (GetAsyncKeyState(i))
         {
             a = i;
+            return 1;
         }
     }
     return a;
