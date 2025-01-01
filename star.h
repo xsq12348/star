@@ -322,6 +322,7 @@ int Vsn(int A)
     * 6.0 增加了置顶窗口函数
     * 6.1 增加了CMD窗口隐藏函数
     * 6.2 增加了硬件检测函数
+    * 7.0 增加了线程函数,现在可以使用多线程编写游戏了
     */
     return A;
 }
@@ -658,11 +659,59 @@ int HardwareDetection()
         if (GetAsyncKeyState(i))
         {
             a = i;
-            return 1;
+            return a;
         }
     }
     return a;
 }
+
+
+//-------------------------------------------------------------------------------------------多线程游戏函数---------------------------------------------------------------------------------------------------------------------------------------//
+
+HANDLE Printhwnd, Logichwnd; // 数组用于保存所有线程的句柄
+DWORD ThreadIDs[2]; // 数组用于保存所有线程的ID
+
+//多线程游戏逻辑计算函数
+DWORD WINAPI Logic(LPARAM lparam);
+
+//多线程游戏画面绘制函数
+DWORD WINAPI Print(LPARAM lparam);
+
+//运行线程
+void RUNLogicThread() { Logichwnd = CreateThread(NULL, 0, Logic, (LPVOID)2, 0, &ThreadIDs[0]); }
+
+void RUNPrintThread() { Printhwnd = CreateThread(NULL, 0, Print, (LPVOID)2, 0, &ThreadIDs[1]); }
+
+void RunThread()
+{
+    Logichwnd = CreateThread(NULL, 0, Logic, (LPVOID)2, 0, &ThreadIDs[0]);
+    Printhwnd = CreateThread(NULL, 0, Print, (LPVOID)2, 0, &ThreadIDs[1]);
+}
+
+//删除线程
+
+void DeletLogicThread()
+{
+    WaitForSingleObject(Printhwnd, INFINITE);
+    CloseHandle(Logichwnd);
+}
+
+void DeletPrintThread()
+{
+    WaitForSingleObject(Logichwnd, INFINITE);
+    CloseHandle(Printhwnd);
+}
+
+void DeletThread()
+{
+    WaitForSingleObject(Printhwnd, INFINITE);
+    WaitForSingleObject(Logichwnd, INFINITE);
+    CloseHandle(Logichwnd);
+    CloseHandle(Printhwnd);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
 
 //---------------------------------------------------------------------------------------------以下为win32内容------------------------------------------------------------------------------------------------------//
 
