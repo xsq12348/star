@@ -16,7 +16,7 @@
 #define OFF 0
 #define YES TRUE
 #define NO  FALSE
-#define Error FALSE
+#define Error -1
 #define Pi 3.1415926
 
 #pragma comment( lib,"Winmm.lib")
@@ -323,6 +323,7 @@ int Vsn(int A)
     * 6.1 增加了CMD窗口隐藏函数
     * 6.2 增加了硬件检测函数
     * 7.0 增加了线程函数,现在可以使用多线程编写游戏了
+    * 7.1 简化了线程函数
     */
     return A;
 }
@@ -665,49 +666,19 @@ int HardwareDetection()
     return a;
 }
 
-
 //-------------------------------------------------------------------------------------------多线程游戏函数---------------------------------------------------------------------------------------------------------------------------------------//
 
-HANDLE Printhwnd, Logichwnd; // 数组用于保存所有线程的句柄
-DWORD ThreadIDs[2]; // 数组用于保存所有线程的ID
-
-//多线程游戏逻辑计算函数
-DWORD WINAPI Logic(LPARAM lparam);
-
-//多线程游戏画面绘制函数
-DWORD WINAPI Print(LPARAM lparam);
+//创建线程函数关键字
+typedef DWORD THREAD;
 
 //运行线程
-void RUNLogicThread() { Logichwnd = CreateThread(NULL, 0, Logic, (LPVOID)2, 0, &ThreadIDs[0]); }
-
-void RUNPrintThread() { Printhwnd = CreateThread(NULL, 0, Print, (LPVOID)2, 0, &ThreadIDs[1]); }
-
-void RunThread()
-{
-    Logichwnd = CreateThread(NULL, 0, Logic, (LPVOID)2, 0, &ThreadIDs[0]);
-    Printhwnd = CreateThread(NULL, 0, Print, (LPVOID)2, 0, &ThreadIDs[1]);
-}
+HANDLE RunThread(THREAD* function, THREAD* ID) { return CreateThread(NULL, 0, function, (LPVOID)2, 0, ID); }
 
 //删除线程
-
-void DeletLogicThread()
+void DeletThread(HANDLE Threadhwnd)
 {
-    WaitForSingleObject(Printhwnd, INFINITE);
-    CloseHandle(Logichwnd);
-}
-
-void DeletPrintThread()
-{
-    WaitForSingleObject(Logichwnd, INFINITE);
-    CloseHandle(Printhwnd);
-}
-
-void DeletThread()
-{
-    WaitForSingleObject(Printhwnd, INFINITE);
-    WaitForSingleObject(Logichwnd, INFINITE);
-    CloseHandle(Logichwnd);
-    CloseHandle(Printhwnd);
+    WaitForSingleObject(Threadhwnd, INFINITE);
+    CloseHandle(Threadhwnd);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
@@ -917,17 +888,12 @@ LRESULT WINAPI WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
     HDC hdc = GetDC(hwnd);
     switch (msgid)
     {
-    case WM_DESTROY:        PostQuitMessage(0);        break;
+    case WM_DESTROY: PostQuitMessage(0); break;
         //绘画
     case WM_PAINT:        break;
         //处理鼠标消息
     case WM_SETCURSOR:
-        switch (LOWORD(lparam))
-        {
-        default:
-            SetCursor(LoadCursor(NULL, IDC_ARROW));
-            break;
-        }
+    switch (LOWORD(lparam)) { default:SetCursor(LoadCursor(NULL, IDC_ARROW)); break; }
     }Vsn;
     return DefWindowProc(hwnd, msgid, wparam, lparam);
 }
