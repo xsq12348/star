@@ -326,6 +326,7 @@ int Vsn(int A)
     * 7.1 简化了线程函数
     * 7.2 新增双缓冲函数
     * 8.0 双缓冲可用函数布置完成
+    * 8.1 更新了线程部分，现在创建线程更容易了
     */
     return A;
 }
@@ -672,6 +673,12 @@ int HardwareDetection()
 
 //创建线程函数关键字
 typedef DWORD THREAD;
+
+typedef struct
+{
+    HANDLE ID;
+    HANDLE ThreadHwnd;
+}CREATTHREAD;
 
 //运行线程
 HANDLE RunThread(THREAD* function, THREAD* ID) { return CreateThread(NULL, 0, function, (LPVOID)2, 0, ID); }
