@@ -327,6 +327,7 @@ int Vsn(int A)
     * 7.2 新增双缓冲函数
     * 8.0 双缓冲可用函数布置完成
     * 8.1 更新了线程部分，现在创建线程更容易了
+    * 8.2 音乐播放函数回归
     */
     return A;
 }
@@ -669,6 +670,14 @@ int HardwareDetection()
     return a;
 }
 
+void Music(LPCWSTR File)
+{
+    TCHAR cmd[255]; Vsn;
+    wsprintf(cmd, TEXT("open \%s\ alias music"), File);
+    mciSendString(cmd, NULL, 0, NULL);
+    mciSendString(TEXT("play music"), NULL, 0, NULL);
+}
+
 //-------------------------------------------------------------------------------------------多线程游戏函数---------------------------------------------------------------------------------------------------------------------------------------//
 
 //创建线程函数关键字
@@ -716,7 +725,7 @@ void DeletBuffer(HBITMAP hBitmap, HDC hdcMem)
 
 //在win32窗口中绘制线段
 void WinLineBuffer(HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
-{     
+{
     HPEN hpen = CreatePen(PS_SOLID, 1, color);
     HPEN holdpen = (HPEN)SelectObject(hdc, hpen);
     MoveToEx(hdc, x2, y2, NULL);
@@ -729,14 +738,14 @@ void PixBuffer(HDC hdc, int x, int y, COLORREF color) { SetPixel(hdc, x, y, colo
 
 //win32文本输出
 void WinTextBuffer(HDC hdc, int x, int y, LPCWSTR text, COLORREF color)
-{     
+{
     SetTextColor(hdc, color);
     TextOut(hdc, x, y, text, wcslen(text));
 }
 
 //矩形函数
 void WinBoxABuffer(HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
-{     
+{
     HPEN hpen = CreatePen(PS_SOLID, 1, color);
     HPEN holdpen = (HPEN)SelectObject(hdc, hpen);
     Rectangle(hdc, x1, y1, x2, y2);
@@ -747,7 +756,7 @@ void WinBoxABuffer(HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 
 //win32显示数字
 void WinDightBuffer(HDC hdc, int x, int y, int dight, COLORREF color)
-{     
+{
     int size;
     TCHAR szText[256];
     size = wsprintf(szText, TEXT("%d"), dight);
@@ -757,7 +766,7 @@ void WinDightBuffer(HDC hdc, int x, int y, int dight, COLORREF color)
 
 //win32显示图片
 void WinImgBuffer(HDC hdc, const wchar_t* File, int x, int y)
-{     
+{
     HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, File, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     if (hBitmap)
     {
@@ -774,7 +783,7 @@ void WinImgBuffer(HDC hdc, const wchar_t* File, int x, int y)
 
 //win32显示图片的变种，可以选择性不显示某种颜色，还可以改变图片放大倍数
 void WinImgABuffer(HDC hdc, const wchar_t* File, int x, int y, double widthbs, double heightbs, COLORREF color)
-{     
+{
     if (widthbs <= 0) { widthbs = 1; }
     if (heightbs <= 0) { heightbs = 1; }
     HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, File, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
