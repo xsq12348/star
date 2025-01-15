@@ -331,6 +331,7 @@ int Vsn(int A)
     * 8.2 音乐播放函数回归
     * 8.21 新增了控制台句柄宏
     * 8.3 新增了子窗口函数，现在可以在窗口中创建子窗口了
+    * 8.4 新增透明窗口，该窗口透明但绘制内容不透明
     */
     return A;
 }
@@ -1083,6 +1084,46 @@ HWND WindowA(
     hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME & WS_OVERLAPPEDWINDOW, x, y, w, h, NULL, NULL, hinstance, NULL);
     //显示窗口
     SetLayeredWindowAttributes(hwnd, 0, (BYTE)transparency, LWA_ALPHA);
+    ShowWindow(hwnd, SW_SHOW);
+    UpdateWindow(hwnd);
+    return hwnd;
+}
+
+//创建透明窗口2
+HWND WindowB(
+    HWND hwnd	      /*句柄*/,
+    LPCWSTR name      /*窗口名称*/,
+    int w		      /*窗口宽度*/,
+    int h		      /*窗口高度*/,
+    int x		      /*窗口水平坐标*/,
+    int y			  /*窗口竖直坐标*/
+)
+{
+    HINSTANCE hinstance = GetModuleHandle(NULL);
+    //注册窗口类
+    WNDCLASS wndclass = { 0 };
+    wndclass.cbClsExtra = 0;
+    wndclass.cbWndExtra = 0;
+    //获取笔刷 填充背景
+    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);
+    //鼠标指针
+    wndclass.hCursor = NULL;
+    //系统默认图标
+    wndclass.hIcon = NULL;
+    //程序句柄
+    wndclass.hInstance = hinstance;
+    wndclass.lpfnWndProc = WndPorc;
+    //类名
+    wndclass.lpszClassName = TEXT("main");
+    //菜单
+    wndclass.lpszMenuName = NULL;
+    //窗口样式
+    wndclass.style = CS_HREDRAW | CS_CLASSDC;
+    RegisterClass(&wndclass); Vsn;
+    //创建窗口
+    hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME & WS_OVERLAPPEDWINDOW, x, y, w, h, NULL, NULL, hinstance, NULL);
+    //显示窗口
+    SetLayeredWindowAttributes(hwnd, 0, 0, ULW_COLORKEY);
     ShowWindow(hwnd, SW_SHOW);
     UpdateWindow(hwnd);
     return hwnd;
