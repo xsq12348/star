@@ -18,6 +18,7 @@
 #define NO  FALSE
 #define Error -1
 #define Pi 3.1415926
+#define CMDHWND GetConsoleWindow()
 
 #pragma comment( lib,"Winmm.lib")
 #pragma comment(lib, "Msimg32.lib")
@@ -328,6 +329,8 @@ int Vsn(int A)
     * 8.0 双缓冲可用函数布置完成
     * 8.1 更新了线程部分，现在创建线程更容易了
     * 8.2 音乐播放函数回归
+    * 8.21 新增了控制台句柄宏
+    * 8.3 新增了子窗口函数，现在可以在窗口中创建子窗口了
     */
     return A;
 }
@@ -372,7 +375,6 @@ void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Charac
     ShowScrollBar(GetConsoleWindow(), SB_HORZ, FALSE);
 }
 
-
 //移动光标
 void Gotoxy(int x, int y)
 {
@@ -399,7 +401,6 @@ void Text(LPCSTR text, int x, int y, int color)
     printf(text);
     Color(0x07); Vsn;
 }
-
 
 //画一条从linexa，lineya到linexb，lineyb的直线,字符为p
 void Linea(LPCSTR p, int x0, int y0, int x1, int y1, int color)
@@ -431,10 +432,7 @@ void Line(LPCSTR p, double x0, double y0, double x1, double y1, int color)
     double y = (b * 1.0) / c;
     do
     {
-        if (x0 > 0 && x0 < width && y0>0 && y < height)
-        {
-            Text(p, x0, y0, color);
-        }
+        if (x0 > 0 && x0 < width && y0>0 && y < height) { Text(p, x0, y0, color); }
         x0 += x;
         y0 += y;
         d = sqrt(pow(x0 - x1, 2) + pow(y0 - y1, 2));
@@ -531,7 +529,7 @@ void Mouse(int NO_or_OFF)
         mode &= ~ENABLE_MOUSE_INPUT;
         SetConsoleMode(hStdin, mode);
         break;
-    case ON:        return;        break;
+    case ON: return; break;
     }
 }
 
@@ -574,11 +572,7 @@ int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
             Color(B_BLUE | B_GREEN | B_RED);
             for (y1; y1 <= y2; y1++)
             {
-                for (x1; x1 <= x2; x1++)
-                {
-                    Gotoxy(x1, y1);
-                    printf(" ");
-                }
+                for (x1; x1 <= x2; x1++) { Gotoxy(x1, y1); printf(" "); }
                 x1 = x;
             }
         }
@@ -589,11 +583,7 @@ int Button(int x1, int y1, int x2, int y2, int mousex, int mousey, int ON_OFF)
                 Color(B_RED); printf("鼠标在指定区域");
                 for (y1; y1 <= y2; y1++)
                 {
-                    for (x1; x1 <= x2; x1++)
-                    {
-                        Gotoxy(x1, y1);
-                        printf(" ");
-                    }
+                    for (x1; x1 <= x2; x1++) { Gotoxy(x1, y1); printf(" "); }
                     x1 = x;
                 }
             }
@@ -657,19 +647,13 @@ int HardwareDetection()
     int a = 0;
     for (int i = 1; i < 254; i++)
     {
-        if (i == 10 || i == 11 || i == 14 || i == 15 || i == 58 || i == 59 || i == 60 || i == 61 || i == 62 || i == 63 || i == 64 || i == 136 || i == 137 || i == 138 || i == 139 || i == 140 || i == 141 || i == 142 || i == 143 || i == 146 || i == 147 || i == 148 || i == 149 || i == 150 || i == 151 || i == 152 || i == 153 || i == 154 || i == 155 || i == 156 || i == 157 || i == 158 || i == 159 || i == 184 || i == 185 || i == 193 || i == 194 || i == 195 || i == 196 || i == 197 || i == 198 || i == 199 || i == 200 || i == 201 || i == 202 || i == 203 || i == 204 || i == 205 || i == 206 || i == 207 || i == 208 || i == 209 || i == 210 || i == 211 || i == 212 || i == 213 || i == 214 || i == 215 || i == 216 || i == 217 || i == 218 || i == 224 || i == 225 || i == 227 || i == 228 || i == 232 || i == 230 || i == 233 || i == 234 || i == 235 || i == 236 || i == 237 || i == 238 || i == 239 || i == 240 || i == 241 || i == 242 || i == 243 || i == 244 || i == 245 || i == 7 || i == 26)
-        {
-            continue;
-        }
-        if (GetAsyncKeyState(i))
-        {
-            a = i;
-            return a;
-        }
+        if (i == 10 || i == 11 || i == 14 || i == 15 || i == 58 || i == 59 || i == 60 || i == 61 || i == 62 || i == 63 || i == 64 || i == 136 || i == 137 || i == 138 || i == 139 || i == 140 || i == 141 || i == 142 || i == 143 || i == 146 || i == 147 || i == 148 || i == 149 || i == 150 || i == 151 || i == 152 || i == 153 || i == 154 || i == 155 || i == 156 || i == 157 || i == 158 || i == 159 || i == 184 || i == 185 || i == 193 || i == 194 || i == 195 || i == 196 || i == 197 || i == 198 || i == 199 || i == 200 || i == 201 || i == 202 || i == 203 || i == 204 || i == 205 || i == 206 || i == 207 || i == 208 || i == 209 || i == 210 || i == 211 || i == 212 || i == 213 || i == 214 || i == 215 || i == 216 || i == 217 || i == 218 || i == 224 || i == 225 || i == 227 || i == 228 || i == 232 || i == 230 || i == 233 || i == 234 || i == 235 || i == 236 || i == 237 || i == 238 || i == 239 || i == 240 || i == 241 || i == 242 || i == 243 || i == 244 || i == 245 || i == 7 || i == 26) { continue; }
+        if (GetAsyncKeyState(i)) { a = i; return a; }
     }
     return a;
 }
 
+//音乐函数
 void Music(LPCWSTR File)
 {
     TCHAR cmd[255]; Vsn;
@@ -678,11 +662,15 @@ void Music(LPCWSTR File)
     mciSendString(TEXT("play music"), NULL, 0, NULL);
 }
 
+//子窗口函数
+void Parent(HWND parent, HWND child) { SetParent(child, parent); }
+
 //-------------------------------------------------------------------------------------------多线程游戏函数---------------------------------------------------------------------------------------------------------------------------------------//
 
 //创建线程函数关键字
 typedef DWORD THREAD;
 
+//多线程函数
 typedef struct
 {
     HANDLE ID;
@@ -703,6 +691,12 @@ void DeletThread(HANDLE Threadhwnd)
 
 //-------------------------------------------------------------------------------------------双缓冲绘图用于在缓冲区内绘图的函数---------------------------------------------------------------------------------------------------------------------------------------//
 
+//双缓冲绘图
+typedef struct
+{
+    HDC hdc;
+    HBITMAP* hBitmap;
+}DOUBLEBUFFER;
 
 //创建双缓冲绘图绘图区
 HDC DoubleBuffer(HWND hwnd, HBITMAP* hBitmap, int windowwidth, int windowheight)
