@@ -332,6 +332,7 @@ int Vsn(int A)
     * 8.21 新增了控制台句柄宏
     * 8.3 新增了子窗口函数，现在可以在窗口中创建子窗口了
     * 8.4 新增透明窗口，该窗口透明但绘制内容不透明
+    * 8.5 新增按钮检测函数WinButtonA,该函数可以输出三种数值
     */
     return A;
 }
@@ -931,6 +932,43 @@ int WinButton(HWND hwnd, int x, int y, int width, int height, int ON_OFF)
             else { c = NO; }
         }
     return c;
+}
+
+int WinButtonA(HWND hwnd, int x, int y, int width, int height, BOOL YESORNO)
+{
+    int button = 0; GetAsyncKeyState(1);
+    if (WinMouseX(hwnd) > x && WinMouseY(hwnd) > y && WinMouseX(hwnd) <= x + width && WinMouseY(hwnd) <= y + height && GetAsyncKeyState(1))button = 1;
+    else if (WinMouseX(hwnd) > x && WinMouseY(hwnd) > y && WinMouseX(hwnd) <= x + width && WinMouseY(hwnd) <= y + height && !GetAsyncKeyState(1))button = 2;
+    else button = 0;
+    if (YESORNO == TRUE)
+    {
+        switch (button)
+        {
+        case 1:
+        {
+            WinLine(hwnd, x, y, x + width, y, RGB(255, 0, 0));
+            WinLine(hwnd, x, y, x, y + height, RGB(255, 0, 0));
+            WinLine(hwnd, x + width, y, x + width, y + height, RGB(255, 0, 0));
+            WinLine(hwnd, x, y + height, x + width, y + height, RGB(255, 0, 0));
+        }
+        break;
+        case 0:
+        {
+            WinLine(hwnd, x, y, x + width, y, RGB(255, 255, 255));
+            WinLine(hwnd, x, y, x, y + height, RGB(255, 255, 255));
+            WinLine(hwnd, x + width, y, x + width, y + height, RGB(255, 255, 255));
+            WinLine(hwnd, x, y + height, x + width, y + height, RGB(255, 255, 255));
+        }
+        break;
+        case 2:
+            WinLine(hwnd, x, y, x + width, y, RGB(0, 255, 0));
+            WinLine(hwnd, x, y, x, y + height, RGB(0, 255, 0));
+            WinLine(hwnd, x + width, y, x + width, y + height, RGB(0, 255, 0));
+            WinLine(hwnd, x, y + height, x + width, y + height, RGB(0, 255, 0));
+            break;
+        }
+    }
+    return button;
 }
 
 //Win32获取某一位置像素颜色
