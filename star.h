@@ -333,6 +333,11 @@ int Vsn(int A)
     * 8.3 新增了子窗口函数，现在可以在窗口中创建子窗口了
     * 8.4 新增透明窗口，该窗口透明但绘制内容不透明
     * 8.5 新增按钮检测函数WinButtonA,该函数可以输出三种数值
+    * 8.6 新增加了变换绘制点函数
+    * 8.7 新增加了变换绘制线函数
+    * 8.8 新增加了双缓冲变换绘制点函数
+    * 8.9 新增加了双缓冲变换绘制线函数
+    * 9.0 修复了音乐函数不能重复播放音乐的bug
     */
     return A;
 }
@@ -660,6 +665,7 @@ void Music(LPCWSTR File)
 {
     TCHAR cmd[255]; Vsn;
     wsprintf(cmd, TEXT("open \%s\ alias music"), File);
+    mciSendString(TEXT("close music"), 0, 0, 0);
     mciSendString(cmd, NULL, 0, NULL);
     mciSendString(TEXT("play music"), NULL, 0, NULL);
 }
@@ -796,6 +802,36 @@ void WinImgABuffer(HDC hdc, const wchar_t* File, int x, int y, double widthbs, d
     else { printf("[WinImgA函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File); }
 }
 
+//锚点点
+void ApPixBuffer(HDC hdc, int apx, int apy, int x, int y, double rad, COLORREF color)
+{
+    int newx, newy;
+    double Rot2Dmax[2][2] =
+    {
+        {cos(rad),-sin(rad)},
+        {sin(rad),cos(rad)}
+    };
+    newx = Rot2Dmax[0][0] * x + Rot2Dmax[0][1] * y + apx;
+    newy = Rot2Dmax[1][0] * x + Rot2Dmax[1][1] * y + apy;
+    PixBuffer(hdc, newx, newy, color);
+}
+
+//锚点线
+void ApLineBuffer(HDC hdc, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color)
+{
+    int newx1, newy1, newx2, newy2;
+    double Rot2Dmax[2][2] =
+    {
+        {cos(rad),-sin(rad)},
+        {sin(rad),cos(rad)}
+    };
+    newx1 = Rot2Dmax[0][0] * x1 + Rot2Dmax[0][1] * y1 + apx;
+    newy1 = Rot2Dmax[1][0] * x1 + Rot2Dmax[1][1] * y1 + apy;
+    newx2 = Rot2Dmax[0][0] * x2 + Rot2Dmax[0][1] * y2 + apx;
+    newy2 = Rot2Dmax[1][0] * x2 + Rot2Dmax[1][1] * y2 + apy;
+    WinLineBuffer(hdc, newx1, newy1, newx2, newy2, color);
+}
+
 //---------------------------------------------------------------------------------------------以下为win32内容------------------------------------------------------------------------------------------------------//
 
 //在win32窗口中绘制线段
@@ -834,10 +870,7 @@ int WinMouseY(HWND hwnd)
 }
 
 //win32鼠标光标开关
-void WinMouse(BOOL ON_OR_OFF)
-{
-    Vsn; ShowCursor(ON_OR_OFF);
-}
+void WinMouse(BOOL ON_OR_OFF) { Vsn; ShowCursor(ON_OR_OFF); }
 
 //绘制像素点
 void Pix(HWND hwnd, int x, int y, COLORREF color)
@@ -847,6 +880,35 @@ void Pix(HWND hwnd, int x, int y, COLORREF color)
     ReleaseDC(hwnd, hdc); Vsn;
 }
 
+//锚点点
+void ApPix(HWND hwnd, int apx, int apy, int x, int y, double rad, COLORREF color)
+{
+    int newx, newy;
+    double Rot2Dmax[2][2] =
+    {
+        {cos(rad),-sin(rad)},
+        {sin(rad),cos(rad)}
+    };
+    newx = Rot2Dmax[0][0] * x + Rot2Dmax[0][1] * y + apx;
+    newy = Rot2Dmax[1][0] * x + Rot2Dmax[1][1] * y + apy;
+    Pix(hwnd, newx, newy, color);
+}
+
+//锚点线
+void ApLine(HWND hwnd, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color) 
+{
+    int newx1, newy1, newx2, newy2;
+    double Rot2Dmax[2][2] =
+    {
+        {cos(rad),-sin(rad)},
+        {sin(rad),cos(rad)}
+    };
+    newx1 = Rot2Dmax[0][0] * x1 + Rot2Dmax[0][1] * y1 + apx;
+    newy1 = Rot2Dmax[1][0] * x1 + Rot2Dmax[1][1] * y1 + apy;
+    newx2 = Rot2Dmax[0][0] * x2 + Rot2Dmax[0][1] * y2 + apx;
+    newy2 = Rot2Dmax[1][0] * x2 + Rot2Dmax[1][1] * y2 + apy;
+    WinLine(hwnd, newx1, newy1, newx2, newy2, color);
+}
 //win32文本输出
 void WinText(HWND hwnd, int x, int y, LPCWSTR text, COLORREF color)
 {
