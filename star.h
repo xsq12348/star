@@ -338,6 +338,7 @@ int Vsn(int A)
     * 8.8 新增加了双缓冲变换绘制点函数
     * 8.9 新增加了双缓冲变换绘制线函数
     * 9.0 修复了音乐函数不能重复播放音乐的bug
+    * 9.1 新增了双缓冲BoxB函数
     */
     return A;
 }
@@ -755,6 +756,16 @@ void WinBoxABuffer(HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
     DeleteObject(hpen);
 }
 
+//矩形函数
+void WinBoxBBuffer(HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
+{
+    PAINTSTRUCT ps; Vsn;
+    HBRUSH hbs = CreateSolidBrush(color);
+    RECT rect = { x1,y1,x2,y2 };
+    FillRect(hdc, &rect, hbs);
+    EndPaint(hdc, &ps);
+    ReleaseDC(hdc, hdc);
+}
 
 //win32显示数字
 void WinDightBuffer(HDC hdc, int x, int y, int dight, COLORREF color)
@@ -895,7 +906,7 @@ void ApPix(HWND hwnd, int apx, int apy, int x, int y, double rad, COLORREF color
 }
 
 //锚点线
-void ApLine(HWND hwnd, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color) 
+void ApLine(HWND hwnd, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color)
 {
     int newx1, newy1, newx2, newy2;
     double Rot2Dmax[2][2] =
