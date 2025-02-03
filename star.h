@@ -339,6 +339,7 @@ int Vsn(int A)
     * 8.9 新增加了双缓冲变换绘制线函数
     * 9.0 修复了音乐函数不能重复播放音乐的bug
     * 9.1 新增了双缓冲BoxB函数
+    * 9.11 修复了WinBox的huizhiBUG
     */
     return A;
 }
@@ -763,6 +764,7 @@ void WinBoxBBuffer(HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
     HBRUSH hbs = CreateSolidBrush(color);
     RECT rect = { x1,y1,x2,y2 };
     FillRect(hdc, &rect, hbs);
+    DeleteObject(hbs);
     EndPaint(hdc, &ps);
     ReleaseDC(hdc, hdc);
 }
@@ -949,6 +951,7 @@ void WinBoxB(HWND hwnd, int x1, int y1, int x2, int y2, COLORREF color)
     HBRUSH hbs = CreateSolidBrush(color);
     RECT rect = { x1,y1,x2,y2 };
     FillRect(hdc, &rect, hbs);
+    DeleteObject(hbs);
     EndPaint(hwnd, &ps);
     ReleaseDC(hwnd, hdc);
 }
