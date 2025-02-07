@@ -314,6 +314,7 @@ int Vsn(int A)
     * 9.11 修复了WinBox的huizhiBUG
     * 1.0.0 大改造测试中
     * 1.0.01 CMDOFF函数修改成了CMD函数，并且修复了CMDOFF的BUG
+    * 1.0.02 修复了HardwareDetection的可能无返回值的BUG
     */
     return A;
 }
@@ -436,7 +437,7 @@ void DeletBuffer(HBITMAP hBitmap, HDC hdcMem)
 //在窗口中绘制线段
 void Line(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0)return;
+    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -452,7 +453,7 @@ void Line(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 //绘制像素点
 void Pix(HWND hwnd, HDC hdc, int x, int y, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0)return;
+    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -493,7 +494,7 @@ void ApLine(HWND hwnd, HDC hdc, int apx, int apy, int x1, int y1, int x2, int y2
 //矩形函数
 void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0)return;
+    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -508,7 +509,7 @@ void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 //矩形函数
 void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0)return;
+    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -524,7 +525,7 @@ void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 //显示图片
 void Img(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y)
 {
-    if (hdc == 0 && hwnd == 0)return;
+    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -545,7 +546,7 @@ void Img(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y)
 //显示图片的变种，可以选择性不显示某种颜色，还可以改变图片放大倍数
 void ImgA(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y, double widthbs, double heightbs, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0)return;
+    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -787,7 +788,7 @@ BOOL CMD(BOOL YESORNO)
 int HardwareDetection()
 {
     for (int i = 1; i < 254; i++) if (i == 10 || i == 11 || i == 14 || i == 15 || i == 58 || i == 59 || i == 60 || i == 61 || i == 62 || i == 63 || i == 64 || i == 136 || i == 137 || i == 138 || i == 139 || i == 140 || i == 141 || i == 142 || i == 143 || i == 146 || i == 147 || i == 148 || i == 149 || i == 150 || i == 151 || i == 152 || i == 153 || i == 154 || i == 155 || i == 156 || i == 157 || i == 158 || i == 159 || i == 184 || i == 185 || i == 193 || i == 194 || i == 195 || i == 196 || i == 197 || i == 198 || i == 199 || i == 200 || i == 201 || i == 202 || i == 203 || i == 204 || i == 205 || i == 206 || i == 207 || i == 208 || i == 209 || i == 210 || i == 211 || i == 212 || i == 213 || i == 214 || i == 215 || i == 216 || i == 217 || i == 218 || i == 224 || i == 225 || i == 227 || i == 228 || i == 232 || i == 230 || i == 233 || i == 234 || i == 235 || i == 236 || i == 237 || i == 238 || i == 239 || i == 240 || i == 241 || i == 242 || i == 243 || i == 244 || i == 245 || i == 7 || i == 26) continue;
-    else if (GetAsyncKeyState(i))  return i;
+    else if (GetAsyncKeyState(i))  return i; else return 0;
 }
 
 //音乐函数
