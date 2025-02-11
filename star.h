@@ -315,6 +315,7 @@ int Vsn(int A)
     * 1.0.0 大改造测试中
     * 1.0.01 CMDOFF函数修改成了CMD函数，并且修复了CMDOFF的BUG
     * 1.0.02 修复了HardwareDetection的可能无返回值的BUG
+    * 1.1.0 更新了定时器模块;
     */
     return A;
 }
@@ -338,7 +339,7 @@ void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Charac
     cfi.FontWeight = FW_NORMAL;
     SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
     //设置窗口大小   
-    char command[256];  
+    char command[256];
     snprintf(command, sizeof(command), "mode con: cols=%d lines=%d", width, height);
     int result = system(command);
     //更改窗口标题
@@ -356,7 +357,7 @@ void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Charac
 //移动光标
 void Gotoxy(int x, int y)
 {
-    COORD lightb;  
+    COORD lightb;
     lightb.X = x;
     lightb.Y = y;
     HANDLE CMD = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -367,7 +368,7 @@ void Gotoxy(int x, int y)
 int Color(WORD color)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hConsole, color);  
+    SetConsoleTextAttribute(hConsole, color);
     return 0;
 }
 
@@ -377,7 +378,7 @@ void CMDText(LPCSTR text, int x, int y, int color)
     Gotoxy(x, y);
     Color(color);
     printf(text);
-    Color(0x07);  
+    Color(0x07);
 }
 
 //清屏
@@ -437,7 +438,7 @@ void DeletBuffer(HBITMAP hBitmap, HDC hdcMem)
 //在窗口中绘制线段
 void Line(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
+    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -453,7 +454,7 @@ void Line(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 //绘制像素点
 void Pix(HWND hwnd, HDC hdc, int x, int y, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
+    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -494,7 +495,7 @@ void ApLine(HWND hwnd, HDC hdc, int apx, int apy, int x1, int y1, int x2, int y2
 //矩形函数
 void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
+    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -509,7 +510,7 @@ void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 //矩形函数
 void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
+    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -525,7 +526,7 @@ void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 //显示图片
 void Img(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y)
 {
-    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
+    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -546,7 +547,7 @@ void Img(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y)
 //显示图片的变种，可以选择性不显示某种颜色，还可以改变图片放大倍数
 void ImgA(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y, double widthbs, double heightbs, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0||hdc != 0 && hwnd != 0)return;
+    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
@@ -580,7 +581,7 @@ LRESULT WINAPI WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
         //处理鼠标消息
     case WM_SETCURSOR:
     switch (LOWORD(lparam)) { default:SetCursor(LoadCursor(NULL, IDC_ARROW)); break; }
-    } 
+    }
     return DefWindowProc(hwnd, msgid, wparam, lparam);
 }
 
@@ -614,7 +615,7 @@ HWND Window(
     wndclass.lpszMenuName = NULL;
     //窗口样式
     wndclass.style = CS_HREDRAW | CS_CLASSDC;
-    RegisterClass(&wndclass);  
+    RegisterClass(&wndclass);
     //创建窗口
     hwnd = CreateWindow(TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, x, y, w, h, NULL, NULL, hinstance, NULL);
     //显示窗口
@@ -654,7 +655,7 @@ HWND WindowA(
     wndclass.lpszMenuName = NULL;
     //窗口样式
     wndclass.style = CS_HREDRAW | CS_CLASSDC;
-    RegisterClass(&wndclass);  
+    RegisterClass(&wndclass);
     //创建窗口
     hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME & WS_OVERLAPPEDWINDOW, x, y, w, h, NULL, NULL, hinstance, NULL);
     //显示窗口
@@ -694,7 +695,7 @@ HWND WindowB(
     wndclass.lpszMenuName = NULL;
     //窗口样式
     wndclass.style = CS_HREDRAW | CS_CLASSDC;
-    RegisterClass(&wndclass);  
+    RegisterClass(&wndclass);
     //创建窗口
     hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME & WS_OVERLAPPEDWINDOW, x, y, w, h, NULL, NULL, hinstance, NULL);
     //显示窗口
@@ -712,7 +713,7 @@ void RunWindow()
     while (GetMessage(&msg, NULL, 0, 0))
     {
         TranslateMessage(&msg);
-        DispatchMessage(&msg);  
+        DispatchMessage(&msg);
         if (GetAsyncKeyState(VK_ESCAPE)) { printf("窗口已退出\n"); return; }
     }
 }
@@ -724,7 +725,7 @@ void ClearWindow()
     if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
     {
         TranslateMessage(&msg);
-        DispatchMessage(&msg);  
+        DispatchMessage(&msg);
     }
 }
 
@@ -965,4 +966,47 @@ int ButtonA(HWND hwnd, HDC hdc, int x, int y, int width, int height, BOOL YESORN
         }
     }
     return button;
+}
+
+//定时器模块
+typedef struct
+{
+    int time1;
+    int time2;
+    int timeload;
+    BOOL timeswitch;
+}TIMELOAD;
+void SetTimeLoad(TIMELOAD* Timeload, int load)
+{
+    Timeload->time1 = NULL;
+    Timeload->time2 = NULL;
+    Timeload->timeload = load;
+    Timeload->timeswitch = 0;
+}
+int TimeLoad(TIMELOAD* Timeload, int mode)
+{
+    if (!mode)return 0;
+    else
+    {
+        if (Timeload == NULL)
+        {
+            printf("[TimeLoad函数错误!]存在空指针");
+            return;
+        }
+        if (!Timeload->timeswitch)
+        {
+            Timeload->time1 = clock();
+            if (Timeload->time1 > Timeload->time2 + Timeload->timeload)
+            {
+                Timeload->time2 = clock();
+                Timeload->timeswitch = TRUE;
+            }
+        }
+        else
+        {
+            Timeload->time2 = clock();
+            Timeload->timeswitch = FALSE;
+        }
+        return Timeload->timeswitch;
+    }
 }
