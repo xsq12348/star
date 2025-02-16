@@ -884,9 +884,9 @@ void Text(HWND hwnd, HDC hdc, int x, int y, LPCWSTR text, COLORREF color)
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
-    SetTextColor(hdc, color);
-    TextOut(hdc, x, y, text, wcslen(text));
-    ReleaseDC(hwnd, hdc);
+    SetTextColor(hDc, color);
+    TextOut(hDc, x, y, text, wcslen(text));
+    ReleaseDC(hwnd, hDc);
 }
 
 //显示数字
@@ -899,9 +899,9 @@ void Dight(HWND hwnd, HDC hdc, int x, int y, int dight, COLORREF color)
     int size;
     TCHAR szText[256];
     size = wsprintf(szText, TEXT("%d"), dight);
-    SetTextColor(hdc, color);
-    TextOut(hdc, x, y, szText, size);
-    ReleaseDC(hwnd, hdc);
+    SetTextColor(hDc, color);
+    TextOut(hDc, x, y, szText, size);
+    ReleaseDC(hwnd, hDc);
 }
 
 //获取某一位置像素颜色
