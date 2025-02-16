@@ -316,6 +316,7 @@ int Vsn(int A)
     * 1.0.01 CMDOFF函数修改成了CMD函数，并且修复了CMDOFF的BUG
     * 1.0.02 修复了HardwareDetection的可能无返回值的BUG
     * 1.1.0 更新了定时器模块;
+    * 1.1.1 修正了上次忘记修改的函数
     */
     return A;
 }
@@ -877,18 +878,24 @@ void FirstWindow(HWND hwnd)
 void Clear(HWND hwnd) { InvalidateRect(hwnd, NULL, TRUE); }
 
 //文本输出
-void Text(HWND hwnd, int x, int y, LPCWSTR text, COLORREF color)
+void Text(HWND hwnd, HDC hdc, int x, int y, LPCWSTR text, COLORREF color)
 {
-    HDC hdc = GetDC(hwnd);
+    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
+    HDC hDc;
+    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
+    else hDc = hdc;
     SetTextColor(hdc, color);
     TextOut(hdc, x, y, text, wcslen(text));
     ReleaseDC(hwnd, hdc);
 }
 
 //显示数字
-void Dight(HWND hwnd, int x, int y, int dight, COLORREF color)
+void Dight(HWND hwnd, HDC hdc, int x, int y, int dight, COLORREF color)
 {
-    HDC hdc = GetDC(hwnd);
+    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
+    HDC hDc;
+    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
+    else hDc = hdc;
     int size;
     TCHAR szText[256];
     size = wsprintf(szText, TEXT("%d"), dight);
@@ -896,6 +903,7 @@ void Dight(HWND hwnd, int x, int y, int dight, COLORREF color)
     TextOut(hdc, x, y, szText, size);
     ReleaseDC(hwnd, hdc);
 }
+
 //获取某一位置像素颜色
 int GetColor(HWND hwnd, int x, int y) { return GetPixel(GetDC(hwnd), x, y); }
 
