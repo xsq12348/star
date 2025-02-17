@@ -317,6 +317,7 @@ int Vsn(int A)
     * 1.0.02 修复了HardwareDetection的可能无返回值的BUG
     * 1.1.0 更新了定时器模块;
     * 1.1.1 修正了上次忘记修改的函数
+    * 1.1.2 新增了BoxC函数
     */
     return A;
 }
@@ -508,7 +509,6 @@ void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
     ReleaseDC(hwnd, hDc);
 }
 
-//矩形函数
 void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
     if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
@@ -518,6 +518,21 @@ void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
     PAINTSTRUCT ps;
     HBRUSH hbs = CreateSolidBrush(color);
     RECT rect = { x1,y1,x2,y2 };
+    FillRect(hDc, &rect, hbs);
+    DeleteObject(hbs);
+    EndPaint(hwnd, &ps);
+    ReleaseDC(hwnd, hDc);
+}
+
+void BoxC(HWND hwnd, HDC hdc, int x, int y, int width, int height, COLORREF color)
+{
+    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
+    HDC hDc;
+    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
+    else hDc = hdc;
+    PAINTSTRUCT ps;
+    HBRUSH hbs = CreateSolidBrush(color);
+    RECT rect = { x,y,x + width,y + height };
     FillRect(hDc, &rect, hbs);
     DeleteObject(hbs);
     EndPaint(hwnd, &ps);
