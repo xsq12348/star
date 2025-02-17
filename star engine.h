@@ -6,6 +6,7 @@
 0.1 完成了引擎的基本框架
 0.11 修复了部分BUG
 0.12 修复了部分BUG
+0.13 优化了绘制体验
 */
 #pragma once
 #include"star.h"
@@ -52,23 +53,26 @@ void GameDrawing(GAME* Game);
 void GameLogic(GAME* Game);
 
 //游戏循环
-void GameLoop(GAME* Game,BOOL esc)
+void GameLoop(GAME* Game, BOOL esc)
 {
 	GetAsyncKeyState(VK_ESCAPE);
 	while (1)
 	{
-		ClearWindow();								//消息循环
-		GameLogic(Game);							//游戏逻辑计算
-		GameDrawing(Game);							//游戏画面绘制
-		if (TimeLoad(&(Game->timeload), 1)) RUNDoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hdc, Game->Windowwidth, Game->Windowheight);	//通过双缓冲绘制到屏幕上		
-		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));												//清除双缓冲屏幕画面
-		if (esc && GetAsyncKeyState(VK_ESCAPE))return;																							//是否启用esc退出游戏
+		ClearWindow();																						//消息循环
+		GameLogic(Game);																					//游戏逻辑计算
+		if (TimeLoad(&(Game->timeload), 1))
+		{
+			BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		//清除双缓冲屏幕画面
+			GameDrawing(Game);																				//游戏画面绘制
+		}
+		RUNDoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hdc, Game->Windowwidth, Game->Windowheight);	//通过双缓冲绘制到屏幕上
+		if (esc && GetAsyncKeyState(VK_ESCAPE))return;														//是否启用esc退出游戏
 	}
 }
 
 void GameOver(GAME* Game,BOOL cmdswitch)
 {
-	DeletBuffer(Game->doublebuffer.hBitmap, Game->doublebuffer.hdc);																			//销毁双缓冲资源
-	DeletWindow(Game->Windowhwnd);					//删除游戏窗口
-	if (cmdswitch)CMD(ON);							//是否在游戏结束时恢复控制台窗口
+	DeletBuffer(Game->doublebuffer.hBitmap, Game->doublebuffer.hdc);										//销毁双缓冲资源
+	DeletWindow(Game->Windowhwnd);																			//删除游戏窗口
+	if (cmdswitch)CMD(ON);																					//是否在游戏结束时恢复控制台窗口
 }
