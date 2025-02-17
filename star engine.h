@@ -1,13 +1,14 @@
 //If the code comments are garbled, ignore them!
 /*
-×÷Õß:xsq1234
-ÓÊÏä:1993346266@qq.com(³£ÓÃ),c6668883535357a@163.com(²»³£ÓÃ)
-°æ±¾ÐÅÏ¢
-0.1 Íê³ÉÁËÒýÇæµÄ»ù±¾¿ò¼Ü
+ä½œè€…:xsq1234
+é‚®ç®±:1993346266@qq.com(å¸¸ç”¨),c6668883535357a@163.com(ä¸å¸¸ç”¨)
+ç‰ˆæœ¬ä¿¡æ¯
+0.1 å®Œæˆäº†å¼•æ“Žçš„åŸºæœ¬æ¡†æž¶
+0.11 ä¿®å¤äº†éƒ¨åˆ†BUG
 */
 #pragma once
 #include"star.h"
-//ÓÎÏ·½á¹¹Ìå
+//æ¸¸æˆç»“æž„ä½“
 typedef struct
 {
 	LPCWSTR Name;
@@ -19,52 +20,54 @@ typedef struct
 	TIMELOAD timeload;
 }GAME;
 
-//³õÊ¼»¯ÓÎÏ·
+//åˆå§‹åŒ–æ¸¸æˆ
 void InitialisationGame(GAME* Game, LPCWSTR name, int width, int height, int timeload, BOOL fullscreen, BOOL cmdswitch)
 {
-	//³õÊ¼»¯½á¹¹Ìå
-	Game->Windowhwnd = Window(NULL, Game->Name, Game->Windowwidth, Game->Windowheight, (nScreenWidth - Game->Windowwidth) / 2, (nScreenheight - Game->Windowheight) / 2);	//´´½¨´°¿Ú
-	Game->Name = name;								//´°¿ÚÃû×Ö
-	if (fullscreen != 0)							//Èç¹ûÈ«ÆÁÔò²»±ä
+	//åˆå§‹åŒ–ç»“æž„ä½“
+	Game->Windowhwnd = Window((HWND)NULL, name, width, height, (nScreenWidth - width) / 2, (nScreenheight - height) / 2);	//åˆ›å»ºçª—å£
+	Game->Name = name;								//çª—å£åå­—
+	if (fullscreen != 0)							//å¦‚æžœå…¨å±åˆ™ä¸å˜
 	{
-		Game->Windowwidth = width;					//´°¿Ú¿í¶È
-		Game->Windowheight = height;				//´°¿Ú¸ß¶È
+		Game->Windowwidth = width;					//çª—å£å®½åº¦
+		Game->Windowheight = height;				//çª—å£é«˜åº¦
 		TitleBar(Game->Windowhwnd);
 		FullScreen(Game->Windowhwnd);
 	}
-	else											//·´Ö®ÐÞÕý´°¿Ú´óÐ¡Îó²î
+	else											//åä¹‹ä¿®æ­£çª—å£å¤§å°è¯¯å·®
 	{
-		Game->Windowwidth = width + 15;				//´°¿Ú¿í¶È
-		Game->Windowheight = height + 39;			//´°¿Ú¸ß¶È
+		Game->Windowwidth = width + 15;				//çª—å£å®½åº¦
+		Game->Windowheight = height + 39;			//çª—å£é«˜åº¦
 	}
-	Game->CMDswitch = cmdswitch;					//ÊÇ·ñÏÔÊ¾¿ØÖÆÌ¨´°¿Ú
-	Game->doublebuffer.hdc = DoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hBitmap, Game->Windowwidth, Game->Windowheight);					//Ë«»º³åäÖÈ¾
-	SetTimeLoad(&(Game->timeload), timeload);		//³õÊ¼»¯¶¨Ê±Æ÷,ÓÃÓÚÖ¡ÂÊ¿ØÖÆ
+	Game->CMDswitch = cmdswitch;					//æ˜¯å¦æ˜¾ç¤ºæŽ§åˆ¶å°çª—å£
+	CMD(cmdswitch);
+	Game->doublebuffer.hdc = DoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hBitmap, Game->Windowwidth, Game->Windowheight);					//åŒç¼“å†²æ¸²æŸ“
+	SetTimeLoad(&(Game->timeload), timeload);		//åˆå§‹åŒ–å®šæ—¶å™¨,ç”¨äºŽå¸§çŽ‡æŽ§åˆ¶
 }
 
-//ÓÎÏ·»­Ãæ»æÖÆ
+//æ¸¸æˆç”»é¢ç»˜åˆ¶
 void GameDrawing(GAME* Game) {};
 
-//ÓÎÏ·Âß¼­»æÖÆ
+//æ¸¸æˆé€»è¾‘ç»˜åˆ¶
 void GameLogic(GAME* Game) {};
 
-//ÓÎÏ·Ñ­»·
+//æ¸¸æˆå¾ªçŽ¯
 void GameLoop(GAME* Game,BOOL esc)
 {
+	GetAsyncKeyState(VK_ESCAPE);
 	while (1)
 	{
-		ClearWindow();								//ÏûÏ¢Ñ­»·
-		GameLogic(Game);							//ÓÎÏ·Âß¼­¼ÆËã
-		GameDrawing(Game);							//ÓÎÏ·»­Ãæ»æÖÆ
-		if (TimeLoad(&(Game->timeload), 1)) RUNDoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hdc, Game->Windowwidth, Game->Windowheight);	//Í¨¹ýË«»º³å»æÖÆµ½ÆÁÄ»ÉÏ		
-		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));												//Çå³ýË«»º³åÆÁÄ»»­Ãæ
-		if (esc && !GetAsyncKeyState(VK_ESCAPE))return;																							//ÊÇ·ñÆôÓÃescÍË³öÓÎÏ·
+		ClearWindow();								//æ¶ˆæ¯å¾ªçŽ¯
+		GameLogic(Game);							//æ¸¸æˆé€»è¾‘è®¡ç®—
+		GameDrawing(Game);							//æ¸¸æˆç”»é¢ç»˜åˆ¶
+		if (TimeLoad(&(Game->timeload), 1)) RUNDoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hdc, Game->Windowwidth, Game->Windowheight);	//é€šè¿‡åŒç¼“å†²ç»˜åˆ¶åˆ°å±å¹•ä¸Š		
+		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));												//æ¸…é™¤åŒç¼“å†²å±å¹•ç”»é¢
+		if (esc && GetAsyncKeyState(VK_ESCAPE))return;																							//æ˜¯å¦å¯ç”¨escé€€å‡ºæ¸¸æˆ
 	}
 }
 
 void GameOver(GAME* Game,BOOL cmdswitch)
 {
-	DeletBuffer(Game->doublebuffer.hBitmap, Game->doublebuffer.hdc);																			//Ïú»ÙË«»º³å×ÊÔ´
-	DeletWindow(Game->Windowhwnd);					//É¾³ýÓÎÏ·´°¿Ú
-	if (cmdswitch)CMD(ON);							//ÊÇ·ñÔÚÓÎÏ·½áÊøÊ±»Ö¸´¿ØÖÆÌ¨´°¿Ú
+	DeletBuffer(Game->doublebuffer.hBitmap, Game->doublebuffer.hdc);																			//é”€æ¯åŒç¼“å†²èµ„æº
+	DeletWindow(Game->Windowhwnd);					//åˆ é™¤æ¸¸æˆçª—å£
+	if (cmdswitch)CMD(ON);							//æ˜¯å¦åœ¨æ¸¸æˆç»“æŸæ—¶æ¢å¤æŽ§åˆ¶å°çª—å£
 }
