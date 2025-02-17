@@ -5,6 +5,7 @@
 版本信息
 0.1 完成了引擎的基本框架
 0.11 修复了部分BUG
+0.12 修复了部分BUG
 */
 #pragma once
 #include"star.h"
@@ -45,10 +46,10 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int width, int height, int tim
 }
 
 //游戏画面绘制
-void GameDrawing(GAME* Game) {};
+void GameDrawing(GAME* Game);
 
 //游戏逻辑绘制
-void GameLogic(GAME* Game) {};
+void GameLogic(GAME* Game);
 
 //游戏循环
 void GameLoop(GAME* Game,BOOL esc)
