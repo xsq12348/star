@@ -217,7 +217,7 @@ int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：1.0.0
+    //版本信息：1.1.21
     /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -318,6 +318,13 @@ int Vsn(int A)
     * 1.1.0 更新了定时器模块;
     * 1.1.1 修正了上次忘记修改的函数
     * 1.1.2 新增了BoxC函数
+    * 1.1.21 更新了HardwareDetection函数
+    * 1.1.23 修复了获取鼠标坐标在有标题栏的情况下对不齐的BUG
+    * 1.1.3 新增加了获取窗口水平坐标的函数
+    * 1.1.4 新增加了获取窗口垂直坐标的函数
+    * 1.1.41 将代码规整了一些
+    * 1.1.42 修复了HardwareDetection的一些bug
+    * 1.1.43 更新了CMDGetColor函数
     */
     return A;
 }
@@ -344,12 +351,9 @@ void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Charac
     char command[256];
     snprintf(command, sizeof(command), "mode con: cols=%d lines=%d", width, height);
     int result = system(command);
-    //更改窗口标题
-    SetConsoleTitle(name);
-    // 禁止改变窗口大小
-    LONG style = GetWindowLong(GetConsoleWindow(), GWL_STYLE);
-    // 移除可调整大小的样式
-    style &= ~WS_SIZEBOX;
+    SetConsoleTitle(name);                                      //更改窗口标题    
+    LONG style = GetWindowLong(GetConsoleWindow(), GWL_STYLE);  // 禁止改变窗口大小    
+    style &= ~WS_SIZEBOX;                                       // 移除可调整大小的样式
     SetWindowLong(GetConsoleWindow(), GWL_STYLE, style);
     //隐藏滚动条
     ShowScrollBar(GetConsoleWindow(), SB_VERT, FALSE);
@@ -359,19 +363,16 @@ void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Charac
 //移动光标
 void Gotoxy(int x, int y)
 {
-    COORD lightb;
-    lightb.X = x;
-    lightb.Y = y;
+    COORD lightb = { x,y };
     HANDLE CMD = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(CMD, lightb);
 }
 
 //颜色函数
-int Color(WORD color)
+void Color(WORD color)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color);
-    return 0;
 }
 
 //设置文字出现的坐标
@@ -390,7 +391,7 @@ void CMDClear() { system("cls"); }
 //创建线程函数关键字
 typedef DWORD THREAD;
 
-//多线程函数
+//多线程函数结构体
 typedef struct
 {
     HANDLE ID;
@@ -587,14 +588,10 @@ void ImgA(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y, double widthbs,
 //消息处理函数,请不要乱动此函数!!!
 LRESULT WINAPI WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
 {
-
-    HDC hdc = GetDC(hwnd);
     switch (msgid)
     {
     case WM_DESTROY: PostQuitMessage(0); break;
-        //绘画
-    case WM_PAINT:        break;
-        //处理鼠标消息
+    case WM_PAINT: break;
     case WM_SETCURSOR:
     switch (LOWORD(lparam)) { default:SetCursor(LoadCursor(NULL, IDC_ARROW)); break; }
     }
@@ -616,24 +613,18 @@ HWND Window(
     WNDCLASS wndclass = { 0 };
     wndclass.cbClsExtra = 0;
     wndclass.cbWndExtra = 0;
-    //获取笔刷 填充背景
-    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);
-    //鼠标指针
-    wndclass.hCursor = NULL;
-    //系统默认图标
-    wndclass.hIcon = NULL;
+    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);    //获取笔刷 填充背景
+    wndclass.hCursor = NULL;                               //鼠标指针
+    wndclass.hIcon = NULL;                                 //系统默认图标
     //程序句柄
     wndclass.hInstance = hinstance;
     wndclass.lpfnWndProc = WndPorc;
-    //类名
-    wndclass.lpszClassName = TEXT("main");
-    //菜单
-    wndclass.lpszMenuName = NULL;
+    wndclass.lpszClassName = TEXT("main");                 //类名
+    wndclass.lpszMenuName = NULL;                          //菜单
     //窗口样式
     wndclass.style = CS_HREDRAW | CS_CLASSDC;
     RegisterClass(&wndclass);
-    //创建窗口
-    hwnd = CreateWindow(TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, x, y, w, h, NULL, NULL, hinstance, NULL);
+    hwnd = CreateWindow(TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, x, y, w, h, NULL, NULL, hinstance, NULL);    //创建窗口
     //显示窗口
     ShowWindow(hwnd, SW_SHOW);
     UpdateWindow(hwnd);
@@ -656,24 +647,18 @@ HWND WindowA(
     WNDCLASS wndclass = { 0 };
     wndclass.cbClsExtra = 0;
     wndclass.cbWndExtra = 0;
-    //获取笔刷 填充背景
-    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);
-    //鼠标指针
-    wndclass.hCursor = NULL;
-    //系统默认图标
-    wndclass.hIcon = NULL;
+    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);    //获取笔刷 填充背景
+    wndclass.hCursor = NULL;                               //鼠标指针
+    wndclass.hIcon = NULL;                                 //系统默认图标
     //程序句柄
     wndclass.hInstance = hinstance;
     wndclass.lpfnWndProc = WndPorc;
-    //类名
-    wndclass.lpszClassName = TEXT("main");
-    //菜单
-    wndclass.lpszMenuName = NULL;
+    wndclass.lpszClassName = TEXT("main");                 //类名
+    wndclass.lpszMenuName = NULL;                          //菜单
     //窗口样式
     wndclass.style = CS_HREDRAW | CS_CLASSDC;
     RegisterClass(&wndclass);
-    //创建窗口
-    hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME & WS_OVERLAPPEDWINDOW, x, y, w, h, NULL, NULL, hinstance, NULL);
+    hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME & WS_OVERLAPPEDWINDOW, x, y, w, h, NULL, NULL, hinstance, NULL);    //创建窗口
     //显示窗口
     SetLayeredWindowAttributes(hwnd, 0, (BYTE)transparency, LWA_ALPHA);
     ShowWindow(hwnd, SW_SHOW);
@@ -696,24 +681,18 @@ HWND WindowB(
     WNDCLASS wndclass = { 0 };
     wndclass.cbClsExtra = 0;
     wndclass.cbWndExtra = 0;
-    //获取笔刷 填充背景
-    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);
-    //鼠标指针
-    wndclass.hCursor = NULL;
-    //系统默认图标
-    wndclass.hIcon = NULL;
+    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);    //获取笔刷 填充背景
+    wndclass.hCursor = NULL;                               //鼠标指针
+    wndclass.hIcon = NULL;                                 //系统默认图标
     //程序句柄
     wndclass.hInstance = hinstance;
     wndclass.lpfnWndProc = WndPorc;
-    //类名
-    wndclass.lpszClassName = TEXT("main");
-    //菜单
-    wndclass.lpszMenuName = NULL;
+    wndclass.lpszClassName = TEXT("main");                 //类名
+    wndclass.lpszMenuName = NULL;                          //菜单
     //窗口样式
     wndclass.style = CS_HREDRAW | CS_CLASSDC;
     RegisterClass(&wndclass);
-    //创建窗口
-    hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME & WS_OVERLAPPEDWINDOW, x, y, w, h, NULL, NULL, hinstance, NULL);
+    hwnd = CreateWindowEx(WS_EX_LAYERED, TEXT("main"), name/*标题*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME & WS_OVERLAPPEDWINDOW, x, y, w, h, NULL, NULL, hinstance, NULL);    //创建窗口
     //显示窗口
     SetLayeredWindowAttributes(hwnd, 0, 0, ULW_COLORKEY);
     ShowWindow(hwnd, SW_SHOW);
@@ -730,7 +709,7 @@ void RunWindow()
     {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
-        if (GetAsyncKeyState(VK_ESCAPE)) { printf("窗口已退出\n"); return; }
+        if (GetAsyncKeyState(VK_ESCAPE))  printf("窗口已退出\n"); return;
     }
 }
 
@@ -746,12 +725,11 @@ void ClearWindow()
 }
 
 //-------------------------------------------------------------------------工具区-------------------------------------------------------------------------------------------------------------------------------------------------------//
+
 //隐藏/显示光标
 void CMDHide(BOOL A)
 {
-    CONSOLE_CURSOR_INFO curInfo;
-    curInfo.dwSize = 1;
-    curInfo.bVisible = A;
+    CONSOLE_CURSOR_INFO curInfo = { 1,A };
     HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorInfo(handle, &curInfo);
 }
@@ -763,6 +741,7 @@ void CMDMouse(int NO_or_OFF)
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     switch (NO_or_OFF)
     {
+    case ON: return; break;
     case OFF:
         GetConsoleMode(hStdin, &mode);
         mode &= ~ENABLE_QUICK_EDIT_MODE;
@@ -770,7 +749,6 @@ void CMDMouse(int NO_or_OFF)
         mode &= ~ENABLE_MOUSE_INPUT;
         SetConsoleMode(hStdin, mode);
         break;
-    case ON: return; break;
     }
 }
 
@@ -804,8 +782,17 @@ BOOL CMD(BOOL YESORNO)
 //硬件检测函数
 int HardwareDetection()
 {
-    for (int i = 1; i < 254; i++) if (i == 10 || i == 11 || i == 14 || i == 15 || i == 58 || i == 59 || i == 60 || i == 61 || i == 62 || i == 63 || i == 64 || i == 136 || i == 137 || i == 138 || i == 139 || i == 140 || i == 141 || i == 142 || i == 143 || i == 146 || i == 147 || i == 148 || i == 149 || i == 150 || i == 151 || i == 152 || i == 153 || i == 154 || i == 155 || i == 156 || i == 157 || i == 158 || i == 159 || i == 184 || i == 185 || i == 193 || i == 194 || i == 195 || i == 196 || i == 197 || i == 198 || i == 199 || i == 200 || i == 201 || i == 202 || i == 203 || i == 204 || i == 205 || i == 206 || i == 207 || i == 208 || i == 209 || i == 210 || i == 211 || i == 212 || i == 213 || i == 214 || i == 215 || i == 216 || i == 217 || i == 218 || i == 224 || i == 225 || i == 227 || i == 228 || i == 232 || i == 230 || i == 233 || i == 234 || i == 235 || i == 236 || i == 237 || i == 238 || i == 239 || i == 240 || i == 241 || i == 242 || i == 243 || i == 244 || i == 245 || i == 7 || i == 26) continue;
-    else if (GetAsyncKeyState(i))  return i; else return 0;
+    if (GetAsyncKeyState(1)) return 1;              //左键
+    if (GetAsyncKeyState(2)) return 2;              //右键
+    if (GetAsyncKeyState(4)) return 4;              //中键
+    if (GetAsyncKeyState(VK_F11)) return VK_F11;    //F11
+    if (GetAsyncKeyState(20)) return 20;            //caps lock
+    if (GetAsyncKeyState(18)) return 18;            //alt
+    if (GetAsyncKeyState(17)) return 17;            //ctrl
+    if (GetAsyncKeyState(16)) return 16;            //shift
+    if (_kbhit()) return 0;
+    else for (int i = 2; i < 254; i++) if (i == 10 || i == 11 || i == 14 || i == 15 || i == 58 || i == 59 || i == 60 || i == 61 || i == 62 || i == 63 || i == 64 || i == 136 || i == 137 || i == 138 || i == 139 || i == 140 || i == 141 || i == 142 || i == 143 || i == 146 || i == 147 || i == 148 || i == 149 || i == 150 || i == 151 || i == 152 || i == 153 || i == 154 || i == 155 || i == 156 || i == 157 || i == 158 || i == 159 || i == 184 || i == 185 || i == 193 || i == 194 || i == 195 || i == 196 || i == 197 || i == 198 || i == 199 || i == 200 || i == 201 || i == 202 || i == 203 || i == 204 || i == 205 || i == 206 || i == 207 || i == 208 || i == 209 || i == 210 || i == 211 || i == 212 || i == 213 || i == 214 || i == 215 || i == 216 || i == 217 || i == 218 || i == 224 || i == 225 || i == 227 || i == 228 || i == 232 || i == 230 || i == 233 || i == 234 || i == 235 || i == 236 || i == 237 || i == 238 || i == 239 || i == 240 || i == 241 || i == 242 || i == 243 || i == 244 || i == 245 || i == 7 || i == 26) continue;
+    else if (GetAsyncKeyState(i))  return i;
 }
 
 //音乐函数
@@ -821,26 +808,38 @@ void Music(LPCWSTR File)
 //子窗口函数
 void Parent(HWND parent, HWND child) { SetParent(child, parent); }
 
-//在窗口中获取鼠标水平位置
+//获取鼠标水平位置
 int MouseX(HWND hwnd)
 {
     POINT p;
     GetCursorPos(&p);
-    RECT rect;
-    GetWindowRect(hwnd, &rect);
-    int x = (p.x - rect.left);
-    return x;
+    ScreenToClient(hwnd, &p);
+    return p.x;
 }
 
-//在窗口中获取鼠标竖直位置
+//获取鼠标竖直位置
 int MouseY(HWND hwnd)
 {
     POINT p;
     GetCursorPos(&p);
-    RECT rect;
-    GetWindowRect(hwnd, &rect);
-    int y = (p.y - rect.top);
-    return y;
+    ScreenToClient(hwnd, &p);
+    return p.y;
+}
+
+//获取窗口水平坐标
+int WindowcoordinatesX(HWND hwnd)
+{
+    RECT windowcoordinates;
+    GetWindowRect(hwnd, &windowcoordinates);
+    return windowcoordinates.left;
+}
+
+//获取窗口垂直坐标
+int WindowcoordinatesY(HWND hwnd)
+{
+    RECT windowcoordinates;
+    GetWindowRect(hwnd, &windowcoordinates);
+    return windowcoordinates.top;
 }
 
 //win32鼠标光标开关
@@ -858,8 +857,7 @@ int CMDGetColor(int x, int y, int A)
     ReadConsoleOutputAttribute(hConsole, &wa, 1, coord, &count);
     int f = wa & 0x0f;
     int b = (wa >> 4) & 0x0f;
-    if (A == 1) { return f; }
-    if (A == 2) { return b; }
+    return (A - 1) ? b : f;
 }
 
 //从txt任意一行读取数据的函数
@@ -999,6 +997,7 @@ typedef struct
     int timeload;
     BOOL timeswitch;
 }TIMELOAD;
+
 void SetTimeLoad(TIMELOAD* Timeload, int load)
 {
     Timeload->time1 = NULL;
@@ -1006,6 +1005,7 @@ void SetTimeLoad(TIMELOAD* Timeload, int load)
     Timeload->timeload = load;
     Timeload->timeswitch = 0;
 }
+
 int TimeLoad(TIMELOAD* Timeload, int mode)
 {
     if (!mode)return 0;
