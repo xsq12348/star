@@ -9,12 +9,15 @@
 0.13 优化了绘制体验
 0.2 添加了动画模块
 0.21 修复了初始化游戏的窗口bug
+0.22 更新了NPC结构体
 */
 #pragma once
 #include"star.h"
 #define MOUSEX(a) MouseX(a)
 #define MOUSEY(a) MouseY(a)
 int GAMEINPUT;					//游戏输入
+
+//--------------------------------------------------------------------------------------游戏结构体----------------------------------------------------------------------------------------------------------//
 
 //游戏结构体
 typedef struct
@@ -29,16 +32,31 @@ typedef struct
 	BOOL cuesor;				//鼠标光标
 }GAME;
 
-//NPC
+//动画结构体
 typedef struct
 {
-	POINT coor;	//位置
-	int health; //血量
-	int mode;	//状态
-	int sid;	//阵营
+	LPCSTR Name;
+	LPCWSTR* sequenceframes;	//序列帧数组
+	int number;					//当前序列帧
+	int totalnumber;			//序列帧总数
+	BOOL animeswitch;			//动画动画播放开关
+	TIMELOAD timeload;			//定时器
+}ANIME;
+
+//NPC结构体
+typedef struct
+{
+	POINT coor;			//位置
+	int health;			//血量
+	int mode;			//状态
+	int sid;			//阵营
+	ANIME anime;		//动画模块
+	LPCWSTR* animeimg;	//动画帧
+	LPCWSTR img;		//默认图标
 }NPC;
 
 //--------------------------------------------------------------------------------------游戏工具----------------------------------------------------------------------------------------------------------//
+
 //按钮控件,用于展示不同状态的按钮,悬停时显示图片2,按下时显示图片3
 int ButtonStart(GAME* Game, int x, int y, int width, int height, int YESORNO, const wchar_t* File1, const wchar_t* File2, const wchar_t* File3)
 {
@@ -53,17 +71,6 @@ int ButtonStart(GAME* Game, int x, int y, int width, int height, int YESORNO, co
 }
 
 //动画控件
-
-//动画结构体
-typedef struct
-{
-	LPCSTR Name;
-	LPCWSTR* sequenceframes;	//序列帧数组
-	int number;					//当前序列帧
-	int totalnumber;			//序列帧总数
-	BOOL animeswitch;			//动画动画播放开关
-	TIMELOAD timeload;			//定时器
-}ANIME;
 
 //初始化动画
 int InitialisationAnime(ANIME* anime,LPCSTR name, LPCWSTR* sequenceframes[], int load, int totalnumber)
@@ -96,6 +103,12 @@ int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y)
 	Img(0, Game->doublebuffer.hdc, anime->sequenceframes[anime->number % anime->totalnumber], x, y);
 	if (TimeLoad(&(anime->timeload), 1)) ++anime->number;	//添加下一帧	
 	return anime->number;
+}
+
+//图片
+void IMG(GAME* Game, const wchar_t* File,int x,int y)
+{
+	Img(0, Game->doublebuffer.hdc, File, x, y);
 }
 
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
@@ -156,6 +169,7 @@ void GameLoop(GAME* Game, BOOL esc)
 	}
 }
 
+//游戏结束
 void GameOver(GAME* Game,BOOL cmdswitch)
 {
 	DeletBuffer(Game->doublebuffer.hBitmap, Game->doublebuffer.hdc);										//销毁双缓冲资源
