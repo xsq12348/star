@@ -10,12 +10,14 @@
 0.2 添加了动画模块
 0.21 修复了初始化游戏的窗口bug
 0.22 更新了NPC结构体
+0.23 更新了动画资源关键字
 */
 #pragma once
 #include"star.h"
 #define MOUSEX(a) MouseX(a)
 #define MOUSEY(a) MouseY(a)
 int GAMEINPUT;					//游戏输入
+typedef LPCWSTR ANIMEIMG;		//动画资源关键字
 
 //--------------------------------------------------------------------------------------游戏结构体----------------------------------------------------------------------------------------------------------//
 
@@ -73,7 +75,7 @@ int ButtonStart(GAME* Game, int x, int y, int width, int height, int YESORNO, co
 //动画控件
 
 //初始化动画
-int InitialisationAnime(ANIME* anime,LPCSTR name, LPCWSTR* sequenceframes[], int load, int totalnumber)
+int InitialisationAnime(ANIME* anime,LPCSTR name, ANIMEIMG* sequenceframes[], int load, int totalnumber)
 {
 	anime->Name = name;
 	if (totalnumber <= 0)
