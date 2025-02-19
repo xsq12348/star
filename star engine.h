@@ -102,7 +102,7 @@ int InitialisationAnime(ANIME* anime,LPCSTR name, ANIMEIMG* sequenceframes[], in
 int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y)
 {
 	if (!animeswitch)return 0;
-	Img(0, Game->doublebuffer.hdc, anime->sequenceframes[anime->number % anime->totalnumber], x, y);
+	ImgA(0, Game->doublebuffer.hdc, anime->sequenceframes[anime->number % anime->totalnumber], x, y, 1, 1, RGB(1, 1, 1));
 	if (TimeLoad(&(anime->timeload), 1)) ++anime->number;	//添加下一帧	
 	return anime->number;
 }
