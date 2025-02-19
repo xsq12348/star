@@ -8,10 +8,12 @@
 0.12 修复了部分BUG
 0.13 优化了绘制体验
 0.2 添加了动画模块
+0.21 修复了初始化游戏的窗口bug
 */
 #pragma once
 #include"star.h"
-
+#define MOUSEX(a) MouseX(a)
+#define MOUSEY(a) MouseY(a)
 int GAMEINPUT;					//游戏输入
 
 //游戏结构体
@@ -104,21 +106,21 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int width, int height, int tim
 	//初始化结构体
 	Game->Windowhwnd = Window((HWND)NULL, name, width, height, (nScreenWidth - width) / 2, (nScreenheight - height) / 2);		//创建窗口
 	Game->Name = name;								//窗口名字
-	switch (fullscreenmode != 0)					//如果全屏则不变
+	switch (fullscreenmode)					//如果全屏则不变
 	{
 	case 0:
 		Game->Windowwidth = width + 15;				//窗口宽度
 		Game->Windowheight = height + 39;			//窗口高度
 		break;
 	case 1:
-		Game->Windowwidth = width;					//窗口宽度
-		Game->Windowheight = height;				//窗口高度
+		Game->Windowwidth = nScreenWidth;					//窗口宽度
+		Game->Windowheight = nScreenheight;				//窗口高度
 		TitleBar(Game->Windowhwnd);
 		FullScreen(Game->Windowhwnd);
 		break;
 	case 2:
-		Game->Windowwidth = width + 15;				//窗口宽度
-		Game->Windowheight = height + 39;			//窗口高度
+		Game->Windowwidth = nScreenWidth;				//窗口宽度
+		Game->Windowheight = nScreenheight;			//窗口高度
 		FullScreen(Game->Windowhwnd);
 		break;
 	}
