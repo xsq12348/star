@@ -11,6 +11,9 @@
 0.21 修复了初始化游戏的窗口bug
 0.22 更新了NPC结构体
 0.23 更新了动画资源关键字
+0.23 重新开始写npc模块
+0.24 npc结构体已被改成ENTITY结构体
+0.3 增加了多线程
 */
 #pragma once
 #include"star.h"
@@ -32,6 +35,7 @@ typedef struct
 	DOUBLEBUFFER doublebuffer;	//双缓冲渲染
 	TIMELOAD timeload;			//帧率控制
 	BOOL cuesor;				//鼠标光标
+	BOOL escswitch;				//是否启用esc
 }GAME;
 
 //动画结构体
@@ -45,17 +49,18 @@ typedef struct
 	TIMELOAD timeload;			//定时器
 }ANIME;
 
-//NPC结构体
+//实体结构体
 typedef struct
 {
-	POINT coor;			//位置
-	int health;			//血量
-	int mode;			//状态
-	int sid;			//阵营
-	ANIME anime;		//动画模块
-	LPCWSTR* animeimg;	//动画帧
-	LPCWSTR img;		//默认图标
-}NPC;
+	LPCSTR Name;				//名称
+	POINT coor;					//位置
+	int hp;						//血量
+	int sid;					//阵营
+	int mode;					//行为模式
+	BOOL crashboxswitch;		//碰撞箱开关
+	struct ENTITY* parent;		//父实体
+	struct ENTITY* children;	//子实体
+}ENTITY;
 
 //--------------------------------------------------------------------------------------游戏工具----------------------------------------------------------------------------------------------------------//
 
@@ -102,48 +107,43 @@ int InitialisationAnime(ANIME* anime,LPCSTR name, ANIMEIMG* sequenceframes[], in
 int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y)
 {
 	if (!animeswitch)return 0;
-	ImgA(0, Game->doublebuffer.hdc, anime->sequenceframes[anime->number % anime->totalnumber], x, y, 1, 1, RGB(1, 1, 1));
+	else ImgA(0, Game->doublebuffer.hdc, anime->sequenceframes[anime->number % anime->totalnumber], x, y, 1, 1, RGB(1, 1, 1));
 	if (TimeLoad(&(anime->timeload), 1)) ++anime->number;	//添加下一帧	
 	return anime->number;
-}
-
-//图片
-void IMG(GAME* Game, const wchar_t* File,int x,int y)
-{
-	Img(0, Game->doublebuffer.hdc, File, x, y);
 }
 
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
 
 //初始化游戏
-void InitialisationGame(GAME* Game, LPCWSTR name, int width, int height, int timeload, int fullscreenmode, BOOL cmdswitch,BOOL cursor)
+void InitialisationGame(GAME* Game, LPCWSTR name, int width, int height, int timeload, int fullscreenmode, BOOL cmdswitch, BOOL cursor)
 {
 	//初始化结构体
 	Game->Windowhwnd = Window((HWND)NULL, name, width, height, (nScreenWidth - width) / 2, (nScreenheight - height) / 2);		//创建窗口
-	Game->Name = name;								//窗口名字
+	Game->Name = name;						//窗口名字
 	switch (fullscreenmode)					//如果全屏则不变
 	{
 	case 0:
-		Game->Windowwidth = width + 15;				//窗口宽度
-		Game->Windowheight = height + 39;			//窗口高度
+		Game->Windowwidth = width + 15;		//窗口宽度
+		Game->Windowheight = height + 39;	//窗口高度
 		break;
 	case 1:
-		Game->Windowwidth = nScreenWidth;					//窗口宽度
-		Game->Windowheight = nScreenheight;				//窗口高度
+		Game->Windowwidth = nScreenWidth;	//窗口宽度
+		Game->Windowheight = nScreenheight;	//窗口高度
 		TitleBar(Game->Windowhwnd);
 		FullScreen(Game->Windowhwnd);
 		break;
 	case 2:
-		Game->Windowwidth = nScreenWidth;				//窗口宽度
-		Game->Windowheight = nScreenheight;			//窗口高度
+		Game->Windowwidth = nScreenWidth;	//窗口宽度
+		Game->Windowheight = nScreenheight;	//窗口高度
 		FullScreen(Game->Windowhwnd);
 		break;
 	}
-	Game->CMDswitch = cmdswitch;					//是否显示控制台窗口
+	Game->CMDswitch = cmdswitch;			//是否显示控制台窗口
 	CMD(cmdswitch);
 	Game->doublebuffer.hdc = DoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hBitmap, Game->Windowwidth, Game->Windowheight);	//双缓冲渲染
-	SetTimeLoad(&(Game->timeload), timeload);		//初始化定时器,用于帧率控制
-	Mouse(cursor);									//鼠标光标显示
+	SetTimeLoad(&(Game->timeload), 1000 / timeload);	//初始化定时器,用于帧率控制
+	Mouse(cursor);										//鼠标光标显示
+	Game->escswitch = 0;								//是否启用esc退出游戏
 }
 
 //游戏画面绘制
@@ -152,29 +152,48 @@ void GameDrawing(GAME* Game);
 //游戏逻辑绘制
 void GameLogic(GAME* Game);
 
+//逻辑线程
+CREATTHREAD GAMELOGIC;
+GAME* GAMETHEARDLOGIC;
+
+//游戏逻辑线程
+THREAD GameThreadLogic(LPARAM lparam)
+{
+	while (1)
+	{
+		GameLogic(GAMETHEARDLOGIC);	//游戏逻辑计算
+		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))return;	//是否启用esc退出游戏
+	}
+}
+
+
 //游戏循环
 void GameLoop(GAME* Game, BOOL esc)
 {
+	GAMETHEARDLOGIC = Game;
+	Game->escswitch = esc;
+	srand((unsigned)time(NULL));
 	GetAsyncKeyState(VK_ESCAPE);
+	RunThread(&GameThreadLogic, &GAMELOGIC.ID);
 	while (1)
 	{
 		ClearWindow();																						//消息循环
-		GameLogic(Game);																					//游戏逻辑计算
-		GAMEINPUT = HardwareDetection();																//按键检测
+		GAMEINPUT = HardwareDetection();																	//按键检测
 		if (TimeLoad(&(Game->timeload), 1))
 		{
 			BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		//清除双缓冲屏幕画面
 			GameDrawing(Game);																				//游戏画面绘制
 		}
 		RUNDoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hdc, Game->Windowwidth, Game->Windowheight);	//通过双缓冲绘制到屏幕上
-		if (esc && GetAsyncKeyState(VK_ESCAPE))return;														//是否启用esc退出游戏
+		if (Game->escswitch && GetAsyncKeyState(VK_ESCAPE))return;											//是否启用esc退出游戏
 	}
 }
 
 //游戏结束
 void GameOver(GAME* Game,BOOL cmdswitch)
 {
-	DeletBuffer(Game->doublebuffer.hBitmap, Game->doublebuffer.hdc);										//销毁双缓冲资源
-	DeletWindow(Game->Windowhwnd);																			//删除游戏窗口
-	if (cmdswitch)CMD(ON);																					//是否在游戏结束时恢复控制台窗口
+	DeletThread(GAMELOGIC.ThreadHwnd);									//清理逻辑线程
+	DeletBuffer(Game->doublebuffer.hBitmap, Game->doublebuffer.hdc);	//销毁双缓冲资源
+	DeletWindow(Game->Windowhwnd);										//删除游戏窗口
+	if (cmdswitch)CMD(ON);												//是否在游戏结束时恢复控制台窗口
 }
