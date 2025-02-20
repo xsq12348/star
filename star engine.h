@@ -161,7 +161,8 @@ THREAD GameThreadLogic(LPARAM lparam)
 {
 	while (1)
 	{
-		GameLogic(GAMETHEARDLOGIC);	//游戏逻辑计算
+		GAMEINPUT = HardwareDetection();										//按键检测
+		GameLogic(GAMETHEARDLOGIC);												//游戏逻辑计算
 		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))return;	//是否启用esc退出游戏
 	}
 }
@@ -178,7 +179,6 @@ void GameLoop(GAME* Game, BOOL esc)
 	while (1)
 	{
 		ClearWindow();																						//消息循环
-		GAMEINPUT = HardwareDetection();																	//按键检测
 		if (TimeLoad(&(Game->timeload), 1))
 		{
 			BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		//清除双缓冲屏幕画面
