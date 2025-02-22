@@ -14,13 +14,19 @@
 0.23 重新开始写npc模块
 0.24 npc结构体已被改成ENTITY结构体
 0.3 增加了多线程
+0.4 绘图函数移植成功
 */
 #pragma once
 #include"star.h"
 #define MOUSEX(a) MouseX(a)
 #define MOUSEY(a) MouseY(a)
+#define RANDOM(a,b) Random(a,b)
+#define DEGRAD(a) DegRad(a)
+
+
 int GAMEINPUT;					//游戏输入
 typedef LPCWSTR ANIMEIMG;		//动画资源关键字
+typedef POINT VELOCITY;			//速度分量结构体
 
 //--------------------------------------------------------------------------------------游戏结构体----------------------------------------------------------------------------------------------------------//
 
@@ -54,6 +60,7 @@ typedef struct
 {
 	LPCSTR Name;				//名称
 	POINT coor;					//位置
+	VELOCITY velocity;			//速度
 	int hp;						//血量
 	int sid;					//阵营
 	int mode;					//行为模式
@@ -64,7 +71,9 @@ typedef struct
 
 //--------------------------------------------------------------------------------------游戏工具----------------------------------------------------------------------------------------------------------//
 
-//按钮控件,用于展示不同状态的按钮,悬停时显示图片2,按下时显示图片3
+//按钮控件
+
+//用于展示不同状态的按钮,悬停时显示图片2,按下时显示图片3
 int ButtonStart(GAME* Game, int x, int y, int width, int height, int YESORNO, const wchar_t* File1, const wchar_t* File2, const wchar_t* File3)
 {
 	int button = ButtonA(0, Game->doublebuffer.hdc, x, y, width, height, YESORNO);
@@ -76,6 +85,16 @@ int ButtonStart(GAME* Game, int x, int y, int width, int height, int YESORNO, co
 	}
 	return button;
 }
+
+void NewButton(GAME* Game, int x, int y, int width, int height)
+{
+	if(GetAsyncKeyState(1))
+	if (MOUSEX(Game->Windowhwnd) > x && MOUSEX(Game->Windowhwnd) < x + width && MOUSEY(Game->Windowhwnd) > y && MOUSEY(Game->Windowhwnd) < y + height)
+	{
+
+	}
+}
+
 
 //动画控件
 
@@ -111,6 +130,28 @@ int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y)
 	if (TimeLoad(&(anime->timeload), 1)) ++anime->number;	//添加下一帧	
 	return anime->number;
 }
+
+//绘图函数
+void PIX(GAME* Game, int x, int y, COLORREF color) { Pix(0, Game->doublebuffer.hdc, x, y, color); }
+void LINE(GAME* Game, int x1, int y1, int x2, int y2, COLORREF color) { Line(0, Game->doublebuffer.hdc, x1, y1, x2, y2, color); }
+void APPIX(GAME* Game, int apx, int apy, int x, int y, double rad, COLORREF color) { ApPix(0, Game->doublebuffer.hdc, apx, apy, x, y, rad, color); }
+void APLINE(GAME* Game, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color) { ApLine(0, Game->doublebuffer.hdc, apx, apy, x1, y1, x2, y2, rad, color); }
+void BOX(GAME* Game, int x, int y, int width, int height, COLORREF color) { BoxC(0, Game->doublebuffer.hdc, x, y, width, height, color); }
+void BOXA(GAME* Game, int x, int y, int width, int height, COLORREF color)
+{
+	LINE(Game, x, y, x + width, y, color);
+	LINE(Game, x, y, x, y + height, color);
+	LINE(Game, x, y + height, x + width, y + height, color);
+	LINE(Game, x + width, y, x + width, y + height, color);
+}
+
+//显示图片
+void IMG(GAME* Game, const wchar_t File, int x, int y) { Img(0, Game->doublebuffer.hdc, File, x, y); }
+void IMGA(GAME* Game, const wchar_t File, int x, int y, int widthbs, int heightbs, COLORREF color) { ImgA(0, Game->doublebuffer.hdc, File, x, y, widthbs, heightbs, color); }
+
+//文字
+void NewTEXT(GAME* Game, LPCWSTR text, int x, int y, COLORREF color) { Text(0, Game->doublebuffer.hdc, x, y, text, color); }
+void NewDIGHT(GAME* Game, int number, int x, int y, COLORREF color) { Dight(0, Game->doublebuffer.hdc, x, y, number, color); }
 
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
 
