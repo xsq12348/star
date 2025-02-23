@@ -15,6 +15,7 @@
 0.24 npc结构体已被改成ENTITY结构体
 0.3 增加了多线程
 0.4 绘图函数移植成功
+0.5 重写了按钮控件
 */
 #pragma once
 #include"star.h"
@@ -69,32 +70,87 @@ typedef struct
 	struct ENTITY* children;	//子实体
 }ENTITY;
 
+typedef struct
+{
+	POINT coor;
+	POINT lengths;
+	BOOL buttonswitch;
+	BOOL button;
+	BOOL triggered;
+}BUTTON;
+//--------------------------------------------------------------------------------------绘图函数----------------------------------------------------------------------------------------------------------//
+
+void PIX(GAME* Game, int x, int y, COLORREF color) { Pix(0, Game->doublebuffer.hdc, x, y, color); }
+void LINE(GAME* Game, int x1, int y1, int x2, int y2, COLORREF color) { Line(0, Game->doublebuffer.hdc, x1, y1, x2, y2, color); }
+void APPIX(GAME* Game, int apx, int apy, int x, int y, double rad, COLORREF color) { ApPix(0, Game->doublebuffer.hdc, apx, apy, x, y, rad, color); }
+void APLINE(GAME* Game, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color) { ApLine(0, Game->doublebuffer.hdc, apx, apy, x1, y1, x2, y2, rad, color); }
+void BOX(GAME* Game, int x, int y, int width, int height, COLORREF color) { BoxC(0, Game->doublebuffer.hdc, x, y, width, height, color); }
+void BOXA(GAME* Game, int x, int y, int width, int height, COLORREF color)
+{
+	LINE(Game, x, y, x + width, y, color);
+	LINE(Game, x, y, x, y + height, color);
+	LINE(Game, x, y + height, x + width, y + height, color);
+	LINE(Game, x + width, y, x + width, y + height, color);
+}
+
+//显示图片
+void IMG(GAME* Game, const wchar_t File, int x, int y) { Img(0, Game->doublebuffer.hdc, File, x, y); }
+void IMGA(GAME* Game, const wchar_t File, int x, int y, int widthbs, int heightbs, COLORREF color) { ImgA(0, Game->doublebuffer.hdc, File, x, y, widthbs, heightbs, color); }
+
+//文字
+void NewTEXT(GAME* Game, LPCWSTR text, int x, int y, COLORREF color) { Text(0, Game->doublebuffer.hdc, x, y, text, color); }
+void NewDIGHT(GAME* Game, int number, int x, int y, COLORREF color) { Dight(0, Game->doublebuffer.hdc, x, y, number, color); }
+
 //--------------------------------------------------------------------------------------游戏工具----------------------------------------------------------------------------------------------------------//
 
 //按钮控件
 
+int InitialisationButton(BUTTON* button, int x, int y, int width, int height, int YESORNO)
+{
+	button->coor.x = x;
+	button->coor.y = y;
+	button->lengths.x = width;
+	button->lengths.y = height;
+	button->buttonswitch = YESORNO;
+	button->button = 0;
+	button->triggered = 0;
+}
+ 
 //用于展示不同状态的按钮,悬停时显示图片2,按下时显示图片3
-int ButtonStart(GAME* Game, int x, int y, int width, int height, int YESORNO, const wchar_t* File1, const wchar_t* File2, const wchar_t* File3)
+int ButtonStart(GAME* Game,BUTTON *button, const wchar_t* File1, const wchar_t* File2, const wchar_t* File3)
 {
-	int button = ButtonA(0, Game->doublebuffer.hdc, x, y, width, height, YESORNO);
-	switch (button)
+	button->button = ButtonA(0, Game->doublebuffer.hdc, button->coor.x, button->coor.y, button->lengths.x, button->lengths.y, button->buttonswitch);
+	switch (button->button)
 	{
-	case 0:Img(0, Game->doublebuffer.hdc, File1, x, y); break;
-	case 1:Img(0, Game->doublebuffer.hdc, File3, x, y); break;
-	case 2:Img(0, Game->doublebuffer.hdc, File2, x, y); break;
+	case 0:Img(0, Game->doublebuffer.hdc, File1, button->coor.x, button->coor.y); break;
+	case 1:Img(0, Game->doublebuffer.hdc, File3, button->coor.x, button->coor.y); break;
+	case 2:Img(0, Game->doublebuffer.hdc, File2, button->coor.x, button->coor.y); break;
 	}
-	return button;
+	return button->button;
 }
 
-void NewButton(GAME* Game, int x, int y, int width, int height)
+//新按钮
+int NewButton(GAME* Game, BUTTON* button)
 {
-	if(GetAsyncKeyState(1))
-	if (MOUSEX(Game->Windowhwnd) > x && MOUSEX(Game->Windowhwnd) < x + width && MOUSEY(Game->Windowhwnd) > y && MOUSEY(Game->Windowhwnd) < y + height)
+	if (button->triggered)
 	{
-
+		button->button = 0;
+		button->triggered = 1;
 	}
+	else if (GetAsyncKeyState(1))
+	{
+		if (MOUSEX(Game->Windowhwnd) > button->coor.x && MOUSEX(Game->Windowhwnd) < button->coor.x + button->lengths.x && MOUSEY(Game->Windowhwnd) > button->coor.y && MOUSEY(Game->Windowhwnd) < button->coor.y + button->lengths.y)
+		{
+			button->button = 1;
+			button->triggered = 1;
+		}
+	}
+	if (!GetAsyncKeyState(1))button->triggered = 0;
+	//if (!(MOUSEX(Game->Windowhwnd) > button->coor.x && MOUSEX(Game->Windowhwnd) < button->coor.x + button->lengths.x && MOUSEY(Game->Windowhwnd) > button->coor.y && MOUSEY(Game->Windowhwnd) < button->coor.y + button->lengths.y))button->button = 0;
+	if (button->buttonswitch)if (button->button)BOXA(Game, button->coor.x, button->coor.y, button->lengths.x, button->lengths.y, RGB(255, 0, 0));
+	else BOXA(Game, button->coor.x, button->coor.y, button->lengths.x, button->lengths.y, RGB(255, 255, 255));
+	return button->button;
 }
-
 
 //动画控件
 
@@ -130,28 +186,6 @@ int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y)
 	if (TimeLoad(&(anime->timeload), 1)) ++anime->number;	//添加下一帧	
 	return anime->number;
 }
-
-//绘图函数
-void PIX(GAME* Game, int x, int y, COLORREF color) { Pix(0, Game->doublebuffer.hdc, x, y, color); }
-void LINE(GAME* Game, int x1, int y1, int x2, int y2, COLORREF color) { Line(0, Game->doublebuffer.hdc, x1, y1, x2, y2, color); }
-void APPIX(GAME* Game, int apx, int apy, int x, int y, double rad, COLORREF color) { ApPix(0, Game->doublebuffer.hdc, apx, apy, x, y, rad, color); }
-void APLINE(GAME* Game, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color) { ApLine(0, Game->doublebuffer.hdc, apx, apy, x1, y1, x2, y2, rad, color); }
-void BOX(GAME* Game, int x, int y, int width, int height, COLORREF color) { BoxC(0, Game->doublebuffer.hdc, x, y, width, height, color); }
-void BOXA(GAME* Game, int x, int y, int width, int height, COLORREF color)
-{
-	LINE(Game, x, y, x + width, y, color);
-	LINE(Game, x, y, x, y + height, color);
-	LINE(Game, x, y + height, x + width, y + height, color);
-	LINE(Game, x + width, y, x + width, y + height, color);
-}
-
-//显示图片
-void IMG(GAME* Game, const wchar_t File, int x, int y) { Img(0, Game->doublebuffer.hdc, File, x, y); }
-void IMGA(GAME* Game, const wchar_t File, int x, int y, int widthbs, int heightbs, COLORREF color) { ImgA(0, Game->doublebuffer.hdc, File, x, y, widthbs, heightbs, color); }
-
-//文字
-void NewTEXT(GAME* Game, LPCWSTR text, int x, int y, COLORREF color) { Text(0, Game->doublebuffer.hdc, x, y, text, color); }
-void NewDIGHT(GAME* Game, int number, int x, int y, COLORREF color) { Dight(0, Game->doublebuffer.hdc, x, y, number, color); }
 
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
 
