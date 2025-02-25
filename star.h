@@ -325,6 +325,7 @@ int Vsn(int A)
     * 1.1.41 将代码规整了一些
     * 1.1.42 修复了HardwareDetection的一些bug
     * 1.1.43 更新了CMDGetColor函数
+    * 1.1.5 新增了绘制圆函数
     */
     return A;
 }
@@ -538,6 +539,21 @@ void BoxC(HWND hwnd, HDC hdc, int x, int y, int width, int height, COLORREF colo
     DeleteObject(hbs);
     EndPaint(hwnd, &ps);
     ReleaseDC(hwnd, hDc);
+}
+
+//绘制圆
+void Circle(HWND hwnd, HDC hdc, int R, int x, int y, COLORREF color)
+{
+    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
+    HDC hDc;
+    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
+    else hDc = hdc;
+    HPEN hpen = CreatePen(PS_SOLID, 1, color);
+    HPEN holdpen = (HPEN)SelectObject(hDc, hpen);
+    float lengths = R * 1.141 * 1.0 / 2;
+    Ellipse(hDc, x - R, y - R, x + R, y + R);
+    SelectObject(hDc, holdpen);
+    DeleteObject(hpen);
 }
 
 //显示图片
