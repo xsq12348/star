@@ -92,6 +92,7 @@ void BOXA(GAME* Game, int x, int y, int width, int height, COLORREF color)
 	LINE(Game, x, y + height, x + width, y + height, color);
 	LINE(Game, x + width, y, x + width, y + height, color);
 }
+void CIRCLE(GAME* Game, int R, int x, int y, COLORREF color) { Circle(0, Game->doublebuffer.hdc, R, x, y, color); }
 
 //显示图片
 void IMG(GAME* Game, const wchar_t File, int x, int y) { Img(0, Game->doublebuffer.hdc, File, x, y); }
