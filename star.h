@@ -550,7 +550,6 @@ void Circle(HWND hwnd, HDC hdc, int R, int x, int y, COLORREF color)
     else hDc = hdc;
     HPEN hpen = CreatePen(PS_SOLID, 1, color);
     HPEN holdpen = (HPEN)SelectObject(hDc, hpen);
-    float lengths = R * 1.141 * 1.0 / 2;
     Ellipse(hDc, x - R, y - R, x + R, y + R);
     SelectObject(hDc, holdpen);
     DeleteObject(hpen);
