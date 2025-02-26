@@ -16,16 +16,16 @@
 0.3 增加了多线程
 0.4 绘图函数移植成功
 0.5 重写了按钮控件
+0.51 修改了MOUSE宏
 */
 #pragma once
 #include"star.h"
-#define MOUSEX(a) MouseX(a)
-#define MOUSEY(a) MouseY(a)
 #define RANDOM(a,b) Random(a,b)
 #define DEGRAD(a) DegRad(a)
 
-
 int GAMEINPUT;					//游戏输入
+int MOUSEX = 0,
+	MOUSEY = 0;
 typedef LPCWSTR ANIMEIMG;		//动画资源关键字
 typedef POINT VELOCITY;			//速度分量结构体
 
@@ -140,7 +140,7 @@ int NewButton(GAME* Game, BUTTON* button)
 	}
 	else if (GetAsyncKeyState(1))
 	{
-		if (MOUSEX(Game->Windowhwnd) > button->coor.x && MOUSEX(Game->Windowhwnd) < button->coor.x + button->lengths.x && MOUSEY(Game->Windowhwnd) > button->coor.y && MOUSEY(Game->Windowhwnd) < button->coor.y + button->lengths.y)
+		if (MOUSEX > button->coor.x && MOUSEX  < button->coor.x + button->lengths.x && MOUSEY  > button->coor.y && MOUSEY < button->coor.y + button->lengths.y)
 		{
 			button->button = 1;
 			button->triggered = 1;
@@ -238,6 +238,8 @@ THREAD GameThreadLogic(LPARAM lparam)
 	while (1)
 	{
 		GAMEINPUT = HardwareDetection();										//按键检测
+		MOUSEX = MouseX(GAMETHEARDLOGIC->Windowhwnd);
+		MOUSEY = MouseY(GAMETHEARDLOGIC->Windowhwnd);
 		GameLogic(GAMETHEARDLOGIC);												//游戏逻辑计算
 		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))return;	//是否启用esc退出游戏
 	}
