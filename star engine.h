@@ -17,6 +17,7 @@
 0.4 绘图函数移植成功
 0.5 重写了按钮控件
 0.51 修改了MOUSE宏
+0.6 修改了渲染逻辑
 */
 #pragma once
 #include"star.h"
@@ -222,6 +223,9 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int width, int height, int tim
 	Game->escswitch = 0;								//是否启用esc退出游戏
 }
 
+int Logiclock = 0,
+	Drawinglock = 0;
+
 //游戏画面绘制
 void GameDrawing(GAME* Game);
 
@@ -235,35 +239,60 @@ GAME* GAMETHEARDLOGIC;
 //游戏逻辑线程
 THREAD GameThreadLogic(LPARAM lparam)
 {
+	printf("[star engine logic进入成功!]\n");
 	while (1)
 	{
-		GAMEINPUT = HardwareDetection();										//按键检测
-		MOUSEX = MouseX(GAMETHEARDLOGIC->Windowhwnd);
-		MOUSEY = MouseY(GAMETHEARDLOGIC->Windowhwnd);
-		GameLogic(GAMETHEARDLOGIC);												//游戏逻辑计算
-		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))return;	//是否启用esc退出游戏
+			GameLogic(GAMETHEARDLOGIC);												//游戏逻辑计算
+			GAMEINPUT = HardwareDetection();										//按键检测
+			MOUSEX = MouseX(GAMETHEARDLOGIC->Windowhwnd);
+			MOUSEY = MouseY(GAMETHEARDLOGIC->Windowhwnd);
+			if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))return;	//是否启用esc退出游戏
+			Logiclock = 1;
 	}
 }
 
+//绘制线程
+CREATTHREAD GAMEDRAWING;
+GAME* GAMETHEARDDRAWING;
+
+//游戏绘制线程(预渲染)
+THREAD GameThreadDrawing(LPARAM lparam)
+{
+	printf("[star engine Drawing进入成功!]\n");
+	while (1)
+	{
+		if (!Drawinglock)
+		{
+			GameDrawing(GAMETHEARDDRAWING);											//游戏绘制计算
+			if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))return;	//是否启用esc退出游戏
+			Drawinglock = 1;
+		}
+	}
+}
 
 //游戏循环
 void GameLoop(GAME* Game, BOOL esc)
 {
 	GAMETHEARDLOGIC = Game;
+	GAMETHEARDDRAWING = Game;
 	Game->escswitch = esc;
 	srand((unsigned)time(NULL));
 	GetAsyncKeyState(VK_ESCAPE);
 	RunThread(&GameThreadLogic, &GAMELOGIC.ID);
+	RunThread(&GameThreadDrawing, &GAMEDRAWING.ID);
 	while (1)
 	{
-		ClearWindow();																						//消息循环
-		if (TimeLoad(&(Game->timeload), 1))
+		ClearWindow();					//消息循环
+		if (Drawinglock)				//线程锁解开
 		{
-			BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		//清除双缓冲屏幕画面
-			GameDrawing(Game);																				//游戏画面绘制
+			if (TimeLoad(&(Game->timeload), 1))
+			{
+				RUNDoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hdc, Game->Windowwidth, Game->Windowheight);	//通过双缓冲绘制到屏幕上
+				BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));			//清除双缓冲屏幕画面
+			}
+			Drawinglock = 0;
 		}
-		RUNDoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hdc, Game->Windowwidth, Game->Windowheight);	//通过双缓冲绘制到屏幕上
-		if (Game->escswitch && GetAsyncKeyState(VK_ESCAPE))return;											//是否启用esc退出游戏
+		if (Game->escswitch && GetAsyncKeyState(VK_ESCAPE))return;												//是否启用esc退出游戏
 	}
 }
 
@@ -271,6 +300,7 @@ void GameLoop(GAME* Game, BOOL esc)
 void GameOver(GAME* Game,BOOL cmdswitch)
 {
 	DeletThread(GAMELOGIC.ThreadHwnd);									//清理逻辑线程
+	DeletThread(GAMEDRAWING.ThreadHwnd);									//清理逻辑线程
 	DeletBuffer(Game->doublebuffer.hBitmap, Game->doublebuffer.hdc);	//销毁双缓冲资源
 	DeletWindow(Game->Windowhwnd);										//删除游戏窗口
 	if (cmdswitch)CMD(ON);												//是否在游戏结束时恢复控制台窗口
