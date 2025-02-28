@@ -24,9 +24,10 @@
 #define RANDOM(a,b) Random(a,b)
 #define DEGRAD(a) DegRad(a)
 
+int GAMEDEAD = 0;				//游戏结束
 int GAMEINPUT;					//游戏输入
 int MOUSEX = 0,
-	MOUSEY = 0;
+MOUSEY = 0;
 typedef LPCWSTR ANIMEIMG;		//动画资源关键字
 typedef POINT VELOCITY;			//速度分量结构体
 
@@ -117,9 +118,9 @@ int InitialisationButton(BUTTON* button, int x, int y, int width, int height, in
 	button->button = 0;
 	button->triggered = 0;
 }
- 
+
 //用于展示不同状态的按钮,悬停时显示图片2,按下时显示图片3
-int ButtonStart(GAME* Game,BUTTON *button, const wchar_t* File1, const wchar_t* File2, const wchar_t* File3)
+int ButtonStart(GAME* Game, BUTTON* button, const wchar_t* File1, const wchar_t* File2, const wchar_t* File3)
 {
 	button->button = ButtonA(0, Game->doublebuffer.hdc, button->coor.x, button->coor.y, button->lengths.x, button->lengths.y, button->buttonswitch);
 	switch (button->button)
@@ -157,7 +158,7 @@ int NewButton(GAME* Game, BUTTON* button)
 //动画控件
 
 //初始化动画
-int InitialisationAnime(ANIME* anime,LPCSTR name, ANIMEIMG* sequenceframes[], int load, int totalnumber)
+int InitialisationAnime(ANIME* anime, LPCSTR name, ANIMEIMG* sequenceframes[], int load, int totalnumber)
 {
 	anime->Name = name;
 	if (totalnumber <= 0)
@@ -224,7 +225,7 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int width, int height, int tim
 }
 
 int Logiclock = 0,
-	Drawinglock = 0;
+Drawinglock = 0;
 
 //游戏画面绘制
 void GameDrawing(GAME* Game);
@@ -242,12 +243,12 @@ THREAD GameThreadLogic(LPARAM lparam)
 	printf("[star engine logic进入成功!]\n");
 	while (1)
 	{
-			GameLogic(GAMETHEARDLOGIC);												//游戏逻辑计算
-			GAMEINPUT = HardwareDetection();										//按键检测
-			MOUSEX = MouseX(GAMETHEARDLOGIC->Windowhwnd);
-			MOUSEY = MouseY(GAMETHEARDLOGIC->Windowhwnd);
-			if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))return;	//是否启用esc退出游戏
-			Logiclock = 1;
+		GameLogic(GAMETHEARDLOGIC);												//游戏逻辑计算
+		GAMEINPUT = HardwareDetection();										//按键检测
+		MOUSEX = MouseX(GAMETHEARDLOGIC->Windowhwnd);
+		MOUSEY = MouseY(GAMETHEARDLOGIC->Windowhwnd);
+		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))return;	//是否启用esc退出游戏
+		Logiclock = 1;
 	}
 }
 
@@ -297,7 +298,7 @@ void GameLoop(GAME* Game, BOOL esc)
 }
 
 //游戏结束
-void GameOver(GAME* Game,BOOL cmdswitch)
+void GameOver(GAME* Game, BOOL cmdswitch)
 {
 	DeletThread(GAMELOGIC.ThreadHwnd);									//清理逻辑线程
 	DeletThread(GAMEDRAWING.ThreadHwnd);									//清理逻辑线程
