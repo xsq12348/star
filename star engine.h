@@ -224,8 +224,7 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int width, int height, int tim
 	Game->escswitch = 0;								//是否启用esc退出游戏
 }
 
-int Logiclock = 0,
-Drawinglock = 0;
+int Drawinglock = 0;
 
 //游戏画面绘制
 void GameDrawing(GAME* Game);
@@ -241,14 +240,13 @@ GAME* GAMETHEARDLOGIC;
 THREAD GameThreadLogic(LPARAM lparam)
 {
 	printf("[star engine logic进入成功!]\n");
-	while (1)
+	while (!GAMEDEAD)
 	{
 		GameLogic(GAMETHEARDLOGIC);												//游戏逻辑计算
 		GAMEINPUT = HardwareDetection();										//按键检测
 		MOUSEX = MouseX(GAMETHEARDLOGIC->Windowhwnd);
 		MOUSEY = MouseY(GAMETHEARDLOGIC->Windowhwnd);
 		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))return;	//是否启用esc退出游戏
-		Logiclock = 1;
 	}
 }
 
@@ -260,7 +258,7 @@ GAME* GAMETHEARDDRAWING;
 THREAD GameThreadDrawing(LPARAM lparam)
 {
 	printf("[star engine Drawing进入成功!]\n");
-	while (1)
+	while (!GAMEDEAD)
 	{
 		if (!Drawinglock)
 		{
@@ -281,7 +279,7 @@ void GameLoop(GAME* Game, BOOL esc)
 	GetAsyncKeyState(VK_ESCAPE);
 	RunThread(&GameThreadLogic, &GAMELOGIC.ID);
 	RunThread(&GameThreadDrawing, &GAMEDRAWING.ID);
-	while (1)
+	while (!GAMEDEAD)
 	{
 		ClearWindow();					//消息循环
 		if (Drawinglock)				//线程锁解开
