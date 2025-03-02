@@ -18,6 +18,7 @@
 0.5 重写了按钮控件
 0.51 修改了MOUSE宏
 0.6 修改了渲染逻辑
+0.61 新增了修改窗口坐标
 */
 #pragma once
 #include"star.h"
@@ -193,10 +194,12 @@ int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y)
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
 
 //初始化游戏
-void InitialisationGame(GAME* Game, LPCWSTR name, int width, int height, int timeload, int fullscreenmode, BOOL cmdswitch, BOOL cursor)
+void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int height, int timeload, int fullscreenmode, BOOL cmdswitch, BOOL cursor)
 {
+
 	//初始化结构体
-	Game->Windowhwnd = Window((HWND)NULL, name, width, height, (nScreenWidth - width) / 2, (nScreenheight - height) / 2);		//创建窗口
+	if (x == -1 || y == -1)Game->Windowhwnd = Window((HWND)NULL, name, width, height, (nScreenWidth - width) / 2, (nScreenheight - height) / 2);		//创建窗口
+	else Game->Windowhwnd = Window((HWND)NULL, name, width, height, x, y);
 	Game->Name = name;						//窗口名字
 	switch (fullscreenmode)					//如果全屏则不变
 	{
