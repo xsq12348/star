@@ -19,6 +19,7 @@
 0.51 修改了MOUSE宏
 0.6 修改了渲染逻辑
 0.61 新增了修改窗口坐标
+0.7 解决了隐性的线程无法关闭的BUG
 */
 #pragma once
 #include"star.h"
@@ -275,6 +276,7 @@ THREAD GameThreadDrawing(LPARAM lparam)
 //游戏循环
 void GameLoop(GAME* Game, BOOL esc)
 {
+	GAMEDEAD = 0;
 	GAMETHEARDLOGIC = Game;
 	GAMETHEARDDRAWING = Game;
 	Game->escswitch = esc;
@@ -294,7 +296,7 @@ void GameLoop(GAME* Game, BOOL esc)
 			}
 			Drawinglock = 0;
 		}
-		if (Game->escswitch && GetAsyncKeyState(VK_ESCAPE))return;												//是否启用esc退出游戏
+		if (Game->escswitch && GetAsyncKeyState(VK_ESCAPE))GAMEDEAD = 1;											//是否启用esc退出游戏
 	}
 }
 
