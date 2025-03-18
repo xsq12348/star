@@ -20,6 +20,7 @@
 0.6 修改了渲染逻辑
 0.61 新增了修改窗口坐标
 0.7 解决了隐性的线程无法关闭的BUG
+0.71 优化提升了部分性能
 */
 #pragma once
 #include"star.h"
@@ -286,6 +287,7 @@ void GameLoop(GAME* Game, BOOL esc)
 	RunThread(&GameThreadDrawing, &GAMEDRAWING.ID);
 	while (!GAMEDEAD)
 	{
+		Sleep(1);
 		ClearWindow();					//消息循环
 		if (Drawinglock)				//线程锁解开
 		{
