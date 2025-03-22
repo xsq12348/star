@@ -21,6 +21,7 @@
 0.61 新增了修改窗口坐标
 0.7 解决了隐性的线程无法关闭的BUG
 0.71 优化提升了部分性能
+0.72 增加了性能开关
 */
 #pragma once
 #include"star.h"
@@ -29,8 +30,8 @@
 
 int GAMEDEAD = 0;				//游戏结束
 int GAMEINPUT;					//游戏输入
-int MOUSEX = 0,
-MOUSEY = 0;
+int MOUSEX = 0, MOUSEY = 0;
+int GAMEPOWER = 0;
 typedef LPCWSTR ANIMEIMG;		//动画资源关键字
 typedef POINT VELOCITY;			//速度分量结构体
 
@@ -287,7 +288,7 @@ void GameLoop(GAME* Game, BOOL esc)
 	RunThread(&GameThreadDrawing, &GAMEDRAWING.ID);
 	while (!GAMEDEAD)
 	{
-		Sleep(1);
+		if (!GAMEPOWER)Sleep(1);
 		ClearWindow();					//消息循环
 		if (Drawinglock)				//线程锁解开
 		{
