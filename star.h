@@ -326,6 +326,7 @@ int Vsn(int A)
     * 1.1.42 修复了HardwareDetection的一些bug
     * 1.1.43 更新了CMDGetColor函数
     * 1.1.5 新增了绘制圆函数
+    * 1.1.51 更新了字体透明背景
     */
     return A;
 }
@@ -912,6 +913,7 @@ void Text(HWND hwnd, HDC hdc, int x, int y, LPCWSTR text, COLORREF color)
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
+    SetBkMode(hDc, TRANSPARENT);//设置字体背景透明
     SetTextColor(hDc, color);
     TextOut(hDc, x, y, text, wcslen(text));
     ReleaseDC(hwnd, hDc);
@@ -924,6 +926,7 @@ void Dight(HWND hwnd, HDC hdc, int x, int y, int dight, COLORREF color)
     HDC hDc;
     if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
     else hDc = hdc;
+    SetBkMode(hDc, TRANSPARENT);//设置字体背景透明
     int size;
     TCHAR szText[256];
     size = wsprintf(szText, TEXT("%d"), dight);
