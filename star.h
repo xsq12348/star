@@ -327,6 +327,7 @@ int Vsn(int A)
     * 1.1.43 更新了CMDGetColor函数
     * 1.1.5 新增了绘制圆函数
     * 1.1.51 更新了字体透明背景
+    * 1.1.6 新增了LPCSTR类型转换成LPCWSTR函数
     */
     return A;
 }
@@ -1050,4 +1051,12 @@ int TimeLoad(TIMELOAD* Timeload, int mode)
         }
         return Timeload->timeswitch;
     }
+}
+
+//LPCSTR类型转换成LPCWSTR
+LPCWSTR CharToLPCWSTR(const char* str)
+{
+    wchar_t* wideStr = (wchar_t*)malloc(wcslen(str) * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, str, -1, wideStr, wcslen(str));
+    return wideStr;
 }
