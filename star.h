@@ -328,6 +328,7 @@ int Vsn(int A)
     * 1.1.5 新增了绘制圆函数
     * 1.1.51 更新了字体透明背景
     * 1.1.6 新增了LPCSTR类型转换成LPCWSTR函数
+    * 1.1.61 修复了在C++程序下的部分报错
     */
     return A;
 }
@@ -402,7 +403,7 @@ typedef struct
 }CREATTHREAD;
 
 //运行线程
-HANDLE RunThread(THREAD* function, THREAD* ID) { return CreateThread(NULL, 0, function, (LPVOID)2, 0, ID); }
+HANDLE RunThread(THREAD* function, THREAD* ID) { return CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)function, (LPVOID)2, 0, ID); }
 
 //删除线程
 void DeletThread(HANDLE Threadhwnd)
@@ -424,7 +425,7 @@ typedef struct
 HDC DoubleBuffer(HWND hwnd, HBITMAP* hBitmap, int windowwidth, int windowheight)
 {
     HDC hdcMem = CreateCompatibleDC(GetDC(hwnd));
-    hBitmap = CreateCompatibleBitmap(GetDC(hwnd), windowwidth, windowheight);
+    *hBitmap = CreateCompatibleBitmap(GetDC(hwnd), windowwidth, windowheight);
     SelectObject(hdcMem, hBitmap);
     return hdcMem;
 }
@@ -794,6 +795,7 @@ BOOL CMD(BOOL YESORNO)
 {
     if (YESORNO)ShowWindow(CMDHWND, SW_SHOW);
     else ShowWindow(CMDHWND, SW_HIDE);
+    return 0;
 }
 
 //硬件检测函数
@@ -1033,7 +1035,7 @@ int TimeLoad(TIMELOAD* Timeload, int mode)
         if (Timeload == NULL)
         {
             printf("[TimeLoad函数错误!]存在空指针");
-            return;
+            return 0;
         }
         if (!Timeload->timeswitch)
         {
@@ -1056,7 +1058,7 @@ int TimeLoad(TIMELOAD* Timeload, int mode)
 //LPCSTR类型转换成LPCWSTR
 LPCWSTR CharToLPCWSTR(const char* str)
 {
-    wchar_t* wideStr = (wchar_t*)malloc(wcslen(str) * sizeof(wchar_t));
-    MultiByteToWideChar(CP_UTF8, 0, str, -1, wideStr, wcslen(str));
+    wchar_t* wideStr = (wchar_t*)malloc(wcslen((LPCUWSTR)str) * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, str, -1, wideStr, wcslen((LPCUWSTR)str));
     return wideStr;
 }
