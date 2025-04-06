@@ -13,6 +13,8 @@
 #include<ctype.h>
 #include <xkeycheck.h>
 #include <commctrl.h> 
+#include <gl/GL.h>
+#include <gl/GLU.h>
 
 #define ON  1
 #define OFF 0
@@ -25,6 +27,8 @@
 #define nScreenheight GetSystemMetrics(SM_CYSCREEN)
 #pragma comment( lib,"Winmm.lib")
 #pragma comment(lib, "Msimg32.lib")
+#pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "glu32.lib")
 
 /*
 颜色属性由两个十六进制数字指定, 第一个为背景色, 第二个为前景色。
@@ -329,6 +333,7 @@ int Vsn(int A)
     * 1.1.51 更新了字体透明背景
     * 1.1.6 新增了LPCSTR类型转换成LPCWSTR函数
     * 1.1.61 修复了在C++程序下的部分报错
+    * 1.2.0 加入了OpenGL绘图
     */
     return A;
 }
@@ -601,6 +606,125 @@ void ImgA(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y, double widthbs,
     }
     else printf("[WinImgA函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);
 }
+
+//---------------------------------------------------------------------------------------------以下为OpenGL内容------------------------------------------------------------------------------------------------------//
+
+typedef struct
+{
+    HDC hdc;
+    HWND hwnd;
+    HGLRC hrc;
+}OPENGL;
+
+//初始化 OpenGL
+void SetOpenGL(HWND hwnd,OPENGL* opengl)
+{
+    HDC hdc;
+    HGLRC hrc;
+    PIXELFORMATDESCRIPTOR pfd =
+    {
+        sizeof(PIXELFORMATDESCRIPTOR),
+        1,
+        PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
+        PFD_TYPE_RGBA,
+        32, // 颜色深度
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        24, // 深度缓冲区
+        8,  // 模板缓冲区
+        0, 0, 0, 0, 0
+    };
+
+    hdc = GetDC(hwnd);
+    int pixelFormat = ChoosePixelFormat(hdc, &pfd);
+    SetPixelFormat(hdc, pixelFormat, &pfd);
+    hrc = wglCreateContext(hdc);
+    wglMakeCurrent(hdc, hrc);
+
+    // 设置视口和正交投影
+    RECT rect;
+    GetClientRect(hwnd, &rect);//获取窗口大小
+    glViewport(0, 0, rect.right, rect.bottom);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, rect.right, rect.bottom, 0, -1.0, 1.0); // 设置正交投影
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    opengl->hdc = hdc;
+    opengl->hrc = hrc;
+}
+
+//绘制画面
+void RunOpenGL(HDC hdc)
+{
+    SwapBuffers(hdc);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void DeletOPENGL(OPENGL opengl)
+{
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(opengl.hrc);
+    ReleaseDC(opengl.hwnd, opengl.hdc);
+    DestroyWindow(opengl.hwnd);
+}
+
+// 绘制线条的函数
+void GLine(float x, float y, float x2, float y2, float width, int alpha, COLORREF color)
+{
+    glColor4ub(GetRValue(color), GetGValue(color), GetBValue(color), alpha);
+    glLineWidth(width);
+    glBegin(GL_LINES);
+    glVertex2f(x, y);
+    glVertex2f(x2, y2);
+    glEnd();
+}
+
+void GPolygon(POINT* point, int n, int x, int y, int alpha, COLORREF color, BOOL line, int width, COLORREF color2)
+{
+    glColor4ub(GetRValue(color), GetGValue(color), GetBValue(color), alpha);
+    glLineWidth((float)width);
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < n; i++)glVertex2f((float)(point[i].x + x), (float)(point[i].y + y));
+    glEnd();
+    // 绘制边框
+    if (line)
+    {
+        glColor3ub(GetRValue(color2), GetGValue(color2), GetBValue(color2));
+        glBegin(GL_LINE_LOOP);
+        for (int i = 0; i < n; i++) glVertex2f(point[i].x + x, point[i].y + y);
+        glEnd();
+    }
+}
+
+void GBox(int mode, int x, int y, int width, int height, int alpha, COLORREF color, int linewidth, COLORREF color2)
+{
+    POINT point[4] =
+    {
+        {0,0},
+        {width,0},
+        {width,height},
+        {0,height},
+    };
+    glColor4ub(GetRValue(color), GetGValue(color), GetBValue(color), alpha);
+    glBegin(GL_POLYGON);
+    switch (mode)
+    {
+    case 1: GPolygon(&point, 4, x, y, alpha, color, 0, 0, 0); break;
+    case 2: GPolygon(&point, 4, x, y, alpha, color, 1, linewidth, color2); break;
+    }
+    glEnd();
+}
+
+void GPix(HDC hdc, int x, int y, int alpha, COLORREF color)
+{
+    glColor4ub(GetRValue(color), GetGValue(color), GetBValue(color), alpha);
+    glBegin(GL_POINTS);
+    //glPixelZoom((GLfloat)x, (GLfloat)y);
+    //glDrawPixels(10,10,)
+    glVertex2f(x, y);
+    glEnd();
+}
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 //消息处理函数,请不要乱动此函数!!!
