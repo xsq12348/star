@@ -430,7 +430,7 @@ typedef struct
 HDC DoubleBuffer(HWND hwnd, HBITMAP* hBitmap, int windowwidth, int windowheight)
 {
     HDC hdcMem = CreateCompatibleDC(GetDC(hwnd));
-    *hBitmap = CreateCompatibleBitmap(GetDC(hwnd), windowwidth, windowheight);
+    hBitmap = CreateCompatibleBitmap(GetDC(hwnd), windowwidth, windowheight);
     SelectObject(hdcMem, hBitmap);
     return hdcMem;
 }
@@ -705,14 +705,11 @@ void GBox(int mode, int x, int y, int width, int height, int alpha, COLORREF col
         {width,height},
         {0,height},
     };
-    glColor4ub(GetRValue(color), GetGValue(color), GetBValue(color), alpha);
-    glBegin(GL_POLYGON);
     switch (mode)
     {
     case 1: GPolygon(&point, 4, x, y, alpha, color, 0, 0, 0); break;
     case 2: GPolygon(&point, 4, x, y, alpha, color, 1, linewidth, color2); break;
     }
-    glEnd();
 }
 
 void GPix(HDC hdc, int x, int y, int alpha, COLORREF color)
