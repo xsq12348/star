@@ -22,9 +22,11 @@
 0.7 解决了隐性的线程无法关闭的BUG
 0.71 优化提升了部分性能
 0.72 增加了性能开关
+0.73 优化了绘制逻辑
 */
 #pragma once
 #include"star.h"
+
 #define RANDOM(a,b) Random(a,b)
 #define DEGRAD(a) DegRad(a)
 
@@ -42,6 +44,7 @@ typedef struct
 {
 	LPCWSTR Name;				//窗口名字
 	HWND Windowhwnd;			//窗口句柄
+	HWND Windowchildhwnd;		//子窗口句柄
 	int Windowwidth;			//窗口宽度
 	int Windowheight;			//窗口高度
 	BOOL CMDswitch;				//CMD开关
@@ -84,6 +87,7 @@ typedef struct
 	BOOL button;
 	BOOL triggered;
 }BUTTON;
+
 //--------------------------------------------------------------------------------------绘图函数----------------------------------------------------------------------------------------------------------//
 
 void PIX(GAME* Game, int x, int y, COLORREF color) { Pix(0, Game->doublebuffer.hdc, x, y, color); }
@@ -199,9 +203,8 @@ int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y)
 //初始化游戏
 void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int height, int timeload, int fullscreenmode, BOOL cmdswitch, BOOL cursor)
 {
-
 	//初始化结构体
-	if (x == -1 || y == -1)Game->Windowhwnd = Window((HWND)NULL, name, width, height, (nScreenWidth - width) / 2, (nScreenheight - height) / 2);		//创建窗口
+	if (y < 0) Game->Windowhwnd = Window((HWND)NULL, name, width, height, (nScreenWidth - width) / 2, (nScreenheight - height) / 2);		//创建窗口	
 	else Game->Windowhwnd = Window((HWND)NULL, name, width, height, x, y);
 	Game->Name = name;						//窗口名字
 	switch (fullscreenmode)					//如果全屏则不变
@@ -230,8 +233,6 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 	Game->escswitch = 0;								//是否启用esc退出游戏
 }
 
-int Drawinglock = 0;
-
 //游戏画面绘制
 void GameDrawing(GAME* Game);
 
@@ -252,62 +253,36 @@ THREAD GameThreadLogic(LPARAM lparam)
 		GAMEINPUT = HardwareDetection();										//按键检测
 		MOUSEX = MouseX(GAMETHEARDLOGIC->Windowhwnd);
 		MOUSEY = MouseY(GAMETHEARDLOGIC->Windowhwnd);
-		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))return;	//是否启用esc退出游戏
+		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))GAMEDEAD = 1;	//是否启用esc退出游戏
 	}
 }
-
-//绘制线程
-CREATTHREAD GAMEDRAWING;
-GAME* GAMETHEARDDRAWING;
-
-//游戏绘制线程(预渲染)
-THREAD GameThreadDrawing(LPARAM lparam)
-{
-	printf("[star engine Drawing进入成功!]\n");
-	while (!GAMEDEAD)
-	{
-		if (!Drawinglock)
-		{
-			GameDrawing(GAMETHEARDDRAWING);											//游戏绘制计算
-			if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))return;	//是否启用esc退出游戏
-			Drawinglock = 1;
-		}
-	}
-}
-
 //游戏循环
 void GameLoop(GAME* Game, BOOL esc)
 {
 	GAMEDEAD = 0;
 	GAMETHEARDLOGIC = Game;
-	GAMETHEARDDRAWING = Game;
 	Game->escswitch = esc;
 	srand((unsigned)time(NULL));
 	GetAsyncKeyState(VK_ESCAPE);
 	RunThread(&GameThreadLogic, &GAMELOGIC.ID);
-	RunThread(&GameThreadDrawing, &GAMEDRAWING.ID);
+	HDC hdc = GetDC(Game->Windowhwnd);
+	HDC hdcchild = GetDC(Game->Windowchildhwnd);
 	while (!GAMEDEAD)
 	{
 		if (!GAMEPOWER)Sleep(1);
+		GameDrawing(Game);
 		ClearWindow();					//消息循环
-		if (Drawinglock)				//线程锁解开
-		{
-			if (TimeLoad(&(Game->timeload), 1))
-			{
-				RUNDoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hdc, Game->Windowwidth, Game->Windowheight);	//通过双缓冲绘制到屏幕上
-				BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));			//清除双缓冲屏幕画面
-			}
-			Drawinglock = 0;
-		}
-		if (Game->escswitch && GetAsyncKeyState(VK_ESCAPE))GAMEDEAD = 1;											//是否启用esc退出游戏
+		BitBlt(hdc, 0, 0, Game->Windowwidth, Game->Windowheight, Game->doublebuffer.hdc, 0, 0, SRCCOPY); //通过双缓冲绘制到屏幕上
+		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		 //清除双缓冲屏幕画面
 	}
+	printf("[star Game Loop 结束!]\n");
 }
 
 //游戏结束
 void GameOver(GAME* Game, BOOL cmdswitch)
 {
+	printf("[star Game Over进入成功!]\n");
 	DeletThread(GAMELOGIC.ThreadHwnd);									//清理逻辑线程
-	DeletThread(GAMEDRAWING.ThreadHwnd);									//清理逻辑线程
 	DeletBuffer(Game->doublebuffer.hBitmap, Game->doublebuffer.hdc);	//销毁双缓冲资源
 	DeletWindow(Game->Windowhwnd);										//删除游戏窗口
 	if (cmdswitch)CMD(ON);												//是否在游戏结束时恢复控制台窗口
