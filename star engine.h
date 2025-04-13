@@ -23,6 +23,7 @@
 0.71 优化提升了部分性能
 0.72 增加了性能开关
 0.73 优化了绘制逻辑
+0.8 增加了按键检测
 */
 #pragma once
 #include"star.h"
@@ -163,6 +164,25 @@ int NewButton(GAME* Game, BUTTON* button)
 	return button->button;
 }
 
+//按键检测
+int KEYSTATE[255];
+int KEYSTATEbuffer[255];
+int KeyState(int key)
+{
+	int KEY = GetKeyState(key);
+	if (KEY == 1 || KEY == 0)
+	{
+		KEYSTATE[key] = 0;
+		KEYSTATEbuffer[key] = 0;
+	}
+	else if ((KEY == -127 || KEY == -128)&& KEYSTATEbuffer[key]>=0)
+	{
+		KEYSTATE[key] = 1;
+		KEYSTATEbuffer[key] = -1;
+	}
+	return KEYSTATE[key];
+}
+
 //动画控件
 
 //初始化动画
@@ -224,6 +244,11 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 		Game->Windowheight = nScreenheight;	//窗口高度
 		FullScreen(Game->Windowhwnd);
 		break;
+	}
+	for (int i = 0; i < 255; i++)
+	{
+		KEYSTATE[i] = 0;
+		KEYSTATEbuffer[i] = 0;
 	}
 	Game->CMDswitch = cmdswitch;			//是否显示控制台窗口
 	CMD(cmdswitch);
