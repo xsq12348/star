@@ -165,22 +165,25 @@ int NewButton(GAME* Game, BUTTON* button)
 }
 
 //按键检测
-int KEYSTATE[255];
 int KEYSTATEbuffer[255];
-int KeyState(int key)
+int KeyState(int vKey)
 {
-	int KEY = GetKeyState(key);
-	if (KEY == 1 || KEY == 0)
+	Sleep(100);
+	int state = GetAsyncKeyState(vKey);
+	if (state & 0x8000)
 	{
-		KEYSTATE[key] = 0;
-		KEYSTATEbuffer[key] = 0;
+		if (KEYSTATEbuffer[vKey] == 0)
+		{
+			KEYSTATEbuffer[vKey] = 1;
+			return 1;
+		}
+		return 0;
 	}
-	else if ((KEY == -127 || KEY == -128)&& KEYSTATEbuffer[key]>=0)
+	else
 	{
-		KEYSTATE[key] = 1;
-		KEYSTATEbuffer[key] = -1;
+		KEYSTATEbuffer[vKey] = 0;
+		return 0;
 	}
-	return KEYSTATE[key];
 }
 
 //动画控件
