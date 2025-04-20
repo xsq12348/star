@@ -168,7 +168,6 @@ int NewButton(GAME* Game, BUTTON* button)
 int KEYSTATEbuffer[255];
 int KeyState(int vKey)
 {
-	Sleep(100);
 	int state = GetAsyncKeyState(vKey);
 	if (state & 0x8000)
 	{
@@ -248,11 +247,7 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 		FullScreen(Game->Windowhwnd);
 		break;
 	}
-	for (int i = 0; i < 255; i++)
-	{
-		KEYSTATE[i] = 0;
-		KEYSTATEbuffer[i] = 0;
-	}
+	for (int i = 0; i < 255; i++) KEYSTATEbuffer[i] = 0;	
 	Game->CMDswitch = cmdswitch;			//是否显示控制台窗口
 	CMD(cmdswitch);
 	Game->doublebuffer.hdc = DoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hBitmap, Game->Windowwidth, Game->Windowheight);	//双缓冲渲染
