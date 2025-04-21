@@ -28,6 +28,10 @@
 #pragma once
 #include"star.h"
 
+TIMELOAD fps;
+int fpsmax = 0,
+fpsmax2 = 0;
+
 #define RANDOM(a,b) Random(a,b)
 #define DEGRAD(a) DegRad(a)
 
@@ -254,6 +258,7 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 	SetTimeLoad(&(Game->timeload), 1000 / timeload);	//初始化定时器,用于帧率控制
 	Mouse(cursor);										//鼠标光标显示
 	Game->escswitch = 0;								//是否启用esc退出游戏
+	SetTimeLoad(&fps, 1000);
 }
 
 //游戏画面绘制
@@ -292,11 +297,19 @@ void GameLoop(GAME* Game, BOOL esc)
 	HDC hdcchild = GetDC(Game->Windowchildhwnd);
 	while (!GAMEDEAD)
 	{
+		if (!TimeLoad(&fps, 1))fpsmax++;
+		else
+		{
+			fpsmax2 = fpsmax;
+			fpsmax = 0;
+		}
 		if (!GAMEPOWER)Sleep(1);
 		GameDrawing(Game);
 		ClearWindow();					//消息循环
 		BitBlt(hdc, 0, 0, Game->Windowwidth, Game->Windowheight, Game->doublebuffer.hdc, 0, 0, SRCCOPY); //通过双缓冲绘制到屏幕上
 		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		 //清除双缓冲屏幕画面
+		Text(0, Game->doublebuffer.hdc, 0, 0, L"FPS:", RGB(0, 150, 0));
+		NewDIGHT(Game, fpsmax2, 30, 0, RGB(0, 150, 0));
 	}
 	printf("[star Game Loop 结束!]\n");
 }
