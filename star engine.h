@@ -305,11 +305,11 @@ void GameLoop(GAME* Game, BOOL esc)
 		}
 		if (!GAMEPOWER)Sleep(1);
 		GameDrawing(Game);
+		Text(0, Game->doublebuffer.hdc, 0, 0, L"FPS:", RGB(0, 150, 0));
+		NewDIGHT(Game, fpsmax2, 30, 0, RGB(0, 150, 0));
 		ClearWindow();					//消息循环
 		BitBlt(hdc, 0, 0, Game->Windowwidth, Game->Windowheight, Game->doublebuffer.hdc, 0, 0, SRCCOPY); //通过双缓冲绘制到屏幕上
 		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		 //清除双缓冲屏幕画面
-		Text(0, Game->doublebuffer.hdc, 0, 0, L"FPS:", RGB(0, 150, 0));
-		NewDIGHT(Game, fpsmax2, 30, 0, RGB(0, 150, 0));
 	}
 	printf("[star Game Loop 结束!]\n");
 }
