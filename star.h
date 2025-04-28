@@ -334,6 +334,7 @@ int Vsn(int A)
     * 1.1.6 新增了LPCSTR类型转换成LPCWSTR函数
     * 1.1.61 修复了在C++程序下的部分报错
     * 1.2.0 加入了OpenGL绘图
+    * 1.2.01 修复了随机函数的BUG
     */
     return A;
 }
@@ -906,7 +907,7 @@ void CMDFullScreen()
 }
 
 //随机数
-int Random(int A, int B) { return rand() % B + A; }
+int Random(int A, int B) { return rand() % (B - A) + A; }
 
 //角度转弧度
 double DegRad(double a) { return Pi * a * 1.0 / 180; }
