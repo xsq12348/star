@@ -214,7 +214,7 @@ VK_PA1			253
 VK_OEM_CLEAR		254
 */
 
-int Vsn(int A)
+static int Vsn(int A)
 {
     //作者: xsq1234
     //未经作者授权，禁止转载
@@ -335,11 +335,12 @@ int Vsn(int A)
     * 1.1.61 修复了在C++程序下的部分报错
     * 1.2.0 加入了OpenGL绘图
     * 1.2.01 修复了随机函数的BUG
+    * 1.2.02 现在可以在多文件下使用该多功能库
     */
     return A;
 }
 
-void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Character_width, int Character_height)
+static void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Character_width, int Character_height)
 {
     //name 窗口名称
     // x:窗口横坐标
@@ -371,7 +372,7 @@ void CMDwindow(LPCWSTR name, unsigned int width, unsigned int height, int Charac
 }
 
 //移动光标
-void Gotoxy(int x, int y)
+static void Gotoxy(int x, int y)
 {
     COORD lightb = { x,y };
     HANDLE CMD = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -379,14 +380,14 @@ void Gotoxy(int x, int y)
 }
 
 //颜色函数
-void Color(WORD color)
+static void Color(WORD color)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color);
 }
 
 //设置文字出现的坐标
-void CMDText(LPCSTR text, int x, int y, int color)
+static void CMDText(LPCSTR text, int x, int y, int color)
 {
     Gotoxy(x, y);
     Color(color);
@@ -395,7 +396,7 @@ void CMDText(LPCSTR text, int x, int y, int color)
 }
 
 //清屏
-void CMDClear() { system("cls"); }
+static void CMDClear() { system("cls"); }
 //-------------------------------------------------------------------------------------------多线程游戏函数---------------------------------------------------------------------------------------------------------------------------------------//
 
 //创建线程函数关键字
@@ -409,10 +410,10 @@ typedef struct
 }CREATTHREAD;
 
 //运行线程
-HANDLE RunThread(THREAD* function, THREAD* ID) { return CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)function, (LPVOID)2, 0, ID); }
+static HANDLE RunThread(THREAD* function, THREAD* ID) { return CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)function, (LPVOID)2, 0, ID); }
 
 //删除线程
-void DeletThread(HANDLE Threadhwnd)
+static void DeletThread(HANDLE Threadhwnd)
 {
     WaitForSingleObject(Threadhwnd, INFINITE);
     CloseHandle(Threadhwnd);
@@ -428,7 +429,7 @@ typedef struct
 }DOUBLEBUFFER;
 
 //创建双缓冲绘图绘图区
-HDC DoubleBuffer(HWND hwnd, HBITMAP* hBitmap, int windowwidth, int windowheight)
+static HDC DoubleBuffer(HWND hwnd, HBITMAP* hBitmap, int windowwidth, int windowheight)
 {
     HDC hdcMem = CreateCompatibleDC(GetDC(hwnd));
     hBitmap = CreateCompatibleBitmap(GetDC(hwnd), windowwidth, windowheight);
@@ -437,10 +438,10 @@ HDC DoubleBuffer(HWND hwnd, HBITMAP* hBitmap, int windowwidth, int windowheight)
 }
 
 //运行双缓冲绘图
-void RUNDoubleBuffer(HWND hwnd, HDC hdc, int windowwidth, int windowheight) { BitBlt(GetDC(hwnd), 0, 0, windowwidth, windowheight, hdc, 0, 0, SRCCOPY); }
+static void RUNDoubleBuffer(HWND hwnd, HDC hdc, int windowwidth, int windowheight) { BitBlt(GetDC(hwnd), 0, 0, windowwidth, windowheight, hdc, 0, 0, SRCCOPY); }
 
 //删除双缓冲绘图绘图区
-void DeletBuffer(HBITMAP hBitmap, HDC hdcMem)
+static void DeletBuffer(HBITMAP hBitmap, HDC hdcMem)
 {
     DeleteObject(hBitmap);
     DeleteDC(hdcMem);
@@ -449,7 +450,7 @@ void DeletBuffer(HBITMAP hBitmap, HDC hdcMem)
 //---------------------------------------------------------------------------------------------以下为win32内容------------------------------------------------------------------------------------------------------//
 
 //在窗口中绘制线段
-void Line(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
+static void Line(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
     if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
@@ -465,7 +466,7 @@ void Line(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 }
 
 //绘制像素点
-void Pix(HWND hwnd, HDC hdc, int x, int y, COLORREF color)
+static void Pix(HWND hwnd, HDC hdc, int x, int y, COLORREF color)
 {
     if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
@@ -476,7 +477,7 @@ void Pix(HWND hwnd, HDC hdc, int x, int y, COLORREF color)
 }
 
 //锚点点
-void ApPix(HWND hwnd, HDC hdc, int apx, int apy, int x, int y, double rad, COLORREF color)
+static void ApPix(HWND hwnd, HDC hdc, int apx, int apy, int x, int y, double rad, COLORREF color)
 {
     int newx, newy;
     double Rot2Dmax[2][2] =
@@ -490,7 +491,7 @@ void ApPix(HWND hwnd, HDC hdc, int apx, int apy, int x, int y, double rad, COLOR
 }
 
 //锚点线
-void ApLine(HWND hwnd, HDC hdc, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color)
+static void ApLine(HWND hwnd, HDC hdc, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color)
 {
     int newx1, newy1, newx2, newy2;
     double Rot2Dmax[2][2] =
@@ -506,7 +507,7 @@ void ApLine(HWND hwnd, HDC hdc, int apx, int apy, int x1, int y1, int x2, int y2
 }
 
 //矩形函数
-void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
+static void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
     if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
@@ -520,7 +521,7 @@ void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
     ReleaseDC(hwnd, hDc);
 }
 
-void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
+static void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
     if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
@@ -535,7 +536,7 @@ void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
     ReleaseDC(hwnd, hDc);
 }
 
-void BoxC(HWND hwnd, HDC hdc, int x, int y, int width, int height, COLORREF color)
+static void BoxC(HWND hwnd, HDC hdc, int x, int y, int width, int height, COLORREF color)
 {
     if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
@@ -551,7 +552,7 @@ void BoxC(HWND hwnd, HDC hdc, int x, int y, int width, int height, COLORREF colo
 }
 
 //绘制圆
-void Circle(HWND hwnd, HDC hdc, int R, int x, int y, COLORREF color)
+static void Circle(HWND hwnd, HDC hdc, int R, int x, int y, COLORREF color)
 {
     if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
@@ -565,7 +566,7 @@ void Circle(HWND hwnd, HDC hdc, int R, int x, int y, COLORREF color)
 }
 
 //显示图片
-void Img(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y)
+static void Img(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y)
 {
     if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
@@ -586,7 +587,7 @@ void Img(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y)
 }
 
 //显示图片的变种，可以选择性不显示某种颜色，还可以改变图片放大倍数
-void ImgA(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y, double widthbs, double heightbs, COLORREF color)
+static void ImgA(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y, double widthbs, double heightbs, COLORREF color)
 {
     if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
@@ -618,7 +619,7 @@ typedef struct
 }OPENGL;
 
 //初始化 OpenGL
-void SetOpenGL(HWND hwnd,OPENGL* opengl)
+static void SetOpenGL(HWND hwnd,OPENGL* opengl)
 {
     HDC hdc;
     HGLRC hrc;
@@ -655,13 +656,13 @@ void SetOpenGL(HWND hwnd,OPENGL* opengl)
 }
 
 //绘制画面
-void RunOpenGL(HDC hdc)
+static void RunOpenGL(HDC hdc)
 {
     SwapBuffers(hdc);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void DeletOPENGL(OPENGL opengl)
+static void DeletOPENGL(OPENGL opengl)
 {
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(opengl.hrc);
@@ -670,7 +671,7 @@ void DeletOPENGL(OPENGL opengl)
 }
 
 // 绘制线条的函数
-void GLine(float x, float y, float x2, float y2, float width, int alpha, COLORREF color)
+static void GLine(float x, float y, float x2, float y2, float width, int alpha, COLORREF color)
 {
     glColor4ub(GetRValue(color), GetGValue(color), GetBValue(color), alpha);
     glLineWidth(width);
@@ -680,7 +681,7 @@ void GLine(float x, float y, float x2, float y2, float width, int alpha, COLORRE
     glEnd();
 }
 
-void GPolygon(POINT* point, int n, int x, int y, int alpha, COLORREF color, BOOL line, int width, COLORREF color2)
+static void GPolygon(POINT* point, int n, int x, int y, int alpha, COLORREF color, BOOL line, int width, COLORREF color2)
 {
     glColor4ub(GetRValue(color), GetGValue(color), GetBValue(color), alpha);
     glLineWidth((float)width);
@@ -697,7 +698,7 @@ void GPolygon(POINT* point, int n, int x, int y, int alpha, COLORREF color, BOOL
     }
 }
 
-void GBox(int mode, int x, int y, int width, int height, int alpha, COLORREF color, int linewidth, COLORREF color2)
+static void GBox(int mode, int x, int y, int width, int height, int alpha, COLORREF color, int linewidth, COLORREF color2)
 {
     POINT point[4] =
     {
@@ -713,7 +714,7 @@ void GBox(int mode, int x, int y, int width, int height, int alpha, COLORREF col
     }
 }
 
-void GPix(HDC hdc, int x, int y, int alpha, COLORREF color)
+static void GPix(HDC hdc, int x, int y, int alpha, COLORREF color)
 {
     glColor4ub(GetRValue(color), GetGValue(color), GetBValue(color), alpha);
     glBegin(GL_POINTS);
@@ -726,7 +727,7 @@ void GPix(HDC hdc, int x, int y, int alpha, COLORREF color)
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 //消息处理函数,请不要乱动此函数!!!
-LRESULT WINAPI WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
+static LRESULT WINAPI WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
 {
     switch (msgid)
     {
@@ -739,7 +740,7 @@ LRESULT WINAPI WndPorc(HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam)
 }
 
 //创建窗口
-HWND Window(
+static HWND Window(
     HWND hwnd	 /*句柄*/,
     LPCWSTR name /*窗口名称*/,
     int w		 /*窗口宽度*/,
@@ -772,7 +773,7 @@ HWND Window(
 }
 
 //创建透明窗口
-HWND WindowA(
+static HWND WindowA(
     HWND hwnd	      /*句柄*/,
     LPCWSTR name      /*窗口名称*/,
     int w		      /*窗口宽度*/,
@@ -807,7 +808,7 @@ HWND WindowA(
 }
 
 //创建透明窗口2
-HWND WindowB(
+static HWND WindowB(
     HWND hwnd	      /*句柄*/,
     LPCWSTR name      /*窗口名称*/,
     int w		      /*窗口宽度*/,
@@ -841,7 +842,7 @@ HWND WindowB(
 }
 
 //阻塞式消息循环，win32常用经典款,常用于多线程游戏
-void RunWindow()
+static void RunWindow()
 {
     //消息循环
     MSG msg = { 0 };
@@ -854,7 +855,7 @@ void RunWindow()
 }
 
 //非阻塞式消息循环，win32常用经典款,常用于单线程游戏
-void ClearWindow()
+static void ClearWindow()
 {
     MSG msg = { 0 };
     if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -867,7 +868,7 @@ void ClearWindow()
 //-------------------------------------------------------------------------工具区-------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 //隐藏/显示光标
-void CMDHide(BOOL A)
+static void CMDHide(BOOL A)
 {
     CONSOLE_CURSOR_INFO curInfo = { 1,A };
     HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -875,7 +876,7 @@ void CMDHide(BOOL A)
 }
 
 //鼠标输入开关函数(关闭快速编辑模式)
-void CMDMouse(int NO_or_OFF)
+static void CMDMouse(int NO_or_OFF)
 {
     DWORD mode;
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
@@ -893,10 +894,10 @@ void CMDMouse(int NO_or_OFF)
 }
 
 //暂停函数
-void TimeOut() { getchar(); }
+static void TimeOut() { getchar(); }
 
 //全屏函数
-void CMDFullScreen()
+static void CMDFullScreen()
 {
     INPUT input = { 0 };
     input.type = INPUT_KEYBOARD;
@@ -907,13 +908,13 @@ void CMDFullScreen()
 }
 
 //随机数
-int Random(int A, int B) { return rand() % (B - A) + A; }
+static int Random(int A, int B) { return rand() % (B - A) + A; }
 
 //角度转弧度
-double DegRad(double a) { return Pi * a * 1.0 / 180; }
+static double DegRad(double a) { return Pi * a * 1.0 / 180; }
 
 //隐藏控制台
-BOOL CMD(BOOL YESORNO)
+static BOOL CMD(BOOL YESORNO)
 {
     if (YESORNO)ShowWindow(CMDHWND, SW_SHOW);
     else ShowWindow(CMDHWND, SW_HIDE);
@@ -921,7 +922,7 @@ BOOL CMD(BOOL YESORNO)
 }
 
 //硬件检测函数
-int HardwareDetection()
+static int HardwareDetection()
 {
     if (GetAsyncKeyState(1)) return 1;              //左键
     if (GetAsyncKeyState(2)) return 2;              //右键
@@ -937,7 +938,7 @@ int HardwareDetection()
 }
 
 //音乐函数
-void Music(LPCWSTR File)
+static void Music(LPCWSTR File)
 {
     TCHAR cmd[255];
     wsprintf(cmd, TEXT("open \%s\ alias music"), File);
@@ -947,10 +948,10 @@ void Music(LPCWSTR File)
 }
 
 //子窗口函数
-void Parent(HWND parent, HWND child) { SetParent(child, parent); }
+static void Parent(HWND parent, HWND child) { SetParent(child, parent); }
 
 //获取鼠标水平位置
-int MouseX(HWND hwnd)
+static int MouseX(HWND hwnd)
 {
     POINT p;
     GetCursorPos(&p);
@@ -959,7 +960,7 @@ int MouseX(HWND hwnd)
 }
 
 //获取鼠标竖直位置
-int MouseY(HWND hwnd)
+static int MouseY(HWND hwnd)
 {
     POINT p;
     GetCursorPos(&p);
@@ -968,7 +969,7 @@ int MouseY(HWND hwnd)
 }
 
 //获取窗口水平坐标
-int WindowcoordinatesX(HWND hwnd)
+static int WindowcoordinatesX(HWND hwnd)
 {
     RECT windowcoordinates;
     GetWindowRect(hwnd, &windowcoordinates);
@@ -976,7 +977,7 @@ int WindowcoordinatesX(HWND hwnd)
 }
 
 //获取窗口垂直坐标
-int WindowcoordinatesY(HWND hwnd)
+static int WindowcoordinatesY(HWND hwnd)
 {
     RECT windowcoordinates;
     GetWindowRect(hwnd, &windowcoordinates);
@@ -984,10 +985,10 @@ int WindowcoordinatesY(HWND hwnd)
 }
 
 //win32鼠标光标开关
-void Mouse(BOOL ON_OR_OFF) { ShowCursor(ON_OR_OFF); }
+static void Mouse(BOOL ON_OR_OFF) { ShowCursor(ON_OR_OFF); }
 
 //获取控制台某一出颜色,A==1时为前景色，A==2时为背景色
-int CMDGetColor(int x, int y, int A)
+static int CMDGetColor(int x, int y, int A)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -1002,7 +1003,7 @@ int CMDGetColor(int x, int y, int A)
 }
 
 //从txt任意一行读取数据的函数
-int FILEFP(FILE* fp, int nLine)
+static int FILEFP(FILE* fp, int nLine)
 {
     char buffer[1024 + 1];
     fpos_t pos;
@@ -1013,26 +1014,26 @@ int FILEFP(FILE* fp, int nLine)
 }
 
 //删除窗口
-void DeletWindow(HWND hwnd) { DestroyWindow(hwnd); }
+static void DeletWindow(HWND hwnd) { DestroyWindow(hwnd); }
 
 //全屏
-void FullScreen(HWND hwnd) { ShowWindow(hwnd, 3); }
+static void FullScreen(HWND hwnd) { ShowWindow(hwnd, 3); }
 
 //win32隐藏标题栏
-void TitleBar(HWND hwnd) { SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION); }
+static void TitleBar(HWND hwnd) { SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION); }
 
 //置顶窗口
-void FirstWindow(HWND hwnd)
+static void FirstWindow(HWND hwnd)
 {
     SetForegroundWindow(hwnd);
     SetFocus(hwnd);
 }
 
 //窗口清屏
-void Clear(HWND hwnd) { InvalidateRect(hwnd, NULL, TRUE); }
+static void Clear(HWND hwnd) { InvalidateRect(hwnd, NULL, TRUE); }
 
 //文本输出
-void Text(HWND hwnd, HDC hdc, int x, int y, LPCWSTR text, COLORREF color)
+static void Text(HWND hwnd, HDC hdc, int x, int y, LPCWSTR text, COLORREF color)
 {
     if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
@@ -1045,7 +1046,7 @@ void Text(HWND hwnd, HDC hdc, int x, int y, LPCWSTR text, COLORREF color)
 }
 
 //显示数字
-void Dight(HWND hwnd, HDC hdc, int x, int y, int dight, COLORREF color)
+static void Dight(HWND hwnd, HDC hdc, int x, int y, int dight, COLORREF color)
 {
     if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
     HDC hDc;
@@ -1061,10 +1062,10 @@ void Dight(HWND hwnd, HDC hdc, int x, int y, int dight, COLORREF color)
 }
 
 //获取某一位置像素颜色
-int GetColor(HWND hwnd, int x, int y) { return GetPixel(GetDC(hwnd), x, y); }
+static int GetColor(HWND hwnd, int x, int y) { return GetPixel(GetDC(hwnd), x, y); }
 
 //按钮函数
-int Button(HWND hwnd, HDC hdc, int x, int y, int width, int height, int ON_OFF)
+static int Button(HWND hwnd, HDC hdc, int x, int y, int width, int height, int ON_OFF)
 {
     int c = 0;
     if (ON_OFF == ON)
@@ -1095,7 +1096,7 @@ int Button(HWND hwnd, HDC hdc, int x, int y, int width, int height, int ON_OFF)
     return c;
 }
 
-int ButtonA(HWND hwnd, HDC hdc, int x, int y, int width, int height, BOOL YESORNO)
+static int ButtonA(HWND hwnd, HDC hdc, int x, int y, int width, int height, BOOL YESORNO)
 {
     int button = 0; GetAsyncKeyState(1);
     if (MouseX(hwnd) > x && MouseY(hwnd) > y && MouseX(hwnd) <= x + width && MouseY(hwnd) <= y + height && GetAsyncKeyState(1))button = 1;
@@ -1141,7 +1142,7 @@ typedef struct
     BOOL timeswitch;
 }TIMELOAD;
 
-void SetTimeLoad(TIMELOAD* Timeload, int load)
+static void SetTimeLoad(TIMELOAD* Timeload, int load)
 {
     Timeload->time1 = NULL;
     Timeload->time2 = NULL;
@@ -1149,7 +1150,7 @@ void SetTimeLoad(TIMELOAD* Timeload, int load)
     Timeload->timeswitch = 0;
 }
 
-int TimeLoad(TIMELOAD* Timeload, int mode)
+static int TimeLoad(TIMELOAD* Timeload, int mode)
 {
     if (!mode)return 0;
     else
@@ -1178,9 +1179,9 @@ int TimeLoad(TIMELOAD* Timeload, int mode)
 }
 
 //LPCSTR类型转换成LPCWSTR
-LPCWSTR CharToLPCWSTR(const char* str)
+static LPCWSTR CharToLPCWSTR(const char* str)
 {
-    wchar_t* wideStr = (wchar_t*)malloc(wcslen((LPCUWSTR)str) * sizeof(wchar_t));
-    MultiByteToWideChar(CP_UTF8, 0, str, -1, wideStr, wcslen((LPCUWSTR)str));
+    wchar_t* wideStr = (wchar_t*)malloc(wcslen(str) * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, str, -1, wideStr, wcslen(str));
     return wideStr;
 }
