@@ -1,4 +1,5 @@
- #pragma once
+注意！！该拓展包已弃用,现在有更加成熟的方案！
+#pragma once
 #include"star.h" 
 
 //这是star的拓展包“时代”
