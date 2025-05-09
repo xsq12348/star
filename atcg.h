@@ -1,3 +1,4 @@
+注意！！该拓展包已弃用！
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
 #include"star.h"
