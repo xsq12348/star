@@ -336,6 +336,7 @@ static int Vsn(int A)
     * 1.2.0 加入了OpenGL绘图
     * 1.2.01 修复了随机函数的BUG
     * 1.2.02 现在可以在多文件下使用该多功能库
+    * 1.2.1 新增了lerp函数
     */
     return A;
 }
@@ -1184,4 +1185,19 @@ static LPCWSTR CharToLPCWSTR(const char* str)
     wchar_t* wideStr = (wchar_t*)malloc(wcslen(str) * sizeof(wchar_t));
     MultiByteToWideChar(CP_UTF8, 0, str, -1, wideStr, wcslen(str));
     return wideStr;
+}
+
+typedef struct
+{
+    double x;
+    double y;
+}DOUBLEPOINT;
+
+static DOUBLEPOINT Lerp(DOUBLEPOINT a, DOUBLEPOINT b, double t)
+{
+    t = (t < 1 ? t : 1);
+    DOUBLEPOINT point;
+    point.x = (1. - t) * a.x + t * b.x;
+    point.y = (1. - t) * a.y + t * b.y;
+    return point;
 }
