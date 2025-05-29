@@ -337,6 +337,7 @@ static int Vsn(int A)
     * 1.2.01 修复了随机函数的BUG
     * 1.2.02 现在可以在多文件下使用该多功能库
     * 1.2.1 新增了lerp函数
+    * 1.2.2 新增了三角形碰撞检测函数
     */
     return A;
 }
@@ -1200,4 +1201,13 @@ static DOUBLEPOINT Lerp(DOUBLEPOINT a, DOUBLEPOINT b, double t)
     point.x = (1. - t) * a.x + t * b.x;
     point.y = (1. - t) * a.y + t * b.y;
     return point;
+}
+
+//三角形碰撞检测
+BOOL TriangleDetection(POINT a, POINT b, POINT c, POINT p)
+{
+    double d1 = (p.x - b.x) * (a.y - b.y) - (a.x - b.x) * (p.y - b.y);
+    double d2 = (p.x - c.x) * (b.y - c.y) - (b.x - c.x) * (p.y - c.y);
+    double d3 = (p.x - a.x) * (c.y - a.y) - (c.x - a.x) * (p.y - a.y);
+    return (d1 * d2 > 0) && (d2 * d3 > 0);
 }
