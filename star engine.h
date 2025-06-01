@@ -26,9 +26,48 @@
 0.8 增加了按键检测
 0.9 优化了帧数限制问题
 0.91 正在解决原本游戏点击关闭窗口后游戏仍然在运行的BUG(消息循环)
+1.0 解决了原本游戏点击关闭窗口后游戏仍然在运行的BUG
 */
 #pragma once
 #include"star.h"
+
+#define VK_0 48
+#define VK_1 49
+#define VK_2 50
+#define VK_3 51
+#define VK_4 52
+#define VK_5 53
+#define VK_6 54
+#define VK_7 55
+#define VK_8 56
+#define VK_9 57
+
+#define VK_A 65
+#define VK_B 66
+#define VK_C 67
+#define VK_D 68
+#define VK_E 69
+#define VK_F 70
+#define VK_G 71
+#define VK_H 72
+#define VK_I 73
+#define VK_J 74
+#define VK_K 75
+#define VK_L 76
+#define VK_M 77
+#define VK_N 78
+#define VK_O 79
+#define VK_P 80
+#define VK_Q 81
+#define VK_R 82
+#define VK_S 83
+#define VK_T 84
+#define VK_U 85
+#define VK_V 86
+#define VK_W 87
+#define VK_X 88
+#define VK_Y 89
+#define VK_Z 90
 
 TIMELOAD fps;
 int fpsmax = 0,
@@ -172,21 +211,21 @@ int NewButton(GAME* Game, BUTTON* button)
 
 //按键检测
 int KEYSTATEbuffer[255];
-int KeyState(int vKey)
+int KeyState(int Key)
 {
-	int state = GetAsyncKeyState(vKey);
+	int state = GetAsyncKeyState(Key);
 	if (state & 0x8000)
 	{
-		if (KEYSTATEbuffer[vKey] == 0)
+		if (KEYSTATEbuffer[Key] == 0)
 		{
-			KEYSTATEbuffer[vKey] = 1;
+			KEYSTATEbuffer[Key] = 1;
 			return 1;
 		}
 		return 0;
 	}
 	else
 	{
-		KEYSTATEbuffer[vKey] = 0;
+		KEYSTATEbuffer[Key] = 0;
 		return 0;
 	}
 }
@@ -273,20 +312,6 @@ void GameLogic(GAME* Game);
 CREATTHREAD GAMELOGIC;
 GAME* GAMETHEARDLOGIC;
 
-CREATTHREAD MESSAGE;
-
-//窗口消息线程
-THREAD WINDOWMESSAGE(LPARAM lparam)
-{
-	MSG msg = {0};
-	while(GetMessage(&msg, NULL, 0, 0) &&!GAMEDEAD)
-	{
-		Sleep(1);
-		TranslateMessage(&msg); //消息循环
-		DispatchMessage(&msg);
-	}
-}
-
 //游戏逻辑线程
 THREAD GameThreadLogic(LPARAM lparam)
 {
@@ -303,7 +328,6 @@ THREAD GameThreadLogic(LPARAM lparam)
 //游戏循环
 void GameLoop(GAME* Game, BOOL esc)
 {
-	MSG msg = { 0 };
 	GAMEDEAD = 0;
 	GAMETHEARDLOGIC = Game;
 	Game->escswitch = esc;
@@ -313,12 +337,8 @@ void GameLoop(GAME* Game, BOOL esc)
 	//RunThread(&WINDOWMESSAGE, &MESSAGE.ID);
 	HDC hdc = GetDC(Game->Windowhwnd);
 	HDC hdcchild = GetDC(Game->Windowchildhwnd);
-	while (PeekMessage(&msg, Game->Windowhwnd, 0, 0, PM_REMOVE)||!GAMEDEAD)
+	while (!GAMEDEAD)
 	{
-		//PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
-		TranslateMessage(&msg); //消息循环
-		DispatchMessage(&msg);
-
 		if (!TimeLoad(&fps, 1))fpsmax++;
 		else
 		{
@@ -332,7 +352,8 @@ void GameLoop(GAME* Game, BOOL esc)
 		Text(0, Game->doublebuffer.hdc, 0, 0, L"FPS:", RGB(0, 150, 0));
 		NewDIGHT(Game, fpsmax2, 30, 0, RGB(0, 150, 0));
 		BitBlt(hdc, 0, 0, Game->Windowwidth, Game->Windowheight, Game->doublebuffer.hdc, 0, 0, SRCCOPY); //通过双缓冲绘制到屏幕上
-		//ClearWindow();					//消息循环
+		ClearWindow();								 //消息循环
+		if (!IsWindow(Game->Windowhwnd))GAMEDEAD = 1;//检查窗口是否存活
 	}
 	printf("[star Game Loop 结束!]\n");
 }
