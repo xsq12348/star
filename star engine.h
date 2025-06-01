@@ -24,6 +24,8 @@
 0.72 增加了性能开关
 0.73 优化了绘制逻辑
 0.8 增加了按键检测
+0.9 优化了帧数限制问题
+0.91 正在解决原本游戏点击关闭窗口后游戏仍然在运行的BUG(消息循环)
 */
 #pragma once
 #include"star.h"
@@ -271,6 +273,20 @@ void GameLogic(GAME* Game);
 CREATTHREAD GAMELOGIC;
 GAME* GAMETHEARDLOGIC;
 
+CREATTHREAD MESSAGE;
+
+//窗口消息线程
+THREAD WINDOWMESSAGE(LPARAM lparam)
+{
+	MSG msg = {0};
+	while(GetMessage(&msg, NULL, 0, 0) &&!GAMEDEAD)
+	{
+		Sleep(1);
+		TranslateMessage(&msg); //消息循环
+		DispatchMessage(&msg);
+	}
+}
+
 //游戏逻辑线程
 THREAD GameThreadLogic(LPARAM lparam)
 {
@@ -287,29 +303,36 @@ THREAD GameThreadLogic(LPARAM lparam)
 //游戏循环
 void GameLoop(GAME* Game, BOOL esc)
 {
+	MSG msg = { 0 };
 	GAMEDEAD = 0;
 	GAMETHEARDLOGIC = Game;
 	Game->escswitch = esc;
 	srand((unsigned)time(NULL));
 	GetAsyncKeyState(VK_ESCAPE);
 	RunThread(&GameThreadLogic, &GAMELOGIC.ID);
+	//RunThread(&WINDOWMESSAGE, &MESSAGE.ID);
 	HDC hdc = GetDC(Game->Windowhwnd);
 	HDC hdcchild = GetDC(Game->Windowchildhwnd);
-	while (!GAMEDEAD)
+	while (PeekMessage(&msg, Game->Windowhwnd, 0, 0, PM_REMOVE)||!GAMEDEAD)
 	{
+		//PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+		TranslateMessage(&msg); //消息循环
+		DispatchMessage(&msg);
+
 		if (!TimeLoad(&fps, 1))fpsmax++;
 		else
 		{
 			fpsmax2 = fpsmax;
 			fpsmax = 0;
 		}
-		if (!GAMEPOWER)Sleep(1);
+		//if (!GAMEPOWER)Sleep(1);
+		if (!GAMEPOWER)Sleep(Game->timeload.timeload);
+		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		 //清除双缓冲屏幕画面
 		GameDrawing(Game);
 		Text(0, Game->doublebuffer.hdc, 0, 0, L"FPS:", RGB(0, 150, 0));
 		NewDIGHT(Game, fpsmax2, 30, 0, RGB(0, 150, 0));
-		ClearWindow();					//消息循环
 		BitBlt(hdc, 0, 0, Game->Windowwidth, Game->Windowheight, Game->doublebuffer.hdc, 0, 0, SRCCOPY); //通过双缓冲绘制到屏幕上
-		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		 //清除双缓冲屏幕画面
+		//ClearWindow();					//消息循环
 	}
 	printf("[star Game Loop 结束!]\n");
 }
@@ -322,4 +345,6 @@ void GameOver(GAME* Game, BOOL cmdswitch)
 	DeletBuffer(Game->doublebuffer.hBitmap, Game->doublebuffer.hdc);	//销毁双缓冲资源
 	DeletWindow(Game->Windowhwnd);										//删除游戏窗口
 	if (cmdswitch)CMD(ON);												//是否在游戏结束时恢复控制台窗口
+	//PostQuitMessage(0);
+	printf("游戏资源清理完成!");
 }
