@@ -138,11 +138,11 @@ typedef struct
 
 //--------------------------------------------------------------------------------------绘图函数----------------------------------------------------------------------------------------------------------//
 
-void PIX(GAME* Game, int x, int y, COLORREF color) { Pix(0, Game->doublebuffer.hdc, x, y, color); }
-void LINE(GAME* Game, int x1, int y1, int x2, int y2, COLORREF color) { Line(0, Game->doublebuffer.hdc, x1, y1, x2, y2, color); }
-void APPIX(GAME* Game, int apx, int apy, int x, int y, double rad, COLORREF color) { ApPix(0, Game->doublebuffer.hdc, apx, apy, x, y, rad, color); }
-void APLINE(GAME* Game, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color) { ApLine(0, Game->doublebuffer.hdc, apx, apy, x1, y1, x2, y2, rad, color); }
-void BOX(GAME* Game, int x, int y, int width, int height, COLORREF color) { BoxC(0, Game->doublebuffer.hdc, x, y, width, height, color); }
+void PIX(GAME* Game, int x, int y, COLORREF color) { Pix(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, color); }
+void LINE(GAME* Game, int x1, int y1, int x2, int y2, COLORREF color) { Line(Game->Windowhwnd, Game->doublebuffer.hdc, x1, y1, x2, y2, color); }
+void APPIX(GAME* Game, int apx, int apy, int x, int y, double rad, COLORREF color) { ApPix(Game->Windowhwnd, Game->doublebuffer.hdc, apx, apy, x, y, rad, color); }
+void APLINE(GAME* Game, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color) { ApLine(Game->Windowhwnd, Game->doublebuffer.hdc, apx, apy, x1, y1, x2, y2, rad, color); }
+void BOX(GAME* Game, int x, int y, int width, int height, COLORREF color) { BoxC(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, width, height, color); }
 void BOXA(GAME* Game, int x, int y, int width, int height, COLORREF color)
 {
 	LINE(Game, x, y, x + width, y, color);
@@ -150,15 +150,15 @@ void BOXA(GAME* Game, int x, int y, int width, int height, COLORREF color)
 	LINE(Game, x, y + height, x + width, y + height, color);
 	LINE(Game, x + width, y, x + width, y + height, color);
 }
-void CIRCLE(GAME* Game, int R, int x, int y, COLORREF color) { Circle(0, Game->doublebuffer.hdc, R, x, y, color); }
+void CIRCLE(GAME* Game, int R, int x, int y, COLORREF color) { Circle(Game->Windowhwnd, Game->doublebuffer.hdc, R, x, y, color); }
 
 //显示图片
-void IMG(GAME* Game, const wchar_t File, int x, int y) { Img(0, Game->doublebuffer.hdc, File, x, y); }
-void IMGA(GAME* Game, const wchar_t File, int x, int y, int widthbs, int heightbs, COLORREF color) { ImgA(0, Game->doublebuffer.hdc, File, x, y, widthbs, heightbs, color); }
+void IMG(GAME* Game, const wchar_t File, int x, int y) { Img(Game->Windowhwnd, Game->doublebuffer.hdc, File, x, y); }
+void IMGA(GAME* Game, const wchar_t File, int x, int y, int widthbs, int heightbs, COLORREF color) { ImgA(Game->Windowhwnd, Game->doublebuffer.hdc, File, x, y, widthbs, heightbs, color); }
 
 //文字
-void NewTEXT(GAME* Game, LPCWSTR text, int x, int y, COLORREF color) { Text(0, Game->doublebuffer.hdc, x, y, text, color); }
-void NewDIGHT(GAME* Game, int number, int x, int y, COLORREF color) { Dight(0, Game->doublebuffer.hdc, x, y, number, color); }
+void NewTEXT(GAME* Game, LPCWSTR text, int x, int y, COLORREF color) { Text(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, text, color); }
+void NewDIGHT(GAME* Game, int number, int x, int y, COLORREF color) { Dight(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, number, color); }
 
 //--------------------------------------------------------------------------------------游戏工具----------------------------------------------------------------------------------------------------------//
 
