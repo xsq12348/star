@@ -338,6 +338,7 @@ static int Vsn(int A)
     * 1.2.02 现在可以在多文件下使用该多功能库
     * 1.2.1 新增了lerp函数
     * 1.2.2 新增了三角形碰撞检测函数
+    * 1.2.01 削减了部分冗余代码和不必要的功能，现在绘图时需要同时传入句柄和设备上下文来避免内存泄露风险,与之前的只能传入一个参数不同。当然，与之前使用该库的代码没有兼容性风险
     */
     return A;
 }
@@ -454,10 +455,7 @@ static void DeletBuffer(HBITMAP hBitmap, HDC hdcMem)
 //在窗口中绘制线段
 static void Line(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
-    HDC hDc;
-    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
-    else hDc = hdc;
+    HDC hDc = hdc;
     HPEN hpen = CreatePen(PS_SOLID, 1, color);
     HPEN holdpen = (HPEN)SelectObject(hDc, hpen);
     MoveToEx(hDc, x2, y2, NULL);
@@ -470,10 +468,7 @@ static void Line(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF co
 //绘制像素点
 static void Pix(HWND hwnd, HDC hdc, int x, int y, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
-    HDC hDc;
-    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
-    else hDc = hdc;
+    HDC hDc = hdc;
     SetPixel(hDc, x, y, color);
     ReleaseDC(hwnd, hDc);
 }
@@ -511,10 +506,7 @@ static void ApLine(HWND hwnd, HDC hdc, int apx, int apy, int x1, int y1, int x2,
 //矩形函数
 static void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
-    HDC hDc;
-    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
-    else hDc = hdc;
+    HDC hDc = hdc;
     HPEN hpen = CreatePen(PS_SOLID, 1, color);
     HPEN holdpen = (HPEN)SelectObject(hDc, hpen);
     Rectangle(hDc, x1, y1, x2, y2);
@@ -525,10 +517,7 @@ static void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF co
 
 static void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
-    HDC hDc;
-    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
-    else hDc = hdc;
+    HDC hDc = hdc;
     PAINTSTRUCT ps;
     HBRUSH hbs = CreateSolidBrush(color);
     RECT rect = { x1,y1,x2,y2 };
@@ -540,10 +529,7 @@ static void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF co
 
 static void BoxC(HWND hwnd, HDC hdc, int x, int y, int width, int height, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
-    HDC hDc;
-    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
-    else hDc = hdc;
+    HDC hDc = hdc;
     PAINTSTRUCT ps;
     HBRUSH hbs = CreateSolidBrush(color);
     RECT rect = { x,y,x + width,y + height };
@@ -556,24 +542,19 @@ static void BoxC(HWND hwnd, HDC hdc, int x, int y, int width, int height, COLORR
 //绘制圆
 static void Circle(HWND hwnd, HDC hdc, int R, int x, int y, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
-    HDC hDc;
-    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
-    else hDc = hdc;
+    HDC hDc = hdc;
     HPEN hpen = CreatePen(PS_SOLID, 1, color);
     HPEN holdpen = (HPEN)SelectObject(hDc, hpen);
     Ellipse(hDc, x - R, y - R, x + R, y + R);
     SelectObject(hDc, holdpen);
     DeleteObject(hpen);
+    ReleaseDC(hwnd, hDc);
 }
 
 //显示图片
 static void Img(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y)
 {
-    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
-    HDC hDc;
-    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
-    else hDc = hdc;
+    HDC hDc = hdc;
     HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, File, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     if (hBitmap)
     {
@@ -585,16 +566,13 @@ static void Img(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y)
         DeleteDC(hdcMem);
         DeleteObject(hBitmap); // 释放位图资源
     }
-    else printf("[WinImg函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);
+    else printf("[WinImg函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", *File);
 }
 
 //显示图片的变种，可以选择性不显示某种颜色，还可以改变图片放大倍数
 static void ImgA(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y, double widthbs, double heightbs, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
-    HDC hDc;
-    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
-    else hDc = hdc;
+    HDC hDc = hdc;
     if (widthbs <= 0) { widthbs = 1; }
     if (heightbs <= 0) { heightbs = 1; }
     HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, File, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
@@ -608,7 +586,7 @@ static void ImgA(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y, double w
         DeleteDC(hdcMem);
         DeleteObject(hBitmap); // 释放位图资源
     }
-    else printf("[WinImgA函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", File);
+    else printf("[WinImgA函数错误][%s]文件打开失败，请检查文件是否在目录中.[Enter]退出\n", *File);
 }
 
 //---------------------------------------------------------------------------------------------以下为OpenGL内容------------------------------------------------------------------------------------------------------//
@@ -1037,10 +1015,7 @@ static void Clear(HWND hwnd) { InvalidateRect(hwnd, NULL, TRUE); }
 //文本输出
 static void Text(HWND hwnd, HDC hdc, int x, int y, LPCWSTR text, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
-    HDC hDc;
-    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
-    else hDc = hdc;
+    HDC hDc = hdc;
     SetBkMode(hDc, TRANSPARENT);//设置字体背景透明
     SetTextColor(hDc, color);
     TextOut(hDc, x, y, text, wcslen(text));
@@ -1050,10 +1025,7 @@ static void Text(HWND hwnd, HDC hdc, int x, int y, LPCWSTR text, COLORREF color)
 //显示数字
 static void Dight(HWND hwnd, HDC hdc, int x, int y, int dight, COLORREF color)
 {
-    if (hdc == 0 && hwnd == 0 || hdc != 0 && hwnd != 0)return;
-    HDC hDc;
-    if (hdc == 0 && hwnd != 0) hDc = GetDC(hwnd);
-    else hDc = hdc;
+    HDC hDc = hdc;
     SetBkMode(hDc, TRANSPARENT);//设置字体背景透明
     int size;
     TCHAR szText[256];
