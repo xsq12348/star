@@ -28,6 +28,7 @@
 0.91 正在解决原本游戏点击关闭窗口后游戏仍然在运行的BUG(消息循环)
 1.0 解决了原本游戏点击关闭窗口后游戏仍然在运行的BUG
 1.01 调整了部分代码
+1.02 修复了部分BUG
 */
 #pragma once
 #include"star.h"
@@ -348,7 +349,7 @@ void GameLoop(GAME* Game, BOOL esc)
 			fpsmax = 0;
 		}
 		//if (!GAMEPOWER)Sleep(1);
-		if (!GAMEPOWER)Sleep(Game->timeload.timeload);
+		if (!GAMEPOWER)if(!TimeLoad(&(Game->timeload),1))Sleep(Game->timeload.timeload);
 		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		 //清除双缓冲屏幕画面
 		GameDrawing(Game);
 		Text(0, Game->doublebuffer.hdc, 0, 0, L"FPS:", RGB(0, 150, 0));
