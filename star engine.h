@@ -27,6 +27,7 @@
 0.9 优化了帧数限制问题
 0.91 正在解决原本游戏点击关闭窗口后游戏仍然在运行的BUG(消息循环)
 1.0 解决了原本游戏点击关闭窗口后游戏仍然在运行的BUG
+1.1 调整了部分代码
 */
 #pragma once
 #include"star.h"
@@ -323,6 +324,7 @@ THREAD GameThreadLogic(LPARAM lparam)
 		MOUSEX = MouseX(GAMETHEARDLOGIC->Windowhwnd);
 		MOUSEY = MouseY(GAMETHEARDLOGIC->Windowhwnd);
 		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))GAMEDEAD = 1;	//是否启用esc退出游戏
+		if (!IsWindow(GAMETHEARDLOGIC->Windowhwnd))GAMEDEAD = 1;//检查窗口是否存活
 	}
 }
 //游戏循环
@@ -353,7 +355,6 @@ void GameLoop(GAME* Game, BOOL esc)
 		NewDIGHT(Game, fpsmax2, 30, 0, RGB(0, 150, 0));
 		BitBlt(hdc, 0, 0, Game->Windowwidth, Game->Windowheight, Game->doublebuffer.hdc, 0, 0, SRCCOPY); //通过双缓冲绘制到屏幕上
 		ClearWindow();								 //消息循环
-		if (!IsWindow(Game->Windowhwnd))GAMEDEAD = 1;//检查窗口是否存活
 	}
 	printf("[star Game Loop 结束!]\n");
 }
