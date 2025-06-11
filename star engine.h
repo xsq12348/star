@@ -29,6 +29,7 @@
 1.0 解决了原本游戏点击关闭窗口后游戏仍然在运行的BUG
 1.01 调整了部分代码
 1.02 修复了部分BUG
+1.1 添加了简单物理
 */
 #pragma once
 #include"star.h"
@@ -191,11 +192,7 @@ int ButtonStart(GAME* Game, BUTTON* button, const wchar_t* File1, const wchar_t*
 //新按钮
 int NewButton(GAME* Game, BUTTON* button)
 {
-	if (button->triggered)
-	{
-		button->button = 0;
-		button->triggered = 1;
-	}
+	if (button->triggered) { button->button = 0; button->triggered = 1; }
 	else if (GetAsyncKeyState(1))
 	{
 		if (MOUSEX > button->coor.x && MOUSEX  < button->coor.x + button->lengths.x && MOUSEY  > button->coor.y && MOUSEY < button->coor.y + button->lengths.y)
@@ -205,7 +202,6 @@ int NewButton(GAME* Game, BUTTON* button)
 		}
 	}
 	if (!GetAsyncKeyState(1))button->triggered = 0;
-	//if (!(MOUSEX(Game->Windowhwnd) > button->coor.x && MOUSEX(Game->Windowhwnd) < button->coor.x + button->lengths.x && MOUSEY(Game->Windowhwnd) > button->coor.y && MOUSEY(Game->Windowhwnd) < button->coor.y + button->lengths.y))button->button = 0;
 	if (button->buttonswitch)if (button->button)BOXA(Game, button->coor.x, button->coor.y, button->lengths.x, button->lengths.y, RGB(255, 0, 0));
 	else BOXA(Game, button->coor.x, button->coor.y, button->lengths.x, button->lengths.y, RGB(255, 255, 255));
 	return button->button;
@@ -218,18 +214,10 @@ int KeyState(int Key)
 	int state = GetAsyncKeyState(Key);
 	if (state & 0x8000)
 	{
-		if (KEYSTATEbuffer[Key] == 0)
-		{
-			KEYSTATEbuffer[Key] = 1;
-			return 1;
-		}
+		if (KEYSTATEbuffer[Key] == 0) { KEYSTATEbuffer[Key] = 1; return 1; }
 		return 0;
 	}
-	else
-	{
-		KEYSTATEbuffer[Key] = 0;
-		return 0;
-	}
+	else { KEYSTATEbuffer[Key] = 0; return 0; }
 }
 
 //动画控件
@@ -238,18 +226,9 @@ int KeyState(int Key)
 int InitialisationAnime(ANIME* anime, LPCSTR name, ANIMEIMG* sequenceframes[], int load, int totalnumber)
 {
 	anime->Name = name;
-	if (totalnumber <= 0)
-	{
-		Color(0x07);
-		printf("[InitialisationAnime函数错误]动画序列帧总数有问题,请检查名为[%s]的动画!\n", name);
-		return Error;
-	}
-	if (sequenceframes == NULL)
-	{
-		Color(0x07);
-		printf("[InitialisationAnime函数错误]动画序列帧有问题,请检查名为[%s]的动画是否存在!\n", name);
-		return Error;
-	}
+	Color(0x07);
+	if (totalnumber <= 0) { printf("[InitialisationAnime函数错误]动画序列帧总数有问题,请检查名为[%s]的动画!\n", name); return Error; }
+	if (sequenceframes == NULL) { printf("[InitialisationAnime函数错误]动画序列帧有问题,请检查名为[%s]的动画是否存在!\n", name); return Error; }
 	anime->animeswitch = 0;
 	anime->sequenceframes = sequenceframes;
 	anime->totalnumber = totalnumber;
@@ -265,6 +244,67 @@ int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y)
 	else ImgA(0, Game->doublebuffer.hdc, anime->sequenceframes[anime->number % anime->totalnumber], x, y, 1, 1, RGB(1, 1, 1));
 	if (TimeLoad(&(anime->timeload), 1)) ++anime->number;	//添加下一帧	
 	return anime->number;
+}
+
+//简单物理
+
+typedef struct
+{
+	DOUBLEPOINT coor;
+	DOUBLEPOINT vectory;
+	int R;
+	double mass;
+}CIRCLEPHYSICS;
+GAME Game;
+CIRCLEPHYSICS circle[3];
+
+void CirclePhysics(CIRCLEPHYSICS* a, CIRCLEPHYSICS* b)
+{
+	int R = a->R + b->R;
+	int L = sqrt(pow(a->coor.x - b->coor.x, 2) + pow(a->coor.y - b->coor.y, 2));
+	if ((L <= R))
+	{
+		double mass = a->mass + b->mass;
+		double vectory[4];
+		double vectorybuffer[2];
+		DOUBLEPOINT vector[2];
+		vector[0].x = (a->coor.x - b->coor.x) * 1. / L;
+		vector[0].y = (a->coor.y - b->coor.y) * 1. / L;
+		vector[1].x = (b->coor.x - a->coor.x) * 1. / L;
+		vector[1].y = (b->coor.y - a->coor.y) * 1. / L;
+		vectory[0] = sqrt(pow(a->vectory.x, 2) + pow(a->vectory.y, 2));
+		vectory[1] = sqrt(pow(b->vectory.x, 2) + pow(b->vectory.y, 2));
+		vectory[2] = ((a->mass - b->mass) * vectory[0] + 2 * b->mass * vectory[1]) / mass;
+		vectory[3] = ((b->mass - a->mass) * vectory[1] + 2 * a->mass * vectory[0]) / mass;
+		a->coor.x += vector[0].x * (R - L) / 2.;
+		a->coor.y += vector[0].y * (R - L) / 2.;
+		b->coor.x += vector[1].x * (R - L) / 2.;
+		b->coor.y += vector[1].y * (R - L) / 2.;
+		vectorybuffer[0] = a->vectory.x * vector[1].x + a->vectory.y * vector[1].y;
+		vectorybuffer[1] = b->vectory.x * vector[0].x + b->vectory.y * vector[0].y;
+		a->vectory.x -= vector[1].x * vectorybuffer[0];
+		a->vectory.y -= vector[1].y * vectorybuffer[0];
+		b->vectory.x -= vector[0].x * vectorybuffer[1];
+		b->vectory.y -= vector[0].y * vectorybuffer[1];
+		a->vectory.x += vector[0].x * vectory[2];
+		a->vectory.y += vector[0].y * vectory[2];
+		b->vectory.x += vector[1].x * vectory[3];
+		b->vectory.y += vector[1].y * vectory[3];
+	}
+	a->coor.x += a->vectory.x;
+	a->coor.y += a->vectory.y;
+	b->coor.x += b->vectory.x;
+	b->coor.y += b->vectory.y;
+}
+
+void InitialisationCircle(CIRCLEPHYSICS* circle, int x, int y, double m, double vx, double vy, int R)
+{
+	circle->coor.x = x;
+	circle->coor.y = y;
+	circle->vectory.x = vx;
+	circle->vectory.y = vy;
+	circle->R = R;
+	circle->mass = m;
 }
 
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
@@ -343,11 +383,7 @@ void GameLoop(GAME* Game, BOOL esc)
 	while (!GAMEDEAD)
 	{
 		if (!TimeLoad(&fps, 1))fpsmax++;
-		else
-		{
-			fpsmax2 = fpsmax;
-			fpsmax = 0;
-		}
+		else { fpsmax2 = fpsmax; fpsmax = 0; }
 		//if (!GAMEPOWER)Sleep(1);
 		if (!GAMEPOWER)if(!TimeLoad(&(Game->timeload),1))Sleep(Game->timeload.timeload);
 		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		 //清除双缓冲屏幕画面
