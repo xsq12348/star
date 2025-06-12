@@ -30,6 +30,7 @@
 1.01 调整了部分代码
 1.02 修复了部分BUG
 1.1 添加了简单物理
+1.2 cpp移植成功,现在cpp和都可以同时使用该引擎
 */
 #pragma once
 #include"star.h"
@@ -115,7 +116,7 @@ typedef struct
 }ANIME;
 
 //实体结构体
-typedef struct
+typedef struct ENTITY
 {
 	LPCSTR Name;				//名称
 	POINT coor;					//位置
@@ -154,8 +155,8 @@ void BOXA(GAME* Game, int x, int y, int width, int height, COLORREF color)
 void CIRCLE(GAME* Game, int R, int x, int y, COLORREF color) { Circle(Game->Windowhwnd, Game->doublebuffer.hdc, R, x, y, color); }
 
 //显示图片
-void IMG(GAME* Game, const wchar_t File, int x, int y) { Img(Game->Windowhwnd, Game->doublebuffer.hdc, File, x, y); }
-void IMGA(GAME* Game, const wchar_t File, int x, int y, int widthbs, int heightbs, COLORREF color) { ImgA(Game->Windowhwnd, Game->doublebuffer.hdc, File, x, y, widthbs, heightbs, color); }
+void IMG(GAME* Game, const wchar_t* File, int x, int y) { Img(Game->Windowhwnd, Game->doublebuffer.hdc, File, x, y); }
+void IMGA(GAME* Game, const wchar_t* File, int x, int y, int widthbs, int heightbs, COLORREF color) { ImgA(Game->Windowhwnd, Game->doublebuffer.hdc, File, x, y, widthbs, heightbs, color); }
 
 //文字
 void NewTEXT(GAME* Game, LPCWSTR text, int x, int y, COLORREF color) { Text(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, text, color); }
@@ -165,7 +166,7 @@ void NewDIGHT(GAME* Game, int number, int x, int y, COLORREF color) { Dight(Game
 
 //按钮控件
 
-int InitialisationButton(BUTTON* button, int x, int y, int width, int height, int YESORNO)
+void InitialisationButton(BUTTON* button, int x, int y, int width, int height, int YESORNO)
 {
 	button->coor.x = x;
 	button->coor.y = y;
@@ -230,7 +231,7 @@ int InitialisationAnime(ANIME* anime, LPCSTR name, ANIMEIMG* sequenceframes[], i
 	if (totalnumber <= 0) { printf("[InitialisationAnime函数错误]动画序列帧总数有问题,请检查名为[%s]的动画!\n", name); return Error; }
 	if (sequenceframes == NULL) { printf("[InitialisationAnime函数错误]动画序列帧有问题,请检查名为[%s]的动画是否存在!\n", name); return Error; }
 	anime->animeswitch = 0;
-	anime->sequenceframes = sequenceframes;
+	anime->sequenceframes = *sequenceframes;
 	anime->totalnumber = totalnumber;
 	anime->number = 0;
 	SetTimeLoad(&(anime->timeload), load);		//设置定时器
@@ -367,6 +368,7 @@ THREAD GameThreadLogic(LPARAM lparam)
 		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))GAMEDEAD = 1;	//是否启用esc退出游戏
 		if (!IsWindow(GAMETHEARDLOGIC->Windowhwnd))GAMEDEAD = 1;//检查窗口是否存活
 	}
+	return 0;
 }
 //游戏循环
 void GameLoop(GAME* Game, BOOL esc)
@@ -376,8 +378,7 @@ void GameLoop(GAME* Game, BOOL esc)
 	Game->escswitch = esc;
 	srand((unsigned)time(NULL));
 	GetAsyncKeyState(VK_ESCAPE);
-	RunThread(&GameThreadLogic, &GAMELOGIC.ID);
-	//RunThread(&WINDOWMESSAGE, &MESSAGE.ID);
+	RunThread((THREAD*)GameThreadLogic, GAMELOGIC.ID);
 	HDC hdc = GetDC(Game->Windowhwnd);
 	HDC hdcchild = GetDC(Game->Windowchildhwnd);
 	while (!GAMEDEAD)
