@@ -221,7 +221,7 @@ static int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：1.1.21
+    //版本信息：1.2.1
     /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -340,6 +340,7 @@ static int Vsn(int A)
     * 1.2.2 新增了三角形碰撞检测函数
     * 1.2.01 削减了部分冗余代码和不必要的功能，现在绘图时需要同时传入句柄和设备上下文来避免内存泄露风险,与之前的只能传入一个参数不同。当然，与之前使用该库的代码没有兼容性风险
     * 1.2.02 删减了部分不必要的代码
+    * 1.2.1 cpp移植成功,现在cpp和都可以同时使用该引擎
     */
     return A;
 }
@@ -409,7 +410,7 @@ typedef DWORD THREAD;
 //多线程函数结构体
 typedef struct
 {
-    HANDLE ID;
+    DWORD* ID;
     HANDLE ThreadHwnd;
 }CREATTHREAD;
 
@@ -429,11 +430,11 @@ static void DeletThread(HANDLE Threadhwnd)
 typedef struct
 {
     HDC hdc;
-    HBITMAP* hBitmap;
+    HBITMAP hBitmap;
 }DOUBLEBUFFER;
 
 //创建双缓冲绘图绘图区
-static HDC DoubleBuffer(HWND hwnd, HBITMAP* hBitmap, int windowwidth, int windowheight)
+static HDC DoubleBuffer(HWND hwnd, HBITMAP hBitmap, int windowwidth, int windowheight)
 {
     HDC hdcMem = CreateCompatibleDC(GetDC(hwnd));
     hBitmap = CreateCompatibleBitmap(GetDC(hwnd), windowwidth, windowheight);
@@ -690,8 +691,8 @@ static void GBox(int mode, int x, int y, int width, int height, int alpha, COLOR
     };
     switch (mode)
     {
-    case 1: GPolygon(&point, 4, x, y, alpha, color, 0, 0, 0); break;
-    case 2: GPolygon(&point, 4, x, y, alpha, color, 1, linewidth, color2); break;
+    case 1: GPolygon(point, 4, x, y, alpha, color, 0, 0, 0); break;
+    case 2: GPolygon(point, 4, x, y, alpha, color, 1, linewidth, color2); break;
     }
 }
 
@@ -1156,8 +1157,8 @@ static int TimeLoad(TIMELOAD* Timeload, int mode)
 //LPCSTR类型转换成LPCWSTR
 static LPCWSTR CharToLPCWSTR(const char* str)
 {
-    wchar_t* wideStr = (wchar_t*)malloc(wcslen(str) * sizeof(wchar_t));
-    MultiByteToWideChar(CP_UTF8, 0, str, -1, wideStr, wcslen(str));
+    wchar_t* wideStr = (wchar_t*)malloc(strlen(str) * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, str, -1, wideStr, strlen(str));
     return wideStr;
 }
 
