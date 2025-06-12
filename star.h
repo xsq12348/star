@@ -339,6 +339,7 @@ static int Vsn(int A)
     * 1.2.1 新增了lerp函数
     * 1.2.2 新增了三角形碰撞检测函数
     * 1.2.01 削减了部分冗余代码和不必要的功能，现在绘图时需要同时传入句柄和设备上下文来避免内存泄露风险,与之前的只能传入一个参数不同。当然，与之前使用该库的代码没有兼容性风险
+    * 1.2.02 删减了部分不必要的代码
     */
     return A;
 }
@@ -1166,17 +1167,15 @@ typedef struct
     double y;
 }DOUBLEPOINT;
 
-static DOUBLEPOINT Lerp(DOUBLEPOINT a, DOUBLEPOINT b, double t)
+static double Lerp(double a, double b, double t)
 {
     t = (t < 1 ? t : 1);
-    DOUBLEPOINT point;
-    point.x = (1. - t) * a.x + t * b.x;
-    point.y = (1. - t) * a.y + t * b.y;
-    return point;
+    int c = (1. - t) * a + t * b;
+    return c;
 }
 
 //三角形碰撞检测
-BOOL TriangleDetection(POINT a, POINT b, POINT c, POINT p)
+static BOOL TriangleDetection(POINT a, POINT b, POINT c, POINT p)
 {
     double d1 = (p.x - b.x) * (a.y - b.y) - (a.x - b.x) * (p.y - b.y);
     double d2 = (p.x - c.x) * (b.y - c.y) - (b.x - c.x) * (p.y - c.y);
