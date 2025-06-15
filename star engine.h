@@ -320,8 +320,8 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 	switch (fullscreenmode)					//如果全屏则不变
 	{
 	case 0:
-		Game->Windowwidth = width + 15;		//窗口宽度
-		Game->Windowheight = height + 39;	//窗口高度
+		Game->Windowwidth = width;		//窗口宽度
+		Game->Windowheight = height;	//窗口高度
 		break;
 	case 1:
 		Game->Windowwidth = nScreenWidth;	//窗口宽度
