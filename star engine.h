@@ -409,4 +409,3 @@ void GameOver(GAME* Game, BOOL cmdswitch)
 	//PostQuitMessage(0);
 	printf("游戏资源清理完成!");
 }
-#undef STARDLC
