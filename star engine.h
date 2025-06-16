@@ -33,6 +33,7 @@
 1.2 cpp移植成功,现在cpp和都可以同时使用该引擎
 */
 #pragma once
+#undef STARDLC
 #include"star.h"
 
 #define VK_0 48
@@ -408,3 +409,4 @@ void GameOver(GAME* Game, BOOL cmdswitch)
 	//PostQuitMessage(0);
 	printf("游戏资源清理完成!");
 }
+#undef STARDLC
