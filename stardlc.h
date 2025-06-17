@@ -2,7 +2,6 @@
 //Creat Time:2025/6/16
 #if STARDLC
 #include"star.h"
-#else
 int KEYSTATEbuffer[255];
 int KeyState(int Key)
 {
@@ -14,6 +13,7 @@ int KeyState(int Key)
     }
     else { KEYSTATEbuffer[Key] = 0; return 0; }
 }
+#else
 #endif
 //In order to expand the CPP functionality in the future, DLC is now availables
 // In order to prevent the Star function from being redefined, you can freely choose whether to add the Star library by defining the STARDLC macro
@@ -23,35 +23,35 @@ int KeyState(int Key)
 
 #define CREATWNDPROC static LRESULT WINAPI
 #define WNDPROCEND (HWND hwnd, UINT msgid, WPARAM wparam, LPARAM lparam){return DefWindowProc(hwnd, msgid, wparam, lparam);}
-//´´½¨´°¿Ú
+//åˆ›å»ºçª—å£
 static HWND NewWindow(
     WNDPROC WndPorc,
-    HWND hwnd	 /*¾ä±ú*/,
-    LPCWSTR name /*´°¿ÚÃû³Æ*/,
-    int w		 /*´°¿Ú¿í¶È*/,
-    int h		 /*´°¿Ú¸ß¶È*/,
-    int x		 /*´°¿ÚË®Æ½×ø±ê*/,
-    int y		 /*´°¿ÚÊúÖ±×ø±ê*/
+    HWND hwnd	 /*å¥æŸ„*/,
+    LPCWSTR name /*çª—å£åç§°*/,
+    int w		 /*çª—å£å®½åº¦*/,
+    int h		 /*çª—å£é«˜åº¦*/,
+    int x		 /*çª—å£æ°´å¹³åæ ‡*/,
+    int y		 /*çª—å£ç«–ç›´åæ ‡*/
 )
 {
     HINSTANCE hinstance = GetModuleHandle(NULL);
-    //×¢²á´°¿ÚÀà
+    //æ³¨å†Œçª—å£ç±»
     WNDCLASS wndclass = { 0 };
     wndclass.cbClsExtra = 0;
     wndclass.cbWndExtra = 0;
-    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);    //»ñÈ¡±ÊË¢ Ìî³ä±³¾°
-    wndclass.hCursor = NULL;                               //Êó±êÖ¸Õë
-    wndclass.hIcon = NULL;                                 //ÏµÍ³Ä¬ÈÏÍ¼±ê
-    //³ÌĞò¾ä±ú
+    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);    //è·å–ç¬”åˆ· å¡«å……èƒŒæ™¯
+    wndclass.hCursor = NULL;                               //é¼ æ ‡æŒ‡é’ˆ
+    wndclass.hIcon = NULL;                                 //ç³»ç»Ÿé»˜è®¤å›¾æ ‡
+    //ç¨‹åºå¥æŸ„
     wndclass.hInstance = hinstance;
     wndclass.lpfnWndProc = WndPorc;
-    wndclass.lpszClassName = TEXT("main");                 //ÀàÃû
-    wndclass.lpszMenuName = NULL;                          //²Ëµ¥
-    //´°¿ÚÑùÊ½
+    wndclass.lpszClassName = TEXT("main");                 //ç±»å
+    wndclass.lpszMenuName = NULL;                          //èœå•
+    //çª—å£æ ·å¼
     wndclass.style = CS_HREDRAW | CS_CLASSDC;
     RegisterClass(&wndclass);
-    hwnd = CreateWindow(TEXT("main"), name/*±êÌâ*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, x, y, w, h, NULL, NULL, hinstance, NULL);    //´´½¨´°¿Ú
-    //ÏÔÊ¾´°¿Ú
+    hwnd = CreateWindow(TEXT("main"), name/*æ ‡é¢˜*/, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME, x, y, w, h, NULL, NULL, hinstance, NULL);    //åˆ›å»ºçª—å£
+    //æ˜¾ç¤ºçª—å£
     ShowWindow(hwnd, SW_SHOW);
     UpdateWindow(hwnd);
     return hwnd;
