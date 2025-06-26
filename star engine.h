@@ -590,6 +590,16 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 	Mouse(cursor);										//鼠标光标显示
 	Game->escswitch = 0;								//是否启用esc退出游戏
 	SetTimeLoad(&fps, 1000);
+#if STARTOpenCL
+	cl_int error;
+	clGetPlatformIDs(1, &platformid, NULL);
+	clGetDeviceIDs(platformid, CL_DEVICE_TYPE_GPU, 1, &deviceid, NULL);
+	context = clCreateContext(NULL, 1, &deviceid, NULL, NULL, NULL);
+	commandqueue = clCreateCommandQueue(context, deviceid, NULL, NULL);
+	program = clCreateProgramWithSource(context, 1, (const char**)&STAROpenCL3D, NULL, &error);
+	clBuildProgram(program, 1, &deviceid, NULL, NULL, NULL);
+	kernel = clCreateKernel(program, "Point3DDrawing", NULL);
+#endif
 }
 
 //游戏画面绘制
@@ -620,16 +630,6 @@ THREAD GameThreadLogic(LPARAM lparam)
 //游戏循环
 void GameLoop(GAME* Game, BOOL esc)
 {
-#if STARTOpenCL
-	cl_int error;
-	clGetPlatformIDs(1, &platformid, NULL);
-	clGetDeviceIDs(platformid, CL_DEVICE_TYPE_GPU, 1, &deviceid, NULL);
-	context = clCreateContext(NULL, 1, &deviceid, NULL, NULL, NULL);
-	commandqueue = clCreateCommandQueue(context, deviceid, NULL, NULL);
-	program = clCreateProgramWithSource(context, 1, (const char**)&STAROpenCL3D, NULL, &error);
-	clBuildProgram(program, 1, &deviceid, NULL, NULL, NULL);
-	kernel = clCreateKernel(program, "Point3DDrawing", NULL);
-#endif
 	GAMEDEAD = 0;
 	GAMETHEARDLOGIC = Game;
 	Game->escswitch = esc;
