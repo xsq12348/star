@@ -341,6 +341,7 @@ static int Vsn(int A)
     * 1.2.01 削减了部分冗余代码和不必要的功能，现在绘图时需要同时传入句柄和设备上下文来避免内存泄露风险,与之前的只能传入一个参数不同。当然，与之前使用该库的代码没有兼容性风险
     * 1.2.02 删减了部分不必要的代码
     * 1.2.1 cpp移植成功,现在cpp和都可以同时使用该引擎
+    * 1.2.2 新添了RunProgram函数
     */
     return A;
 }
@@ -1183,3 +1184,5 @@ static BOOL TriangleDetection(POINT a, POINT b, POINT c, POINT p)
     double d3 = (p.x - a.x) * (c.y - a.y) - (c.x - a.x) * (p.y - a.y);
     return (d1 * d2 > 0) && (d2 * d3 > 0);
 }
+
+void RunProgram(LPCWSTR name) { ShellExecute(NULL, L"open", name, NULL, NULL, SW_SHOW); }
