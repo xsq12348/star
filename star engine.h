@@ -32,6 +32,9 @@
 1.1 添加了简单物理
 1.2 cpp移植成功,现在cpp和都可以同时使用该引擎
 1.3 添加了OpenCL支持
+1.4 添加了对象注册表，现在可以通过GAME结构体访问全部对象
+1.5 修改了动画部分
+1.6 重做了按钮模块
 */
 #pragma once
 #undef STARDLC
@@ -85,22 +88,30 @@ fpsmax2 = 0;
 
 #define RANDOM(a,b) Random(a,b)
 #define DEGRAD(a) DegRad(a)
+#define switchlogic(alpha) if(FALSE);
+#define caselogic(beta) else if(beta)
+#define NOTFOUND Error
 
 int GAMEDEAD = 0;				//游戏结束
 int GAMEINPUT;					//游戏输入
 int MOUSEX = 0, MOUSEY = 0;
 int GAMEPOWER = 0;
-typedef LPCWSTR ANIMEIMG;		//动画资源关键字
 typedef POINT VELOCITY;			//速度分量结构体
 
 //--------------------------------------------------------------------------------------游戏结构体----------------------------------------------------------------------------------------------------------//
+
+//对象
+typedef struct
+{
+	char* nameid;
+	void* entityindex;
+}ENTITYINDEX;
 
 //游戏结构体
 typedef struct
 {
 	LPCWSTR Name;				//窗口名字
 	HWND Windowhwnd;			//窗口句柄
-	HWND Windowchildhwnd;		//子窗口句柄
 	int Windowwidth;			//窗口宽度
 	int Windowheight;			//窗口高度
 	BOOL CMDswitch;				//CMD开关
@@ -108,40 +119,29 @@ typedef struct
 	TIMELOAD timeload;			//帧率控制
 	BOOL cuesor;				//鼠标光标
 	BOOL escswitch;				//是否启用esc
+	ENTITYINDEX entityindex[100];//对象池注册表
 }GAME;
+
+typedef struct
+{
+	POINT lengths;				//图片大小
+	DOUBLEBUFFER image;//图片
+}IMAGE;
 
 //动画结构体
 typedef struct
 {
 	LPCSTR Name;
-	LPCWSTR* sequenceframes;	//序列帧数组
+	IMAGE* sequenceframes;		//序列帧数组
 	int number;					//当前序列帧
 	int totalnumber;			//序列帧总数
 	BOOL animeswitch;			//动画动画播放开关
 	TIMELOAD timeload;			//定时器
 }ANIME;
 
-//实体结构体
-typedef struct ENTITY
-{
-	LPCSTR Name;				//名称
-	POINT coor;					//位置
-	VELOCITY velocity;			//速度
-	int hp;						//血量
-	int sid;					//阵营
-	int mode;					//行为模式
-	BOOL crashboxswitch;		//碰撞箱开关
-	struct ENTITY* parent;		//父实体
-	struct ENTITY* children;	//子实体
-}ENTITY;
-
 typedef struct
 {
-	POINT coor;
-	POINT lengths;
-	BOOL buttonswitch;
-	BOOL button;
-	BOOL triggered;
+	RECT coord;
 }BUTTON;
 
 typedef struct
@@ -194,48 +194,38 @@ void NewDIGHT(GAME* Game, int number, int x, int y, COLORREF color) { Dight(Game
 
 //--------------------------------------------------------------------------------------游戏工具----------------------------------------------------------------------------------------------------------//
 
-//按钮控件
-
-void InitialisationButton(BUTTON* button, int x, int y, int width, int height, int YESORNO)
+//加载图片
+void ImageLoad(IMAGE* image, LPCWSTR* imagefile, int imagenumber)
 {
-	button->coor.x = x;
-	button->coor.y = y;
-	button->lengths.x = width;
-	button->lengths.y = height;
-	button->buttonswitch = YESORNO;
-	button->button = 0;
-	button->triggered = 0;
-}
-
-//用于展示不同状态的按钮,悬停时显示图片2,按下时显示图片3
-int ButtonStart(GAME* Game, BUTTON* button, const wchar_t* File1, const wchar_t* File2, const wchar_t* File3)
-{
-	button->button = ButtonA(0, Game->doublebuffer.hdc, button->coor.x, button->coor.y, button->lengths.x, button->lengths.y, button->buttonswitch);
-	switch (button->button)
+	if (imagenumber == 1)
 	{
-	case 0:Img(0, Game->doublebuffer.hdc, File1, button->coor.x, button->coor.y); break;
-	case 1:Img(0, Game->doublebuffer.hdc, File3, button->coor.x, button->coor.y); break;
-	case 2:Img(0, Game->doublebuffer.hdc, File2, button->coor.x, button->coor.y); break;
+		HDC hdcmem;
+		BITMAP bitmap;
+		HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, *imagefile, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		GetObject(hBitmap, sizeof(BITMAP), &bitmap);
+		hdcmem = CreateCompatibleDC(image->image.hdc);
+		SelectObject(hdcmem, hBitmap);
+		TransparentBlt(image->image.hdc, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hdcmem, 0, 0, bitmap.bmWidth, bitmap.bmHeight, RGB(1,1,1));
+		image->lengths.x = bitmap.bmWidth;
+		image->lengths.y = bitmap.bmHeight;
+		DeleteDC(hdcmem);
+		DeleteObject(hBitmap); // 释放位图资源
 	}
-	return button->button;
-}
-
-//新按钮
-int NewButton(GAME* Game, BUTTON* button)
-{
-	if (button->triggered) { button->button = 0; button->triggered = 1; }
-	else if (GetAsyncKeyState(1))
-	{
-		if (MOUSEX > button->coor.x && MOUSEX  < button->coor.x + button->lengths.x && MOUSEY  > button->coor.y && MOUSEY < button->coor.y + button->lengths.y)
+	else if (imagenumber > 0)
+		for (int i = 0; i < imagenumber; i++)
 		{
-			button->button = 1;
-			button->triggered = 1;
+			HDC hdcmem;
+			BITMAP bitmap;
+			HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, imagefile[i], IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+			GetObject(hBitmap, sizeof(BITMAP), &bitmap);
+			hdcmem = CreateCompatibleDC(image[i].image.hdc);
+			SelectObject(hdcmem, hBitmap);
+			TransparentBlt(image[i].image.hdc, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hdcmem, 0, 0, bitmap.bmWidth, bitmap.bmHeight, RGB(1, 1, 1));
+			image[i].lengths.x = bitmap.bmWidth;
+			image[i].lengths.y = bitmap.bmHeight;
+			DeleteDC(hdcmem);
+			DeleteObject(hBitmap); // 释放位图资源
 		}
-	}
-	if (!GetAsyncKeyState(1))button->triggered = 0;
-	if (button->buttonswitch)if (button->button)BOXA(Game, button->coor.x, button->coor.y, button->lengths.x, button->lengths.y, RGB(255, 0, 0));
-	else BOXA(Game, button->coor.x, button->coor.y, button->lengths.x, button->lengths.y, RGB(255, 255, 255));
-	return button->button;
 }
 
 //按键检测
@@ -251,28 +241,61 @@ int KeyState(int Key)
 	else { KEYSTATEbuffer[Key] = 0; return 0; }
 }
 
+//按钮控件
+
+//初始化按钮
+void InitialisationButton(BUTTON* button,int x,int y,int width,int height)
+{
+	button->coord.left = x;
+	button->coord.top = y;
+	button->coord.right = width;
+	button->coord.bottom = height;
+}
+
+int NewButton(GAME* Game, BUTTON* button, int mode, IMAGE buttonimagealpha, IMAGE buttonimagebeta, IMAGE buttonimagegamma)
+{
+	int out = FALSE, type = FALSE;
+	if (MOUSEX > button->coord.left && MOUSEX > button->coord.right + button->coord.left - 1 && MOUSEX > button->coord.top && MOUSEX > button->coord.bottom + button->coord.top - 1)
+	{
+		type = TRUE;
+		out = KeyState(1);
+	}
+	if (mode)
+	{
+		if (out && type)TransparentBlt(Game->doublebuffer.hdc, button->coord.left, button->coord.top, buttonimagealpha.lengths.x, buttonimagealpha.lengths.y, buttonimagealpha.image.hdc, 0, 0, buttonimagealpha.lengths.x, buttonimagealpha.lengths.y, RGB(1, 1, 1));
+		if (!out && type)TransparentBlt(Game->doublebuffer.hdc, button->coord.left, button->coord.top, buttonimagebeta.lengths.x, buttonimagebeta.lengths.y, buttonimagebeta.image.hdc, 0, 0, buttonimagebeta.lengths.x, buttonimagebeta.lengths.y, RGB(1, 1, 1));
+		if (!out && !type)TransparentBlt(Game->doublebuffer.hdc, button->coord.left, button->coord.top, buttonimagegamma.lengths.x, buttonimagegamma.lengths.y, buttonimagegamma.image.hdc, 0, 0, buttonimagegamma.lengths.x, buttonimagegamma.lengths.y, RGB(1, 1, 1));
+	}
+	return out;
+}
+
 //动画控件
 
 //初始化动画
-int InitialisationAnime(ANIME* anime, LPCSTR name, ANIMEIMG* sequenceframes[], int load, int totalnumber)
+int InitialisationAnime(ANIME* anime, LPCSTR name, IMAGE* sequenceframes, int timeload, int totalnumber,int width,int height)
 {
 	anime->Name = name;
 	Color(0x07);
 	if (totalnumber <= 0) { printf("[InitialisationAnime函数错误]动画序列帧总数有问题,请检查名为[%s]的动画!\n", name); return Error; }
 	if (sequenceframes == NULL) { printf("[InitialisationAnime函数错误]动画序列帧有问题,请检查名为[%s]的动画是否存在!\n", name); return Error; }
 	anime->animeswitch = 0;
-	anime->sequenceframes = *sequenceframes;
+	anime->sequenceframes = sequenceframes;
 	anime->totalnumber = totalnumber;
 	anime->number = 0;
-	SetTimeLoad(&(anime->timeload), load);		//设置定时器
+	for(int i = 0;i<anime->totalnumber;i++)
+	{
+		anime->sequenceframes[i].lengths.x = width;
+		anime->sequenceframes[i].lengths.y = height;
+	}
+	SetTimeLoad(&(anime->timeload), timeload);		//设置定时器
 	return YES;
 }
 
 //运行动画
-int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y)
+int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y, int widthsize, int heightsize)
 {
 	if (!animeswitch)return 0;
-	else ImgA(0, Game->doublebuffer.hdc, anime->sequenceframes[anime->number % anime->totalnumber], x, y, 1, 1, RGB(1, 1, 1));
+	else TransparentBlt(Game->doublebuffer.hdc, x, y, anime->sequenceframes[anime->number].lengths.x * widthsize, anime->sequenceframes[anime->number].lengths.y * heightsize, anime->sequenceframes[anime->number % anime->totalnumber].image.hdc, 0, 0, anime->sequenceframes[anime->number].lengths.x, anime->sequenceframes[anime->number].lengths.y, RGB(1, 1, 1));
 	if (TimeLoad(&(anime->timeload), 1)) ++anime->number;	//添加下一帧	
 	return anime->number;
 }
@@ -555,6 +578,24 @@ char* STAROpenCL3D =
 "}"
 ;
 #endif
+//--------------------------------------------------------------------------------------对象注册----------------------------------------------------------------------------------------------------------//
+//对象需要是一个结构体数组,在GAME结构体里指定对象类型索引进行注册然后通过GAME结构体统一调用
+int CreateEntityIndex(GAME* Game, void* arrentity,char* nameid)
+{
+	int index = NOTFOUND;
+	for (int i = 0; i < 100; i++)
+	{
+		if (Game->entityindex[i].entityindex == NULL)
+		{
+			Game->entityindex[i].entityindex = arrentity;
+			Game->entityindex[i].nameid = nameid;
+			index = i;
+			break;
+		}
+		else index = NOTFOUND;
+	}
+	return index;
+}
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
 
 //初始化游戏
@@ -582,14 +623,19 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 		FullScreen(Game->Windowhwnd);
 		break;
 	}
-	for (int i = 0; i < 255; i++) KEYSTATEbuffer[i] = 0;	
+	for (int i = 0; i < 255; i++) KEYSTATEbuffer[i] = 0;
 	Game->CMDswitch = cmdswitch;			//是否显示控制台窗口
 	CMD(cmdswitch);
 	Game->doublebuffer.hdc = DoubleBuffer(Game->Windowhwnd, Game->doublebuffer.hBitmap, Game->Windowwidth, Game->Windowheight);	//双缓冲渲染
 	SetTimeLoad(&(Game->timeload), 1000 / timeload);	//初始化定时器,用于帧率控制
 	Mouse(cursor);										//鼠标光标显示
 	Game->escswitch = 0;								//是否启用esc退出游戏
-	SetTimeLoad(&fps, 1000);
+	SetTimeLoad(&fps, 1000);							//控制帧率
+	for (int i = 0; i < 100; i++)
+	{
+		Game->entityindex[i].entityindex = NULL;
+		Game->entityindex[i].nameid = NULL;
+	}
 #if STARTOpenCL
 	cl_int error;
 	clGetPlatformIDs(1, &platformid, NULL);
@@ -600,7 +646,7 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 	clBuildProgram(program, 1, &deviceid, NULL, NULL, NULL);
 	kernel = clCreateKernel(program, "Point3DDrawing", NULL);
 #endif
-}
+	}
 
 //游戏画面绘制
 void GameDrawing(GAME* Game);
@@ -628,7 +674,7 @@ THREAD GameThreadLogic(LPARAM lparam)
 	return 0;
 }
 //游戏循环
-void GameLoop(GAME* Game, BOOL esc)
+void GameLoop(GAME* Game, BOOL esc,void(*GameSetting)())
 {
 	GAMEDEAD = 0;
 	GAMETHEARDLOGIC = Game;
@@ -637,7 +683,7 @@ void GameLoop(GAME* Game, BOOL esc)
 	GetAsyncKeyState(VK_ESCAPE);
 	RunThread((THREAD*)GameThreadLogic, GAMELOGIC.ID);
 	HDC hdc = GetDC(Game->Windowhwnd);
-	HDC hdcchild = GetDC(Game->Windowchildhwnd);
+	GameSetting();
 	while (!GAMEDEAD)
 	{
 		if (!TimeLoad(&fps, 1))fpsmax++;
