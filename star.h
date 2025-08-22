@@ -1,5 +1,3 @@
-//大改造，非正式版,star将从这个版本开始正式简化冗余代码，可能造成兼容问题，如造成兼容问题，请移步9.11正式版本
-
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
@@ -221,7 +219,7 @@ static int Vsn(int A)
     // 
     //邮箱：c6668883535357a@163.com |1993346266@qq.com 
     // 
-    //版本信息：1.2.1
+    //版本信息：12.3
     /*
     *     版本更新内容
     * 0.1 实现了窗口创建函数
@@ -316,32 +314,33 @@ static int Vsn(int A)
     * 9.0 修复了音乐函数不能重复播放音乐的bug
     * 9.1 新增了双缓冲BoxB函数
     * 9.11 修复了WinBox的huizhiBUG
-    * 1.0.0 大改造测试中
-    * 1.0.01 CMDOFF函数修改成了CMD函数，并且修复了CMDOFF的BUG
-    * 1.0.02 修复了HardwareDetection的可能无返回值的BUG
-    * 1.1.0 更新了定时器模块;
-    * 1.1.1 修正了上次忘记修改的函数
-    * 1.1.2 新增了BoxC函数
-    * 1.1.21 更新了HardwareDetection函数
-    * 1.1.23 修复了获取鼠标坐标在有标题栏的情况下对不齐的BUG
-    * 1.1.3 新增加了获取窗口水平坐标的函数
-    * 1.1.4 新增加了获取窗口垂直坐标的函数
-    * 1.1.41 将代码规整了一些
-    * 1.1.42 修复了HardwareDetection的一些bug
-    * 1.1.43 更新了CMDGetColor函数
-    * 1.1.5 新增了绘制圆函数
-    * 1.1.51 更新了字体透明背景
-    * 1.1.6 新增了LPCSTR类型转换成LPCWSTR函数
-    * 1.1.61 修复了在C++程序下的部分报错
-    * 1.2.0 加入了OpenGL绘图
-    * 1.2.01 修复了随机函数的BUG
-    * 1.2.02 现在可以在多文件下使用该多功能库
-    * 1.2.1 新增了lerp函数
-    * 1.2.2 新增了三角形碰撞检测函数
-    * 1.2.01 削减了部分冗余代码和不必要的功能，现在绘图时需要同时传入句柄和设备上下文来避免内存泄露风险,与之前的只能传入一个参数不同。当然，与之前使用该库的代码没有兼容性风险
-    * 1.2.02 删减了部分不必要的代码
-    * 1.2.1 cpp移植成功,现在cpp和都可以同时使用该引擎
-    * 1.2.2 新添了RunProgram函数
+    * 10.0 大改造测试中
+    * 10.01 CMDOFF函数修改成了CMD函数，并且修复了CMDOFF的BUG
+    * 10.02 修复了HardwareDetection的可能无返回值的BUG
+    * 11.0 更新了定时器模块;
+    * 11.1 修正了上次忘记修改的函数
+    * 11.2 新增了BoxC函数
+    * 11.21 更新了HardwareDetection函数
+    * 11.23 修复了获取鼠标坐标在有标题栏的情况下对不齐的BUG
+    * 11.3 新增加了获取窗口水平坐标的函数
+    * 11.4 新增加了获取窗口垂直坐标的函数
+    * 11.41 将代码规整了一些
+    * 11.42 修复了HardwareDetection的一些bug
+    * 11.43 更新了CMDGetColor函数
+    * 11.5 新增了绘制圆函数
+    * 11.51 更新了字体透明背景
+    * 11.6 新增了LPCSTR类型转换成LPCWSTR函数
+    * 11.61 修复了在C++程序下的部分报错
+    * 12.0 加入了OpenGL绘图
+    * 12.01 修复了随机函数的BUG
+    * 12.02 现在可以在多文件下使用该多功能库
+    * 12.1 新增了lerp函数
+    * 12.2 新增了三角形碰撞检测函数
+    * 12.01 削减了部分冗余代码和不必要的功能，现在绘图时需要同时传入句柄和设备上下文来避免内存泄露风险,与之前的只能传入一个参数不同。当然，与之前使用该库的代码没有兼容性风险
+    * 12.02 删减了部分不必要的代码
+    * 12.1 cpp移植成功,现在cpp和都可以同时使用该引擎
+    * 12.2 新添了RunProgram函数
+    * 12.3 新添了简单的Hash函数
     */
     return A;
 }
@@ -1186,3 +1185,13 @@ static BOOL TriangleDetection(POINT a, POINT b, POINT c, POINT p)
 }
 
 void RunProgram(LPCWSTR name) { ShellExecute(NULL, L"open", name, NULL, NULL, SW_SHOW); }
+
+//Hash
+int Hash(char* text)
+{
+    if (text == NULL)return -1;
+    int length = strlen(text), hash = 0;
+    if (length <= 0)return -1;
+    for (int i = 0; i < length; i++)hash += text[i] * (i + 1);
+    return hash / length * (length % hash);
+}
