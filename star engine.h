@@ -544,7 +544,7 @@ cl_command_queue commandqueue;
 cl_program program;
 cl_kernel kernel;
 
-char* STAROpenCL3D =
+const char* STAROpenCL3D =
 "__kernel void Point3DDrawing(__global float* pointx, __global float* pointy, __global float* pointz, __global float* cameravectorx, __global float* cameravectory, __global float* camerapoint, __global float* cameramatrix, __global float* returnpointx, __global float* returnpointy, __global float* returnpointz,__global float* focalLength)"
 "{"
 "	int number=get_global_id(0);"
