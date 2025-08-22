@@ -37,6 +37,7 @@
 1.6 重做了按钮模块
 */
 #pragma once
+#pragma warning(disable:4996)
 #undef STARDLC
 #include"star.h"
 #if STARTOpenCL
