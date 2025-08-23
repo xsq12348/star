@@ -693,7 +693,7 @@ THREAD GameThreadLogic(LPARAM lparam)
 	return 0;
 }
 //游戏循环
-void GameLoop(GAME* Game, BOOL esc,void(*GameSetting)())
+void GameLoop(GAME* Game, BOOL esc, void(*GameSetting)(GAME* Game))
 {
 	GAMEDEAD = 0;
 	GAMETHEARDLOGIC = Game;
@@ -702,13 +702,13 @@ void GameLoop(GAME* Game, BOOL esc,void(*GameSetting)())
 	GetAsyncKeyState(VK_ESCAPE);
 	RunThread((THREAD*)GameThreadLogic, GAMELOGIC.ID);
 	HDC hdc = GetDC(Game->Windowhwnd);
-	GameSetting();
+	GameSetting(Game);
 	while (!GAMEDEAD)
 	{
 		if (!TimeLoad(&fps, 1))fpsmax++;
 		else { fpsmax2 = fpsmax; fpsmax = 0; }
 		//if (!GAMEPOWER)Sleep(1);
-		if (!GAMEPOWER)if(!TimeLoad(&(Game->timeload),1))Sleep(Game->timeload.timeload);
+		if (!GAMEPOWER)if (!TimeLoad(&(Game->timeload), 1))Sleep(Game->timeload.timeload);
 		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		 //清除双缓冲屏幕画面
 		GameDrawing(Game);
 		Text(0, Game->doublebuffer.hdc, 0, 0, L"FPS:", RGB(0, 150, 0));
@@ -734,4 +734,3 @@ void GameOver(GAME* Game, BOOL cmdswitch)
 #endif
 	printf("游戏资源清理完成!");
 }
-
