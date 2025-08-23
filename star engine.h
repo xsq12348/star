@@ -35,9 +35,9 @@
 1.4 添加了对象注册表，现在可以通过GAME结构体访问全部对象
 1.5 修改了动画部分
 1.6 重做了按钮模块
+1.7 对实体系统添加了Hash查找
 */
 #pragma once
-#pragma warning(disable:4996)
 #undef STARDLC
 #include"star.h"
 #if STARTOpenCL
@@ -83,6 +83,8 @@
 #define VK_Y 89
 #define VK_Z 90
 
+#define ENTITYNUMBER 10000
+
 TIMELOAD fps;
 int fpsmax = 0,
 fpsmax2 = 0;
@@ -120,7 +122,7 @@ typedef struct
 	TIMELOAD timeload;			//帧率控制
 	BOOL cuesor;				//鼠标光标
 	BOOL escswitch;				//是否启用esc
-	ENTITYINDEX entityindex[100];//对象池注册表
+	ENTITYINDEX entityindex[ENTITYNUMBER];//对象池注册表
 }GAME;
 
 typedef struct
@@ -581,22 +583,34 @@ const char* STAROpenCL3D =
 #endif
 //--------------------------------------------------------------------------------------对象注册----------------------------------------------------------------------------------------------------------//
 //对象需要是一个结构体数组,在GAME结构体里指定对象类型索引进行注册然后通过GAME结构体统一调用
-int CreateEntityIndex(GAME* Game, void* arrentity,char* nameid)
+int CreateEntityIndex(GAME* Game, void* arrentity, char* nameid)
 {
 	int index = NOTFOUND;
-	for (int i = 0; i < 100; i++)
+	int hash = Hash(nameid) % ENTITYNUMBER;
+	if (Game->entityindex[hash].entityindex == NULL)
 	{
-		if (Game->entityindex[i].entityindex == NULL)
+		if (hash != Error)
 		{
-			Game->entityindex[i].entityindex = arrentity;
-			Game->entityindex[i].nameid = nameid;
-			index = i;
-			break;
+			index = hash;
+			Game->entityindex[index].entityindex = arrentity;
+			Game->entityindex[index].nameid = nameid;
 		}
-		else index = NOTFOUND;
+		else printf("非法的字符串[%s],无法通过这个字符串得到哈希值", nameid);
+	}
+	else
+	{
+		printf("字符串[%s]导致的哈希冲突，请换一个名字", nameid);
+		index = NOTFOUND;
 	}
 	return index;
 }
+
+//hash寻找实体
+int HashFindEntityIndex(char*nameid)
+{
+	return Hash(nameid) % ENTITYNUMBER;
+}
+
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
 
 //初始化游戏
@@ -632,7 +646,7 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 	Mouse(cursor);										//鼠标光标显示
 	Game->escswitch = 0;								//是否启用esc退出游戏
 	SetTimeLoad(&fps, 1000);							//控制帧率
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < ENTITYNUMBER; i++)
 	{
 		Game->entityindex[i].entityindex = NULL;
 		Game->entityindex[i].nameid = NULL;
