@@ -38,6 +38,7 @@
 1.7 对实体系统添加了Hash查找
 */
 #pragma once
+#pragma warning(disable:4996)
 #undef STARDLC
 #include"star.h"
 #if STARTOpenCL
@@ -733,3 +734,4 @@ void GameOver(GAME* Game, BOOL cmdswitch)
 #endif
 	printf("游戏资源清理完成!");
 }
+
