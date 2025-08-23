@@ -107,6 +107,7 @@ typedef POINT VELOCITY;			//速度分量结构体
 typedef struct
 {
 	char* nameid;
+	int length;
 	void* entityindex;
 }ENTITYINDEX;
 
@@ -583,7 +584,7 @@ const char* STAROpenCL3D =
 #endif
 //--------------------------------------------------------------------------------------对象注册----------------------------------------------------------------------------------------------------------//
 //对象需要是一个结构体数组,在GAME结构体里指定对象类型索引进行注册然后通过GAME结构体统一调用
-int CreateEntityIndex(GAME* Game, void* arrentity, char* nameid)
+int CreateEntityIndex(GAME* Game, void* arrentity, char* nameid,int length)
 {
 	int index = NOTFOUND;
 	int hash = Hash(nameid) % ENTITYNUMBER;
@@ -594,6 +595,7 @@ int CreateEntityIndex(GAME* Game, void* arrentity, char* nameid)
 			index = hash;
 			Game->entityindex[index].entityindex = arrentity;
 			Game->entityindex[index].nameid = nameid;
+			Game->entityindex[index].length = length;
 		}
 		else printf("非法的字符串[%s],无法通过这个字符串得到哈希值", nameid);
 	}
@@ -650,6 +652,7 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 	{
 		Game->entityindex[i].entityindex = NULL;
 		Game->entityindex[i].nameid = NULL;
+		Game->entityindex[i].length = NULL;
 	}
 #if STARTOpenCL
 	cl_int error;
