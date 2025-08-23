@@ -36,6 +36,7 @@
 1.5 修改了动画部分
 1.6 重做了按钮模块
 1.7 对实体系统添加了Hash查找
+1.71 修复了被遗忘的隐藏BUG
 */
 #pragma once
 #pragma warning(disable:4996)
@@ -314,8 +315,6 @@ typedef struct
 	int R;
 	double mass;
 }CIRCLEPHYSICS;
-GAME Game;
-CIRCLEPHYSICS circle[3];
 
 void CirclePhysics(CIRCLEPHYSICS* a, CIRCLEPHYSICS* b)
 {
