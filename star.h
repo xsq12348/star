@@ -341,6 +341,7 @@ static int Vsn(int A)
     * 12.3 cpp移植成功,现在cpp和都可以同时使用该引擎
     * 12.4 新添了RunProgram函数
     * 12.5 新添了简单的Hash函数
+    * 12.51 删减了部分冗余代码
     */
     return A;
 }
@@ -457,22 +458,20 @@ static void DeletBuffer(HBITMAP hBitmap, HDC hdcMem)
 //在窗口中绘制线段
 static void Line(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    HDC hDc = hdc;
     HPEN hpen = CreatePen(PS_SOLID, 1, color);
-    HPEN holdpen = (HPEN)SelectObject(hDc, hpen);
-    MoveToEx(hDc, x2, y2, NULL);
-    LineTo(hDc, x1, y1);
-    SelectObject(hDc, holdpen);
+    HPEN holdpen = (HPEN)SelectObject(hdc, hpen);
+    MoveToEx(hdc, x2, y2, NULL);
+    LineTo(hdc, x1, y1);
+    SelectObject(hdc, holdpen);
     DeleteObject(hpen);
-    ReleaseDC(hwnd, hDc);
+    ReleaseDC(hwnd, hdc);
 }
 
 //绘制像素点
 static void Pix(HWND hwnd, HDC hdc, int x, int y, COLORREF color)
 {
-    HDC hDc = hdc;
-    SetPixel(hDc, x, y, color);
-    ReleaseDC(hwnd, hDc);
+    SetPixel(hdc, x, y, color);
+    ReleaseDC(hwnd, hdc);
 }
 
 //锚点点
@@ -508,49 +507,45 @@ static void ApLine(HWND hwnd, HDC hdc, int apx, int apy, int x1, int y1, int x2,
 //矩形函数
 static void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    HDC hDc = hdc;
     HPEN hpen = CreatePen(PS_SOLID, 1, color);
-    HPEN holdpen = (HPEN)SelectObject(hDc, hpen);
-    Rectangle(hDc, x1, y1, x2, y2);
-    SelectObject(hDc, holdpen);
+    HPEN holdpen = (HPEN)SelectObject(hdc, hpen);
+    Rectangle(hdc, x1, y1, x2, y2);
+    SelectObject(hdc, holdpen);
     DeleteObject(hpen);
-    ReleaseDC(hwnd, hDc);
+    ReleaseDC(hwnd, hdc);
 }
 
 static void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
 {
-    HDC hDc = hdc;
     PAINTSTRUCT ps;
     HBRUSH hbs = CreateSolidBrush(color);
     RECT rect = { x1,y1,x2,y2 };
-    FillRect(hDc, &rect, hbs);
+    FillRect(hdc, &rect, hbs);
     DeleteObject(hbs);
     EndPaint(hwnd, &ps);
-    ReleaseDC(hwnd, hDc);
+    ReleaseDC(hwnd, hdc);
 }
 
 static void BoxC(HWND hwnd, HDC hdc, int x, int y, int width, int height, COLORREF color)
 {
-    HDC hDc = hdc;
     PAINTSTRUCT ps;
     HBRUSH hbs = CreateSolidBrush(color);
     RECT rect = { x,y,x + width,y + height };
-    FillRect(hDc, &rect, hbs);
+    FillRect(hdc, &rect, hbs);
     DeleteObject(hbs);
     EndPaint(hwnd, &ps);
-    ReleaseDC(hwnd, hDc);
+    ReleaseDC(hwnd, hdc);
 }
 
 //绘制圆
 static void Circle(HWND hwnd, HDC hdc, int R, int x, int y, COLORREF color)
 {
-    HDC hDc = hdc;
     HPEN hpen = CreatePen(PS_SOLID, 1, color);
-    HPEN holdpen = (HPEN)SelectObject(hDc, hpen);
-    Ellipse(hDc, x - R, y - R, x + R, y + R);
-    SelectObject(hDc, holdpen);
+    HPEN holdpen = (HPEN)SelectObject(hdc, hpen);
+    Ellipse(hdc, x - R, y - R, x + R, y + R);
+    SelectObject(hdc, holdpen);
     DeleteObject(hpen);
-    ReleaseDC(hwnd, hDc);
+    ReleaseDC(hwnd, hdc);
 }
 
 //显示图片
@@ -1017,24 +1012,21 @@ static void Clear(HWND hwnd) { InvalidateRect(hwnd, NULL, TRUE); }
 //文本输出
 static void Text(HWND hwnd, HDC hdc, int x, int y, LPCWSTR text, COLORREF color)
 {
-    HDC hDc = hdc;
-    SetBkMode(hDc, TRANSPARENT);//设置字体背景透明
-    SetTextColor(hDc, color);
-    TextOut(hDc, x, y, text, wcslen(text));
-    ReleaseDC(hwnd, hDc);
+    SetBkMode(hdc, TRANSPARENT);//设置字体背景透明
+    SetTextColor(hdc, color);
+    TextOut(hdc, x, y, text, wcslen(text));
+    ReleaseDC(hwnd, hdc);
 }
 
 //显示数字
 static void Dight(HWND hwnd, HDC hdc, int x, int y, int dight, COLORREF color)
 {
-    HDC hDc = hdc;
-    SetBkMode(hDc, TRANSPARENT);//设置字体背景透明
-    int size;
-    TCHAR szText[256];
-    size = wsprintf(szText, TEXT("%d"), dight);
-    SetTextColor(hDc, color);
-    TextOut(hDc, x, y, szText, size);
-    ReleaseDC(hwnd, hDc);
+    SetBkMode(hdc, TRANSPARENT);//设置字体背景透明
+    wchar_t number[50];
+    swprintf(number, 50, L"%d", dight);
+    SetTextColor(hdc, color);
+    TextOut(hdc, x, y, number, wcslen(number));
+    ReleaseDC(hwnd, hdc);
 }
 
 //获取某一位置像素颜色
