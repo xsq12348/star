@@ -96,6 +96,7 @@ fpsmax2 = 0;
 #define switchlogic(alpha) if(FALSE);
 #define caselogic(beta) else if(beta)
 #define NOTFOUND Error
+#define RANGE(alpha, beta, gamma) min(max(alpha, beta), gamma)
 
 int GAMEDEAD = 0;				//游戏结束
 int GAMEINPUT;					//游戏输入
