@@ -21,6 +21,8 @@
 #define CMDHWND GetConsoleWindow()
 #define nScreenWidth GetSystemMetrics(SM_CXSCREEN)
 #define nScreenheight GetSystemMetrics(SM_CYSCREEN)
+#define DegRad(alpha) (Pi * (alpha) * 1.f / 180) //角度转弧度
+#define Lerp(alpha, beta, t) ((1. - t) * alpha + t * beta) //线性插值
 #pragma comment( lib,"Winmm.lib")
 #pragma comment(lib, "Msimg32.lib")
 
@@ -338,6 +340,8 @@ static int Vsn(int A)
     * 12.5 新添了简单的Hash函数
     * 12.51 删减了部分冗余代码
     * 12.6 OpenGL作为GPU功能存在于这样一个基础多功能库里是不合理的,占地方且几乎未使用，目前已经被转移到Star Engine中
+    * 12.61 修复了RunWindow函数的BUG
+    * 12.62 修复了部分冗余和不必要的代码
     */
     return A;
 }
@@ -471,10 +475,10 @@ static void Pix(HWND hwnd, HDC hdc, int x, int y, COLORREF color)
 }
 
 //锚点点
-static void ApPix(HWND hwnd, HDC hdc, int apx, int apy, int x, int y, double rad, COLORREF color)
+static void ApPix(HWND hwnd, HDC hdc, int apx, int apy, int x, int y, float rad, COLORREF color)
 {
     int newx, newy;
-    double Rot2Dmax[2][2] =
+    float Rot2Dmax[2][2] =
     {
         {cos(rad),-sin(rad)},
         {sin(rad),cos(rad)}
@@ -485,10 +489,10 @@ static void ApPix(HWND hwnd, HDC hdc, int apx, int apy, int x, int y, double rad
 }
 
 //锚点线
-static void ApLine(HWND hwnd, HDC hdc, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color)
+static void ApLine(HWND hwnd, HDC hdc, int apx, int apy, int x1, int y1, int x2, int y2, float rad, COLORREF color)
 {
     int newx1, newy1, newx2, newy2;
-    double Rot2Dmax[2][2] =
+    float Rot2Dmax[2][2] =
     {
         {cos(rad),-sin(rad)},
         {sin(rad),cos(rad)}
@@ -563,7 +567,7 @@ static void Img(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y)
 }
 
 //显示图片的变种，可以选择性不显示某种颜色，还可以改变图片放大倍数
-static void ImgA(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y, double widthbs, double heightbs, COLORREF color)
+static void ImgA(HWND hwnd, HDC hdc, const wchar_t* File, int x, int y, float widthbs, float heightbs, COLORREF color)
 {
     HDC hDc = hdc;
     if (widthbs <= 0) { widthbs = 1; }
@@ -708,7 +712,11 @@ static void RunWindow()
     {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
-        if (GetAsyncKeyState(VK_ESCAPE))  printf("窗口已退出\n"); return;
+        if (GetAsyncKeyState(VK_ESCAPE))  
+        {
+            printf("窗口已退出\n");
+            return;
+        }
     }
 }
 
@@ -751,9 +759,6 @@ static void CMDMouse(int NO_or_OFF)
     }
 }
 
-//暂停函数
-static void TimeOut() { getchar(); }
-
 //全屏函数
 static void CMDFullScreen()
 {
@@ -767,9 +772,6 @@ static void CMDFullScreen()
 
 //随机数
 static int Random(int A, int B) { return rand() % (B - A) + A; }
-
-//角度转弧度
-static double DegRad(double a) { return Pi * a * 1.0 / 180; }
 
 //隐藏控制台
 static BOOL CMD(BOOL YESORNO)
@@ -842,8 +844,7 @@ static int WindowcoordinatesY(HWND hwnd)
     return windowcoordinates.top;
 }
 
-//win32鼠标光标开关
-static void Mouse(BOOL ON_OR_OFF) { ShowCursor(ON_OR_OFF); }
+/*win32鼠标光标开关*/static void Mouse(BOOL ON_OR_OFF) { ShowCursor(ON_OR_OFF); }
 
 //获取控制台某一出颜色,A==1时为前景色，A==2时为背景色
 static int CMDGetColor(int x, int y, int A)
@@ -871,14 +872,12 @@ static int FILEFP(FILE* fp, int nLine)
     return 0;
 }
 
-//删除窗口
-static void DeletWindow(HWND hwnd) { DestroyWindow(hwnd); }
+/*删除窗口*/static void DeletWindow(HWND hwnd) { DestroyWindow(hwnd); }
 
-//全屏
-static void FullScreen(HWND hwnd) { ShowWindow(hwnd, 3); }
+/*全屏*/static void FullScreen(HWND hwnd) { ShowWindow(hwnd, 3); }
 
-//win32隐藏标题栏
-static void TitleBar(HWND hwnd) { SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION); }
+
+/*win32隐藏标题栏*/static void TitleBar(HWND hwnd) { SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION); }
 
 //置顶窗口
 static void FirstWindow(HWND hwnd)
@@ -1037,27 +1036,20 @@ static LPCWSTR CharToLPCWSTR(const char* str)
 
 typedef struct
 {
-    double x;
-    double y;
+    float x;
+    float y;
 }DOUBLEPOINT;
 
-static double Lerp(double a, double b, double t)
-{
-    t = (t < 1 ? t : 1);
-    int c = (1. - t) * a + t * b;
-    return c;
-}
-
 //三角形碰撞检测
-static BOOL TriangleDetection(POINT a, POINT b, POINT c, POINT p)
+static BOOL TriangleDetection(DOUBLEPOINT a, DOUBLEPOINT b, DOUBLEPOINT c, DOUBLEPOINT p)
 {
-    double d1 = (p.x - b.x) * (a.y - b.y) - (a.x - b.x) * (p.y - b.y);
-    double d2 = (p.x - c.x) * (b.y - c.y) - (b.x - c.x) * (p.y - c.y);
-    double d3 = (p.x - a.x) * (c.y - a.y) - (c.x - a.x) * (p.y - a.y);
+    float d1 = (p.x - b.x) * (a.y - b.y) - (a.x - b.x) * (p.y - b.y);
+    float d2 = (p.x - c.x) * (b.y - c.y) - (b.x - c.x) * (p.y - c.y);
+    float d3 = (p.x - a.x) * (c.y - a.y) - (c.x - a.x) * (p.y - a.y);
     return (d1 * d2 > 0) && (d2 * d3 > 0);
 }
 
-void RunProgram(LPCWSTR name) { ShellExecute(NULL, L"open", name, NULL, NULL, SW_SHOW); }
+/*运行外部程序*/void RunProgram(LPCWSTR name) { ShellExecute(NULL, L"open", name, NULL, NULL, SW_SHOW); }
 
 //Hash
 int Hash(char* text)
