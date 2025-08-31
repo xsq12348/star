@@ -11,8 +11,6 @@
 #include<ctype.h>
 #include <xkeycheck.h>
 #include <commctrl.h> 
-#include <gl/GL.h>
-#include <gl/GLU.h>
 
 #define ON  1
 #define OFF 0
@@ -25,8 +23,6 @@
 #define nScreenheight GetSystemMetrics(SM_CYSCREEN)
 #pragma comment( lib,"Winmm.lib")
 #pragma comment(lib, "Msimg32.lib")
-#pragma comment(lib, "opengl32.lib")
-#pragma comment(lib, "glu32.lib")
 
 /*
 颜色属性由两个十六进制数字指定, 第一个为背景色, 第二个为前景色。
