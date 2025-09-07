@@ -42,9 +42,13 @@
 #pragma warning(disable:4996)
 #undef STARDLC
 #include"star.h"
-#if STARTOpenCL
+#if STARTOpenCL || STARTGPU
 #include<CL/opencl.h>
+#include <gl/GL.h>
+#include <gl/GLU.h>
 #pragma comment(lib,"OpenCL.lib")
+#pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "glu32.lib")
 #endif
 
 #define VK_0 48
@@ -85,11 +89,10 @@
 #define VK_Y 89
 #define VK_Z 90
 
-#define ENTITYNUMBER 10000
+#define VECTORY float
 
-TIMELOAD fps;
-int fpsmax = 0,
-fpsmax2 = 0;
+#define ENTITYNUMBER 10000
+#define nScreenHeight nScreenheight
 
 #define RANDOM(a,b) Random(a,b)
 #define DEGRAD(a) DegRad(a)
@@ -97,12 +100,18 @@ fpsmax2 = 0;
 #define caselogic(beta) else if(beta)
 #define NOTFOUND Error
 #define RANGE(alpha, beta, gamma) min(max(alpha, beta), gamma)
+#define SETMOUSECOORD(x, y) SetCursorPos(x, y)
+#define HashFindEntityIndex(nameid) (Hash(nameid) % ENTITYNUMBER)//hash寻找实体
 
 int GAMEDEAD = 0;				//游戏结束
 int GAMEINPUT;					//游戏输入
 int MOUSEX = 0, MOUSEY = 0;
 int GAMEPOWER = 0;
 typedef POINT VELOCITY;			//速度分量结构体
+
+TIMELOAD fps;
+int fpsmax = 0,
+fpsmax2 = 0;
 
 //--------------------------------------------------------------------------------------游戏结构体----------------------------------------------------------------------------------------------------------//
 
@@ -132,7 +141,7 @@ typedef struct
 typedef struct
 {
 	POINT lengths;				//图片大小
-	DOUBLEBUFFER image;//图片
+	DOUBLEBUFFER image;			//图片
 }IMAGE;
 
 //动画结构体
@@ -140,7 +149,7 @@ typedef struct
 {
 	LPCSTR Name;
 	IMAGE* sequenceframes;		//序列帧数组
-	int number;					//当前序列帧
+	long long int number;		//当前序列帧
 	int totalnumber;			//序列帧总数
 	BOOL animeswitch;			//动画动画播放开关
 	TIMELOAD timeload;			//定时器
@@ -153,27 +162,59 @@ typedef struct
 
 typedef struct
 {
+	DOUBLEPOINT coor;
+	DOUBLEPOINT vectory;
+	int R;
+	double mass;
+}CIRCLEPHYSICS;
+
+typedef struct
+{
 	float x;
 	float y;
 	float z;
 }POINT3D;
+
 typedef struct
 {
 	float x;
 	float y;
 	float Z;
 }POINT2D;
+
+typedef struct
+{
+	int color;
+	POINT3D vertex[3];
+}SURFACE;
+
 typedef struct
 {
 	POINT3D camerapoint;
 	POINT3D cameravectorx;
 	POINT3D cameravectory;
+	POINT3D cameranormal;
 	float cameravectorxmo;
 	float cameravectorymo;
 	float focalLength;
 	float matrixR[3][3];
 	float matrix[3][3];
 }CAMERA;
+
+#if STARTOpenCL || STARTGPU
+typedef struct
+{
+	HDC hdc;
+	HWND hwnd;
+	HGLRC hrc;
+	int znear;
+	int zfar;
+	int* bitmap;
+	int width;
+	int height;
+}OPENGL;
+
+#endif
 
 //--------------------------------------------------------------------------------------绘图函数----------------------------------------------------------------------------------------------------------//
 
@@ -302,20 +343,16 @@ int InitialisationAnime(ANIME* anime, LPCSTR name, IMAGE* sequenceframes, int ti
 int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y, int widthsize, int heightsize)
 {
 	if (!animeswitch)return 0;
-	else TransparentBlt(Game->doublebuffer.hdc, x, y, anime->sequenceframes[anime->number].lengths.x * widthsize, anime->sequenceframes[anime->number].lengths.y * heightsize, anime->sequenceframes[anime->number % anime->totalnumber].image.hdc, 0, 0, anime->sequenceframes[anime->number].lengths.x, anime->sequenceframes[anime->number].lengths.y, RGB(1, 1, 1));
+	else 
+	{
+		anime->number %= anime->totalnumber;
+		TransparentBlt(Game->doublebuffer.hdc, x, y, anime->sequenceframes[anime->number].lengths.x * widthsize, anime->sequenceframes[anime->number].lengths.y * heightsize, anime->sequenceframes[anime->number].image.hdc, 0, 0, anime->sequenceframes[anime->number].lengths.x, anime->sequenceframes[anime->number].lengths.y, RGB(1, 1, 1));
+	}
 	if (TimeLoad(&(anime->timeload), 1)) ++anime->number;	//添加下一帧	
 	return anime->number;
 }
 
 //简单物理
-
-typedef struct
-{
-	DOUBLEPOINT coor;
-	DOUBLEPOINT vectory;
-	int R;
-	double mass;
-}CIRCLEPHYSICS;
 
 void CirclePhysics(CIRCLEPHYSICS* a, CIRCLEPHYSICS* b)
 {
@@ -367,7 +404,7 @@ void InitialisationCircle(CIRCLEPHYSICS* circle, int x, int y, double m, double 
 }
 
 //-----------------------------------------------------------------------------------------3D-------------------------------------------------------------------------------------------------------------//
-void CameraMatrix(CAMERA* camera, double Rx, double Ry, double Rz)
+void CameraMatrix(CAMERA* camera, float Rx, float Ry, float Rz)
 {
 
 	/*
@@ -477,10 +514,9 @@ you can get an orthogonal projection, and then you can get the perspective effec
 			camera->matrixR[o][i] = matrixR[o][i];
 			camera->matrix[o][i] = matrix[o][i];
 		}
-
 }
 
-void CameraCompute(CAMERA* camera, double Rx, double Ry, double Rz)
+void CameraCompute(CAMERA* camera, float Rx, float Ry, float Rz)
 {
 	CameraMatrix(camera, Rx, Ry, Rz);
 	camera->cameravectorx.x = camera->matrixR[0][0] * camera->cameravectorxmo;
@@ -490,17 +526,16 @@ void CameraCompute(CAMERA* camera, double Rx, double Ry, double Rz)
 	camera->cameravectory.x = camera->matrixR[0][1] * camera->cameravectorymo;
 	camera->cameravectory.y = camera->matrixR[1][1] * camera->cameravectorymo;
 	camera->cameravectory.z = camera->matrixR[2][1] * camera->cameravectorymo;
+
+	camera->cameranormal.x = camera->cameravectorx.y * camera->cameravectory.z - camera->cameravectorx.z * camera->cameravectory.y;
+	camera->cameranormal.y = camera->cameravectorx.z * camera->cameravectory.x - camera->cameravectorx.x * camera->cameravectory.z;
+	camera->cameranormal.z = camera->cameravectorx.x * camera->cameravectory.y - camera->cameravectorx.y * camera->cameravectory.x;
 }
 
-POINT2D Point3DDrawing(POINT3D point, CAMERA camera, double L, BOOL orthogonal)
+POINT2D Point3DDrawing(POINT3D point, CAMERA camera, float L, BOOL orthogonal)
 {
 
-	POINT3D cameravectory =
-	{
-			camera.cameravectorx.y * camera.cameravectory.z - camera.cameravectorx.z * camera.cameravectory.y,
-			camera.cameravectorx.z * camera.cameravectory.x - camera.cameravectorx.x * camera.cameravectory.z,
-			camera.cameravectorx.x * camera.cameravectory.y - camera.cameravectorx.y * camera.cameravectory.x
-	};
+	POINT3D cameravectory = camera.cameranormal;
 	POINT3D relativecoordinatespointbuffer =
 	{
 		-point.x + camera.camerapoint.x,
@@ -539,16 +574,18 @@ POINT2D Point3DDrawing(POINT3D point, CAMERA camera, double L, BOOL orthogonal)
 	else returnpoint.Z = 1;
 	return returnpoint;
 }
-#if STARTOpenCL
+
+#if STARTOpenCL || STARTGPU
 
 cl_platform_id platformid;
 cl_device_id deviceid;
 cl_context context;
 cl_command_queue commandqueue;
 cl_program program;
-cl_kernel kernel;
+cl_kernel kernel3D;
 
 const char* STAROpenCL3D =
+/*
 "__kernel void Point3DDrawing(__global float* pointx, __global float* pointy, __global float* pointz, __global float* cameravectorx, __global float* cameravectory, __global float* camerapoint, __global float* cameramatrix, __global float* returnpointx, __global float* returnpointy, __global float* returnpointz,__global float* focalLength)"
 "{"
 "	int number=get_global_id(0);"
@@ -581,8 +618,115 @@ const char* STAROpenCL3D =
 "	if (returnpointz[number] > 5000){returnpointz[number] = -1;return;}"
 "	return;"
 "}"
+*/
+//point			[x][y][z]
+//cameravector	[x.x][x.y][x.z][y.x][y.y][y.z][normal.x][normal.y][normal.z]
+//returnpoint	[x][y][Z]
+"__kernel void Point3DDrawing(float* point, float* cameravector, float* camerapoint, float* cameramatrix, __global float* returnpoint, float* focalLength)"
+"{"
+"	int number = get_global_id(0);"
+"	float cameravectorZ[3];"
+"	cameravectorZ[0] = cameravector[6];"
+"	cameravectorZ[1] = cameravector[7];"
+"	cameravectorZ[2] = cameravector[8];"
+"	float relativecoordinatespointbuffer[3];"
+"	relativecoordinatespointbuffer[0] = - point[number * 3] + camerapoint[0];"
+"	relativecoordinatespointbuffer[1] = - point[number * 3 + 1] + camerapoint[1];"
+"	relativecoordinatespointbuffer[2] = - point[number * 3 + 2] + camerapoint[2];"
+"	float direction = (relativecoordinatespointbuffer[0] * cameravectorZ[0] + relativecoordinatespointbuffer[1] * cameravectorZ[1] + relativecoordinatespointbuffer[2] * cameravectorZ[2]) / (sqrt(cameravectorZ[0] * cameravectorZ[0] + cameravectorZ[1] * cameravectorZ[1] + cameravectorZ[2] * cameravectorZ[2]) * sqrt(relativecoordinatespointbuffer[0] * relativecoordinatespointbuffer[0] + relativecoordinatespointbuffer[1] * relativecoordinatespointbuffer[1] + relativecoordinatespointbuffer[2] * relativecoordinatespointbuffer[2]));"
+"	if(direction >= -.1f){returnpoint[number * 3 + 2] = -1; return;}"
+"	float relativecoordinatespoint[3];"
+"	relativecoordinatespoint[0] = relativecoordinatespointbuffer[0];"
+"	relativecoordinatespoint[1] = relativecoordinatespointbuffer[1];"
+"	relativecoordinatespoint[2] = relativecoordinatespointbuffer[2];"
+"	relativecoordinatespointbuffer[0] = relativecoordinatespoint[0] * cameramatrix[0] + relativecoordinatespoint[1] * cameramatrix[1] + relativecoordinatespoint[2] * cameramatrix[2];"
+"	relativecoordinatespointbuffer[1] = relativecoordinatespoint[0] * cameramatrix[3] + relativecoordinatespoint[1] * cameramatrix[4] + relativecoordinatespoint[2] * cameramatrix[5];"
+"	relativecoordinatespointbuffer[2] = relativecoordinatespoint[0] * cameramatrix[6] + relativecoordinatespoint[1] * cameramatrix[7] + relativecoordinatespoint[2] * cameramatrix[8];"
+"	returnpoint[number * 3] = relativecoordinatespointbuffer[0] * cameravector[0] + relativecoordinatespointbuffer[1] * cameravector[1] + relativecoordinatespointbuffer[2] * cameravector[2];"
+"	returnpoint[number * 3 + 1] = relativecoordinatespointbuffer[0] * cameravector[3] + relativecoordinatespointbuffer[1] * cameravector[4] + relativecoordinatespointbuffer[2] * cameravector[5];"
+"	returnpoint[number * 3 + 2] = 0;"
+"	float pointmo[2];"
+"	pointmo[0] = sqrt(relativecoordinatespointbuffer[0] * relativecoordinatespointbuffer[0] + relativecoordinatespointbuffer[1] * relativecoordinatespointbuffer[1] + relativecoordinatespointbuffer[2] * relativecoordinatespointbuffer[2]);"
+"	pointmo[1] = sqrt(relativecoordinatespoint[0] * relativecoordinatespoint[0] + relativecoordinatespoint[1] * relativecoordinatespoint[1] + relativecoordinatespoint[2] * relativecoordinatespoint[2]);"
+"	returnpoint[number * 3 + 2] = sqrt(pointmo[1] * pointmo[1] - pointmo[0] * pointmo[0]);"
+"	returnpoint[number * 3] = returnpoint[number * 3] / returnpoint[number * 3 + 2] * *focalLength;"
+"	returnpoint[number * 3 + 1] = returnpoint[number * 3 + 1] / returnpoint[number * 3 + 2] * *focalLength;"
+"	if (returnpoint[number * 3 + 2] > 5000){returnpoint[number * 3 + 2] = -1;return;}"
+"	return;"
+"}"
 ;
+
+//---------------------------------------------------------------------------------------------以下为OpenGL内容------------------------------------------------------------------------------------------------------//
+
+//初始化 OpenGL
+static void SetOpenGL(HWND hwnd, OPENGL* opengl,int*bitmap,int width,int height,int znear,int zfar)
+{
+	HDC hdc;
+	HGLRC hrc;
+	PIXELFORMATDESCRIPTOR pfd =
+	{
+		sizeof(PIXELFORMATDESCRIPTOR),
+		1,
+		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
+		PFD_TYPE_RGBA,
+		32, // 颜色深度
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		24, // 深度缓冲区
+		8,  // 模板缓冲区
+		0, 0, 0, 0, 0
+	};
+
+	hdc = GetDC(hwnd);
+	int pixelFormat = ChoosePixelFormat(hdc, &pfd);
+	SetPixelFormat(hdc, pixelFormat, &pfd);
+	hrc = wglCreateContext(hdc);
+	wglMakeCurrent(hdc, hrc);
+
+	// 设置视口和正交投影
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(45.0, width/ height, znear, zfar);  // 3D透视投影
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	opengl->hdc = hdc;
+	opengl->hrc = hrc;
+	opengl->znear = znear;
+	opengl->zfar = zfar;
+	opengl->bitmap = bitmap;
+	opengl->width = width;
+	opengl->height = height;
+}
+
+//绘制画面
+static void RunOpenGL(HDC hdc)
+{
+	SwapBuffers(hdc);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+static void DeletOPENGL(OPENGL opengl)
+{
+	wglMakeCurrent(NULL, NULL);
+	wglDeleteContext(opengl.hrc);
+	ReleaseDC(opengl.hwnd, opengl.hdc);
+	DestroyWindow(opengl.hwnd);
+}
+//---------------------------------------------------------------------------------------------以下为具体渲染内容------------------------------------------------------------------------------------------------------//
+
+void SurfaceDrawingGPU(GAME* Game, CAMERA camera, SURFACE surface, float L)
+{
+
+}
 #endif
+
+void SurfaceDrawing(GAME* Game, CAMERA camera, SURFACE surface, float L)
+{
+	POINT2D screencoord[3] = { 0 };
+	for (int i = 0; i < 3; i++)screencoord[i] = Point3DDrawing(surface.vertex[i], camera, L, FALSE);
+	if (screencoord[0].Z >= -L && screencoord[1].Z >= -L && screencoord[2].Z >= -L)return;
+}
+
 //--------------------------------------------------------------------------------------对象注册----------------------------------------------------------------------------------------------------------//
 //对象需要是一个结构体数组,在GAME结构体里指定对象类型索引进行注册然后通过GAME结构体统一调用
 int CreateEntityIndex(GAME* Game, void* arrentity, char* nameid,int length)
@@ -606,12 +750,6 @@ int CreateEntityIndex(GAME* Game, void* arrentity, char* nameid,int length)
 		index = NOTFOUND;
 	}
 	return index;
-}
-
-//hash寻找实体
-int HashFindEntityIndex(char*nameid)
-{
-	return Hash(nameid) % ENTITYNUMBER;
 }
 
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
@@ -655,7 +793,7 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 		Game->entityindex[i].nameid = NULL;
 		Game->entityindex[i].length = NULL;
 	}
-#if STARTOpenCL
+#if STARTOpenCL || STARTGPU
 	cl_int error;
 	clGetPlatformIDs(1, &platformid, NULL);
 	clGetDeviceIDs(platformid, CL_DEVICE_TYPE_GPU, 1, &deviceid, NULL);
@@ -663,7 +801,7 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 	commandqueue = clCreateCommandQueue(context, deviceid, NULL, NULL);
 	program = clCreateProgramWithSource(context, 1, (const char**)&STAROpenCL3D, NULL, &error);
 	clBuildProgram(program, 1, &deviceid, NULL, NULL, NULL);
-	kernel = clCreateKernel(program, "Point3DDrawing", NULL);
+	kernel3D = clCreateKernel(program, "Point3DDrawing", NULL);
 #endif
 	}
 
@@ -727,7 +865,7 @@ void GameOver(GAME* Game, BOOL cmdswitch)
 	DeletBuffer(Game->doublebuffer.hBitmap, Game->doublebuffer.hdc);	//销毁双缓冲资源
 	DeletWindow(Game->Windowhwnd);										//删除游戏窗口
 	if (cmdswitch)CMD(ON);												//是否在游戏结束时恢复控制台窗口
-#if STARTOpenCL
+#if STARTOpenCL || STARTGPU
 	clReleaseProgram(program);
 	clReleaseDevice(deviceid);
 	clReleaseContext(context);
