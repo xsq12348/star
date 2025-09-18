@@ -1,0 +1,88 @@
+#include<star.h>
+#include <direct.h> 
+#define WINDOWWIDTH     500
+#define WINDOWHEIGHT    300
+int KEYSTATEbuffer[256];
+int KeyState(int Key)
+{
+	int state = GetAsyncKeyState(Key);
+	if (state & 0x8000)
+	{
+		if (KEYSTATEbuffer[Key] == 0) { KEYSTATEbuffer[Key] = 1; return 1; }
+		return 0;
+	}
+	else { KEYSTATEbuffer[Key] = 0; return 0; }
+}
+int NewButton(int MOUSEX,int MOUSEY,int x,int y,int w,int h)
+{
+	int out = FALSE, type = FALSE;
+	if (MOUSEX > x && MOUSEX < w + x - 1 && MOUSEY > y && MOUSEY < h + y - 1)
+	{
+		type = TRUE;
+		out = KeyState(1);
+	}
+	return out;
+}
+void main()
+{
+	FILE* fplogic, * fpdrawing, * fpmain;
+	MSG msg = { 0 };
+	wchar_t gamename[256] = { 0 }, fpstext[5] = { 0 };
+	char arrgamename[512] = { 0 }, arrgamedocument[512] = { 0 }, arrfps[5] = { 0 };
+	HWND hwnd, gamenameedit, gamefpsedit;
+	HDC hdc;
+	int gamecreateok = FALSE, gameproject = FALSE, gamepowerbutton = FALSE, fps = 60;
+	CMDwindow(L"StarEngine", 80, 30, 8, 16);
+	hwnd = Window((HWND)0, L"StarEngine", WINDOWWIDTH + 15, WINDOWHEIGHT + 39, (nScreenWidth - WINDOWWIDTH) / 2, (nScreenheight - WINDOWHEIGHT) / 2);												//创建窗口
+	hdc = GetDC(hwnd);
+	CreateWindow(L"BUTTON", NULL, WS_CHILD | BS_PUSHBUTTON | WS_VISIBLE | WS_DISABLED, 0, 0, WINDOWWIDTH, WINDOWHEIGHT, hwnd, NULL, NULL, NULL);													//使用按钮创建背景色
+	CreateWindow(L"EDIT", L"GameName", WS_CHILD | ES_LEFT | WS_DISABLED | WS_VISIBLE, WINDOWWIDTH / 80 + 50, WINDOWHEIGHT / 50, 100, 20, hwnd, NULL, NULL, NULL);									//游戏项目名称标题
+	CreateWindow(L"EDIT", L"FPS", WS_CHILD | ES_LEFT | WS_DISABLED | WS_VISIBLE, WINDOWWIDTH / 80, WINDOWHEIGHT / 50 + 20 + 30 + 30 + 30, 30, 20, hwnd, NULL, NULL, NULL);							//FPS标题
+	CreateWindow(L"BUTTON", L"GamePower", WS_CHILD | WS_VISIBLE | WS_DISABLED | BS_PUSHBUTTON | BS_DEFPUSHBUTTON, WINDOWWIDTH / 80, WINDOWHEIGHT / 50 + 20 + 30, 100, 25, hwnd, NULL, NULL, NULL);	//引擎高性能按钮标题
+	gamenameedit = CreateWindow(L"EDIT", L"NewGame", WS_CHILD | WS_VISIBLE | ES_LEFT | ES_AUTOHSCROLL, WINDOWWIDTH / 80, WINDOWHEIGHT / 50 + 20, 200, 20, hwnd, NULL, NULL, NULL);					//游戏项目名称
+	gamefpsedit = CreateWindow(L"EDIT", L"60", WS_CHILD | WS_VISIBLE | ES_RIGHT, WINDOWWIDTH / 80 + 30, WINDOWHEIGHT / 50 + 20 + 30 + 30 + 30, 40, 20, hwnd, NULL, NULL, NULL);						//FPS
+	CreateWindow(L"BUTTON", NULL, WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, WINDOWWIDTH / 80 + 110, WINDOWHEIGHT / 50 + 20 + 30, 45, 25, hwnd, NULL, NULL, NULL);										//取消高性能按钮
+	CreateWindow(L"BUTTON", NULL, WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, WINDOWWIDTH / 80 + 160, WINDOWHEIGHT / 50 + 20 + 30, 45, 25, hwnd, NULL, NULL, NULL);										//确定高性能按钮
+	CreateWindow(L"BUTTON", L"Create Game Project", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON, WINDOWWIDTH - 200 - 10, WINDOWHEIGHT - 100 - 10, 200, 100, hwnd, NULL, NULL, NULL);	//确定按钮
+	while (GetMessage(&msg, NULL, 0, 0) && !gamecreateok)																																			//消息循环
+	{
+		int mousex = MouseX(hwnd), mousey = MouseY(hwnd);
+		gamecreateok = NewButton(mousex, mousey, WINDOWWIDTH - 200 - 10, WINDOWHEIGHT - 100 - 10, 200, 100);																						//检测退出
+		if (NewButton(mousex, mousey, WINDOWWIDTH / 80 + 110, WINDOWHEIGHT / 50 + 20 + 30, 45, 25))gamepowerbutton = FALSE;																			//设置高性能模式
+		else if (NewButton(mousex, mousey, WINDOWWIDTH / 80 + 160, WINDOWHEIGHT / 50 + 20 + 30, 45, 25))gamepowerbutton = TRUE;
+		Text(0, hdc, WINDOWWIDTH / 80 + 120, WINDOWHEIGHT / 50 + 25 + 30, L"OFF", (gamepowerbutton == FALSE ? 0x0000ff : 0x000000));																//打印高性能模式状态
+		Text(0, hdc, WINDOWWIDTH / 80 + 170, WINDOWHEIGHT / 50 + 25 + 30, L"ON", (gamepowerbutton == TRUE ? 0x0000ff : 0x000000));
+		Text(0, hdc, WINDOWWIDTH / 80, WINDOWHEIGHT / 50 + 25 + 30 + 30, L"Warning! Enabling GamePower may cause FPS limit to fail", 0);
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+	GetWindowText(gamenameedit, gamename, GetWindowTextLength(gamenameedit) + 1);//读取项目标题
+	{ int i = 0; for (; i < GetWindowTextLength(gamenameedit) + 1; i++)arrgamename[i] = gamename[i]; }
+	GetWindowText(gamefpsedit, fpstext, GetWindowTextLength(gamefpsedit) + 1);//读取FPS
+	{ int i = 0; for (; i < GetWindowTextLength(gamefpsedit) + 1; i++)arrfps[i] = fpstext[i]; }
+	fps = atoi(arrfps);
+	gameproject = _mkdir(arrgamename);
+	if (gameproject == Error)
+	{
+		MessageBox(hwnd, L"该项目文件夹已存在!\nThe project folder already exists!", L"Waring", MB_OK | MB_ICONWARNING);
+		exit(0);
+		return;
+	}
+	strcpy(arrgamedocument, arrgamename);
+	strcat(arrgamedocument, "/GameLogic.txt");
+	fplogic = fopen(arrgamedocument, "w");
+	fplogic = fopen(arrgamedocument, "a");
+	fputs("Sleep 1\n", fplogic);
+	fclose(fplogic);
+	strcpy(arrgamedocument, arrgamename);
+	strcat(arrgamedocument, "/GameDrawing.txt");
+	fpdrawing = fopen(arrgamedocument, "w");
+	fclose(fpdrawing);
+	strcpy(arrgamedocument, arrgamename);
+	strcat(arrgamedocument, "/GameMain.txt");
+	fpmain = fopen(arrgamedocument, "w");
+	fpmain = fopen(arrgamedocument, "a");
+	fprintf(fpmain, "FPS %d\nGAMEPOWER %d\n", fps, gamepowerbutton);
+	fclose(fpmain);
+	ReleaseDC(hwnd, hdc);
+}
