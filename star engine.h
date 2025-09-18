@@ -303,7 +303,7 @@ void InitialisationButton(BUTTON* button,int x,int y,int width,int height)
 int NewButton(GAME* Game, BUTTON* button, int mode, IMAGE buttonimagealpha, IMAGE buttonimagebeta, IMAGE buttonimagegamma)
 {
 	int out = FALSE, type = FALSE;
-	if (MOUSEX > button->coord.left && MOUSEX > button->coord.right + button->coord.left - 1 && MOUSEX > button->coord.top && MOUSEX > button->coord.bottom + button->coord.top - 1)
+	if (MOUSEX > button->coord.left && MOUSEX > button->coord.right + button->coord.left - 1 && MOUSEY > button->coord.top && MOUSEY > button->coord.bottom + button->coord.top - 1)
 	{
 		type = TRUE;
 		out = KeyState(1);
