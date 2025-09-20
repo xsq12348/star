@@ -642,7 +642,7 @@ HWND CustomWindow(
     int h		 /*窗口高度*/,
     int x		 /*窗口水平坐标*/,
     int y		 /*窗口竖直坐标*/,
-    int customwindowstyle,
+    int customwindowstyle
 )
 {
     HINSTANCE hinstance = GetModuleHandle(NULL);
