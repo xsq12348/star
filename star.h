@@ -634,6 +634,39 @@ static HWND Window(
     return hwnd;
 }
 
+void CustomWindow(
+    HWND hwnd	 /*句柄*/,
+    LPCWSTR name /*窗口名称*/,
+    int w		 /*窗口宽度*/,
+    int h		 /*窗口高度*/,
+    int x		 /*窗口水平坐标*/,
+    int y		 /*窗口竖直坐标*/,
+    int customwindowstyle,
+)
+{
+    HINSTANCE hinstance = GetModuleHandle(NULL);
+    //注册窗口类
+    WNDCLASS wndclass = { 0 };
+    wndclass.cbClsExtra = 0;
+    wndclass.cbWndExtra = 0;
+    wndclass.hbrBackground = (HBRUSH)GetStockObject(4);    //获取笔刷 填充背景
+    wndclass.hCursor = NULL;                               //鼠标指针
+    wndclass.hIcon = NULL;                                 //系统默认图标
+    //程序句柄
+    wndclass.hInstance = hinstance;
+    wndclass.lpfnWndProc = WndPorc;
+    wndclass.lpszClassName = TEXT("main");                 //类名
+    wndclass.lpszMenuName = NULL;                          //菜单
+    //窗口样式
+    wndclass.style = CS_HREDRAW | CS_CLASSDC;
+    RegisterClass(&wndclass);
+    hwnd = CreateWindow(TEXT("main"), name/*标题*/, customwindowstyle, x, y, w, h, NULL, NULL, hinstance, NULL);    //创建窗口
+    //显示窗口
+    ShowWindow(hwnd, SW_SHOW);
+    UpdateWindow(hwnd);
+    return hwnd;
+}
+
 //创建透明窗口
 static HWND WindowA(
     HWND hwnd	      /*句柄*/,
