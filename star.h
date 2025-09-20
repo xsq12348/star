@@ -342,6 +342,7 @@ static int Vsn(int A)
     * 12.6 OpenGL作为GPU功能存在于这样一个基础多功能库里是不合理的,占地方且几乎未使用，目前已经被转移到Star Engine中
     * 12.61 修复了RunWindow函数的BUG
     * 12.62 修复了部分冗余和不必要的代码
+    * 12.7 添加了自定义样式窗口的函数
     */
     return A;
 }
