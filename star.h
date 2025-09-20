@@ -635,7 +635,7 @@ static HWND Window(
     return hwnd;
 }
 
-void CustomWindow(
+HWND CustomWindow(
     HWND hwnd	 /*句柄*/,
     LPCWSTR name /*窗口名称*/,
     int w		 /*窗口宽度*/,
