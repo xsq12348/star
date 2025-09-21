@@ -80,16 +80,20 @@ void main()
 	fplogic = fopen(arrgamedocument, "w");
 	fplogic = fopen(arrgamedocument, "a");
 	fputs("Sleep 1\n", fplogic);
+	fputs("EXIT\n", fplogic);
 	fclose(fplogic);
 	strcpy(arrgamedocument, arrgamename);
 	strcat(arrgamedocument, "/GameDrawing.txt");
 	fpdrawing = fopen(arrgamedocument, "w");
+	fpdrawing = fopen(arrgamedocument, "a");
+	fputs("EXIT\n", fpdrawing);
 	fclose(fpdrawing);
 	strcpy(arrgamedocument, arrgamename);
 	strcat(arrgamedocument, "/GameMain.txt");
 	fpmain = fopen(arrgamedocument, "w");
 	fpmain = fopen(arrgamedocument, "a");
-	fprintf(fpmain, "FPS %d\nGAMEPOWER %d\nOPENCL %d", fps, gamepowerbutton, openclbutton);
+	fprintf(fpmain, "FPS %d\nGAMEPOWER %d\nOPENCL %d\n", fps, gamepowerbutton, openclbutton);
+	fputs("EXIT\n", fpmain);
 	fclose(fpmain);
 	ReleaseDC(hwnd, hdc);
 }
