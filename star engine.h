@@ -37,11 +37,12 @@
 1.6 重做了按钮模块
 1.7 对实体系统添加了Hash查找
 1.71 修复了被遗忘的隐藏BUG
+1.72 修正了多文件支持的BUG
 */
 #pragma once
 #pragma warning(disable:4996)
 #undef STARDLC
-#include"star.h"
+#include<star.h>
 #if STARTOpenCL || STARTGPU
 #include<CL/opencl.h>
 #include <gl/GL.h>
@@ -103,14 +104,14 @@
 #define SETMOUSECOORD(x, y) SetCursorPos(x, y)
 #define HashFindEntityIndex(nameid) (Hash(nameid) % ENTITYNUMBER)//hash寻找实体
 
-int GAMEDEAD = 0;				//游戏结束
-int GAMEINPUT;					//游戏输入
-int MOUSEX = 0, MOUSEY = 0;
-int GAMEPOWER = 0;
+static int GAMEDEAD = 0;				//游戏结束
+static int GAMEINPUT;					//游戏输入
+static int MOUSEX = 0, MOUSEY = 0;
+static int GAMEPOWER = 0;
 typedef POINT VELOCITY;			//速度分量结构体
 
-TIMELOAD fps;
-int fpsmax = 0,
+static TIMELOAD fps;
+static int fpsmax = 0,
 fpsmax2 = 0;
 
 //--------------------------------------------------------------------------------------游戏结构体----------------------------------------------------------------------------------------------------------//
@@ -218,32 +219,32 @@ typedef struct
 
 //--------------------------------------------------------------------------------------绘图函数----------------------------------------------------------------------------------------------------------//
 
-void PIX(GAME* Game, int x, int y, COLORREF color) { Pix(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, color); }
-void LINE(GAME* Game, int x1, int y1, int x2, int y2, COLORREF color) { Line(Game->Windowhwnd, Game->doublebuffer.hdc, x1, y1, x2, y2, color); }
-void APPIX(GAME* Game, int apx, int apy, int x, int y, double rad, COLORREF color) { ApPix(Game->Windowhwnd, Game->doublebuffer.hdc, apx, apy, x, y, rad, color); }
-void APLINE(GAME* Game, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color) { ApLine(Game->Windowhwnd, Game->doublebuffer.hdc, apx, apy, x1, y1, x2, y2, rad, color); }
-void BOX(GAME* Game, int x, int y, int width, int height, COLORREF color) { BoxC(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, width, height, color); }
-void BOXA(GAME* Game, int x, int y, int width, int height, COLORREF color)
+static void PIX(GAME* Game, int x, int y, COLORREF color) { Pix(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, color); }
+static void LINE(GAME* Game, int x1, int y1, int x2, int y2, COLORREF color) { Line(Game->Windowhwnd, Game->doublebuffer.hdc, x1, y1, x2, y2, color); }
+static void APPIX(GAME* Game, int apx, int apy, int x, int y, double rad, COLORREF color) { ApPix(Game->Windowhwnd, Game->doublebuffer.hdc, apx, apy, x, y, rad, color); }
+static void APLINE(GAME* Game, int apx, int apy, int x1, int y1, int x2, int y2, double rad, COLORREF color) { ApLine(Game->Windowhwnd, Game->doublebuffer.hdc, apx, apy, x1, y1, x2, y2, rad, color); }
+static void BOX(GAME* Game, int x, int y, int width, int height, COLORREF color) { BoxC(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, width, height, color); }
+static void BOXA(GAME* Game, int x, int y, int width, int height, COLORREF color)
 {
 	LINE(Game, x, y, x + width, y, color);
 	LINE(Game, x, y, x, y + height, color);
 	LINE(Game, x, y + height, x + width, y + height, color);
 	LINE(Game, x + width, y, x + width, y + height, color);
 }
-void CIRCLE(GAME* Game, int R, int x, int y, COLORREF color) { Circle(Game->Windowhwnd, Game->doublebuffer.hdc, R, x, y, color); }
+static void CIRCLE(GAME* Game, int R, int x, int y, COLORREF color) { Circle(Game->Windowhwnd, Game->doublebuffer.hdc, R, x, y, color); }
 
 //显示图片
-void IMG(GAME* Game, const wchar_t* File, int x, int y) { Img(Game->Windowhwnd, Game->doublebuffer.hdc, File, x, y); }
-void IMGA(GAME* Game, const wchar_t* File, int x, int y, int widthbs, int heightbs, COLORREF color) { ImgA(Game->Windowhwnd, Game->doublebuffer.hdc, File, x, y, widthbs, heightbs, color); }
+static void IMG(GAME* Game, const wchar_t* File, int x, int y) { Img(Game->Windowhwnd, Game->doublebuffer.hdc, File, x, y); }
+static void IMGA(GAME* Game, const wchar_t* File, int x, int y, int widthbs, int heightbs, COLORREF color) { ImgA(Game->Windowhwnd, Game->doublebuffer.hdc, File, x, y, widthbs, heightbs, color); }
 
 //文字
-void NewTEXT(GAME* Game, LPCWSTR text, int x, int y, COLORREF color) { Text(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, text, color); }
-void NewDIGHT(GAME* Game, int number, int x, int y, COLORREF color) { Dight(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, number, color); }
+static void NewTEXT(GAME* Game, LPCWSTR text, int x, int y, COLORREF color) { Text(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, text, color); }
+static void NewDIGHT(GAME* Game, int number, int x, int y, COLORREF color) { Dight(Game->Windowhwnd, Game->doublebuffer.hdc, x, y, number, color); }
 
 //--------------------------------------------------------------------------------------游戏工具----------------------------------------------------------------------------------------------------------//
 
 //加载图片
-void ImageLoad(IMAGE* image, LPCWSTR* imagefile, int imagenumber)
+static void ImageLoad(IMAGE* image, LPCWSTR* imagefile, int imagenumber)
 {
 	if (imagenumber == 1)
 	{
@@ -277,8 +278,8 @@ void ImageLoad(IMAGE* image, LPCWSTR* imagefile, int imagenumber)
 }
 
 //按键检测
-int KEYSTATEbuffer[255];
-int KeyState(int Key)
+static int KEYSTATEbuffer[255];
+static int KeyState(int Key)
 {
 	int state = GetAsyncKeyState(Key);
 	if (state & 0x8000)
@@ -292,7 +293,7 @@ int KeyState(int Key)
 //按钮控件
 
 //初始化按钮
-void InitialisationButton(BUTTON* button,int x,int y,int width,int height)
+static void InitialisationButton(BUTTON* button,int x,int y,int width,int height)
 {
 	button->coord.left = x;
 	button->coord.top = y;
@@ -300,7 +301,7 @@ void InitialisationButton(BUTTON* button,int x,int y,int width,int height)
 	button->coord.bottom = height;
 }
 
-int NewButton(GAME* Game, BUTTON* button, int mode, IMAGE buttonimagealpha, IMAGE buttonimagebeta, IMAGE buttonimagegamma)
+static int NewButton(GAME* Game, BUTTON* button, int mode, IMAGE buttonimagealpha, IMAGE buttonimagebeta, IMAGE buttonimagegamma)
 {
 	int out = FALSE, type = FALSE;
 	if (MOUSEX > button->coord.left && MOUSEX > button->coord.right + button->coord.left - 1 && MOUSEY > button->coord.top && MOUSEY > button->coord.bottom + button->coord.top - 1)
@@ -320,7 +321,7 @@ int NewButton(GAME* Game, BUTTON* button, int mode, IMAGE buttonimagealpha, IMAG
 //动画控件
 
 //初始化动画
-int InitialisationAnime(ANIME* anime, LPCSTR name, IMAGE* sequenceframes, int timeload, int totalnumber,int width,int height)
+static int InitialisationAnime(ANIME* anime, LPCSTR name, IMAGE* sequenceframes, int timeload, int totalnumber,int width,int height)
 {
 	anime->Name = name;
 	Color(0x07);
@@ -340,7 +341,7 @@ int InitialisationAnime(ANIME* anime, LPCSTR name, IMAGE* sequenceframes, int ti
 }
 
 //运行动画
-int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y, int widthsize, int heightsize)
+static int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y, int widthsize, int heightsize)
 {
 	if (!animeswitch)return 0;
 	else 
@@ -354,7 +355,7 @@ int RunAnime(GAME* Game, ANIME* anime, int animeswitch, int x, int y, int widths
 
 //简单物理
 
-void CirclePhysics(CIRCLEPHYSICS* a, CIRCLEPHYSICS* b)
+static void CirclePhysics(CIRCLEPHYSICS* a, CIRCLEPHYSICS* b)
 {
 	int R = a->R + b->R;
 	int L = sqrt(pow(a->coor.x - b->coor.x, 2) + pow(a->coor.y - b->coor.y, 2));
@@ -393,7 +394,7 @@ void CirclePhysics(CIRCLEPHYSICS* a, CIRCLEPHYSICS* b)
 	b->coor.y += b->vectory.y;
 }
 
-void InitialisationCircle(CIRCLEPHYSICS* circle, int x, int y, double m, double vx, double vy, int R)
+static void InitialisationCircle(CIRCLEPHYSICS* circle, int x, int y, double m, double vx, double vy, int R)
 {
 	circle->coor.x = x;
 	circle->coor.y = y;
@@ -404,7 +405,7 @@ void InitialisationCircle(CIRCLEPHYSICS* circle, int x, int y, double m, double 
 }
 
 //-----------------------------------------------------------------------------------------3D-------------------------------------------------------------------------------------------------------------//
-void CameraMatrix(CAMERA* camera, float Rx, float Ry, float Rz)
+static void CameraMatrix(CAMERA* camera, float Rx, float Ry, float Rz)
 {
 
 	/*
@@ -516,7 +517,7 @@ you can get an orthogonal projection, and then you can get the perspective effec
 		}
 }
 
-void CameraCompute(CAMERA* camera, float Rx, float Ry, float Rz)
+static void CameraCompute(CAMERA* camera, float Rx, float Ry, float Rz)
 {
 	CameraMatrix(camera, Rx, Ry, Rz);
 	camera->cameravectorx.x = camera->matrixR[0][0] * camera->cameravectorxmo;
@@ -532,7 +533,7 @@ void CameraCompute(CAMERA* camera, float Rx, float Ry, float Rz)
 	camera->cameranormal.z = camera->cameravectorx.x * camera->cameravectory.y - camera->cameravectorx.y * camera->cameravectory.x;
 }
 
-POINT2D Point3DDrawing(POINT3D point, CAMERA camera, float L, BOOL orthogonal)
+static POINT2D Point3DDrawing(POINT3D point, CAMERA camera, float L, BOOL orthogonal)
 {
 
 	POINT3D cameravectory = camera.cameranormal;
@@ -577,14 +578,14 @@ POINT2D Point3DDrawing(POINT3D point, CAMERA camera, float L, BOOL orthogonal)
 
 #if STARTOpenCL || STARTGPU
 
-cl_platform_id platformid;
-cl_device_id deviceid;
-cl_context context;
-cl_command_queue commandqueue;
-cl_program program;
-cl_kernel kernel3D;
+extern cl_platform_id platformid;
+extern cl_device_id deviceid;
+extern cl_context context;
+extern cl_command_queue commandqueue;
+extern cl_program program;
+extern cl_kernel kernel3D;
 
-const char* STAROpenCL3D =
+extern const char* STAROpenCL3D =
 /*
 "__kernel void Point3DDrawing(__global float* pointx, __global float* pointy, __global float* pointz, __global float* cameravectorx, __global float* cameravectory, __global float* camerapoint, __global float* cameramatrix, __global float* returnpointx, __global float* returnpointy, __global float* returnpointz,__global float* focalLength)"
 "{"
@@ -714,13 +715,13 @@ static void DeletOPENGL(OPENGL opengl)
 }
 //---------------------------------------------------------------------------------------------以下为具体渲染内容------------------------------------------------------------------------------------------------------//
 
-void SurfaceDrawingGPU(GAME* Game, CAMERA camera, SURFACE surface, float L)
+static void SurfaceDrawingGPU(GAME* Game, CAMERA camera, SURFACE surface, float L)
 {
 
 }
 #endif
 
-void SurfaceDrawing(GAME* Game, CAMERA camera, SURFACE surface, float L)
+static void SurfaceDrawing(GAME* Game, CAMERA camera, SURFACE surface, float L)
 {
 	POINT2D screencoord[3] = { 0 };
 	for (int i = 0; i < 3; i++)screencoord[i] = Point3DDrawing(surface.vertex[i], camera, L, FALSE);
@@ -729,7 +730,7 @@ void SurfaceDrawing(GAME* Game, CAMERA camera, SURFACE surface, float L)
 
 //--------------------------------------------------------------------------------------对象注册----------------------------------------------------------------------------------------------------------//
 //对象需要是一个结构体数组,在GAME结构体里指定对象类型索引进行注册然后通过GAME结构体统一调用
-int CreateEntityIndex(GAME* Game, void* arrentity, char* nameid,int length)
+static int CreateEntityIndex(GAME* Game, void* arrentity, char* nameid,int length)
 {
 	int index = NOTFOUND;
 	int hash = Hash(nameid) % ENTITYNUMBER;
@@ -755,7 +756,7 @@ int CreateEntityIndex(GAME* Game, void* arrentity, char* nameid,int length)
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
 
 //初始化游戏
-void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int height, int timeload, int fullscreenmode, BOOL cmdswitch, BOOL cursor)
+static void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int height, int timeload, int fullscreenmode, BOOL cmdswitch, BOOL cursor)
 {
 	//初始化结构体
 	if (y < 0) Game->Windowhwnd = Window((HWND)NULL, name, width, height, (nScreenWidth - width) / 2, (nScreenheight - height) / 2);		//创建窗口	
@@ -806,17 +807,17 @@ void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int h
 	}
 
 //游戏画面绘制
-void GameDrawing(GAME* Game);
+extern void GameDrawing(GAME* Game);
 
 //游戏逻辑绘制
-void GameLogic(GAME* Game);
+extern void GameLogic(GAME* Game);
 
 //逻辑线程
-CREATTHREAD GAMELOGIC;
-GAME* GAMETHEARDLOGIC;
+static CREATTHREAD GAMELOGIC;
+static GAME* GAMETHEARDLOGIC;
 
 //游戏逻辑线程
-THREAD GameThreadLogic(LPARAM lparam)
+static THREAD GameThreadLogic(LPARAM lparam)
 {
 	printf("[star engine logic进入成功!]\n");
 	while (!GAMEDEAD)
@@ -831,7 +832,7 @@ THREAD GameThreadLogic(LPARAM lparam)
 	return 0;
 }
 //游戏循环
-void GameLoop(GAME* Game, BOOL esc, void(*GameSetting)(GAME* Game))
+static void GameLoop(GAME* Game, BOOL esc, void(*GameSetting)(GAME* Game))
 {
 	GAMEDEAD = 0;
 	GAMETHEARDLOGIC = Game;
@@ -858,7 +859,7 @@ void GameLoop(GAME* Game, BOOL esc, void(*GameSetting)(GAME* Game))
 }
 
 //游戏结束
-void GameOver(GAME* Game, BOOL cmdswitch)
+static void GameOver(GAME* Game, BOOL cmdswitch)
 {
 	printf("[star Game Over进入成功!]\n");
 	DeletThread(GAMELOGIC.ThreadHwnd);									//清理逻辑线程
