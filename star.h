@@ -343,6 +343,7 @@ static int Vsn(int A)
     * 12.61 修复了RunWindow函数的BUG
     * 12.62 修复了部分冗余和不必要的代码
     * 12.7 添加了自定义样式窗口的函数
+    * 12.71 修正了多文件支持的BUG
     */
     return A;
 }
@@ -635,7 +636,7 @@ static HWND Window(
     return hwnd;
 }
 
-HWND CustomWindow(
+static HWND CustomWindow(
     HWND hwnd	 /*句柄*/,
     LPCWSTR name /*窗口名称*/,
     int w		 /*窗口宽度*/,
@@ -1083,10 +1084,10 @@ static BOOL TriangleDetection(DOUBLEPOINT a, DOUBLEPOINT b, DOUBLEPOINT c, DOUBL
     return (d1 * d2 > 0) && (d2 * d3 > 0);
 }
 
-/*运行外部程序*/void RunProgram(LPCWSTR name) { ShellExecute(NULL, L"open", name, NULL, NULL, SW_SHOW); }
+/*运行外部程序*/static void RunProgram(LPCWSTR name) { ShellExecute(NULL, L"open", name, NULL, NULL, SW_SHOW); }
 
 //Hash
-int Hash(char* text)
+static int Hash(char* text)
 {
     if (text == NULL)return -1;
     int length = strlen(text), hash = 0;
