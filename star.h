@@ -344,6 +344,7 @@ static int Vsn(int A)
     * 12.62 修复了部分冗余和不必要的代码
     * 12.7 添加了自定义样式窗口的函数
     * 12.71 修正了多文件支持的BUG
+    * 12.72 将大部分ReleaseDC去除了,现在您需要自己管理您的设备上下文
     */
     return A;
 }
@@ -465,15 +466,13 @@ static void Line(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF co
     MoveToEx(hdc, x2, y2, NULL);
     LineTo(hdc, x1, y1);
     SelectObject(hdc, holdpen);
-    DeleteObject(hpen);
-    ReleaseDC(hwnd, hdc);
+    DeleteObject(hpen);    
 }
 
 //绘制像素点
 static void Pix(HWND hwnd, HDC hdc, int x, int y, COLORREF color)
 {
-    SetPixel(hdc, x, y, color);
-    ReleaseDC(hwnd, hdc);
+    SetPixel(hdc, x, y, color);    
 }
 
 //锚点点
@@ -513,8 +512,7 @@ static void BoxA(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF co
     HPEN holdpen = (HPEN)SelectObject(hdc, hpen);
     Rectangle(hdc, x1, y1, x2, y2);
     SelectObject(hdc, holdpen);
-    DeleteObject(hpen);
-    ReleaseDC(hwnd, hdc);
+    DeleteObject(hpen);    
 }
 
 static void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
@@ -524,8 +522,7 @@ static void BoxB(HWND hwnd, HDC hdc, int x1, int y1, int x2, int y2, COLORREF co
     RECT rect = { x1,y1,x2,y2 };
     FillRect(hdc, &rect, hbs);
     DeleteObject(hbs);
-    EndPaint(hwnd, &ps);
-    ReleaseDC(hwnd, hdc);
+    EndPaint(hwnd, &ps);    
 }
 
 static void BoxC(HWND hwnd, HDC hdc, int x, int y, int width, int height, COLORREF color)
@@ -535,8 +532,7 @@ static void BoxC(HWND hwnd, HDC hdc, int x, int y, int width, int height, COLORR
     RECT rect = { x,y,x + width,y + height };
     FillRect(hdc, &rect, hbs);
     DeleteObject(hbs);
-    EndPaint(hwnd, &ps);
-    ReleaseDC(hwnd, hdc);
+    EndPaint(hwnd, &ps);    
 }
 
 //绘制圆
@@ -546,8 +542,7 @@ static void Circle(HWND hwnd, HDC hdc, int R, int x, int y, COLORREF color)
     HPEN holdpen = (HPEN)SelectObject(hdc, hpen);
     Ellipse(hdc, x - R, y - R, x + R, y + R);
     SelectObject(hdc, holdpen);
-    DeleteObject(hpen);
-    ReleaseDC(hwnd, hdc);
+    DeleteObject(hpen);    
 }
 
 //显示图片
@@ -930,7 +925,7 @@ static void Text(HWND hwnd, HDC hdc, int x, int y, LPCWSTR text, COLORREF color)
     SetBkMode(hdc, TRANSPARENT);//设置字体背景透明
     SetTextColor(hdc, color);
     TextOut(hdc, x, y, text, wcslen(text));
-    ReleaseDC(hwnd, hdc);
+    
 }
 
 //显示数字
@@ -941,7 +936,7 @@ static void Dight(HWND hwnd, HDC hdc, int x, int y, int dight, COLORREF color)
     swprintf(number, 50, L"%d", dight);
     SetTextColor(hdc, color);
     TextOut(hdc, x, y, number, wcslen(number));
-    ReleaseDC(hwnd, hdc);
+    
 }
 
 //获取某一位置像素颜色
