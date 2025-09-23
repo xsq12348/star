@@ -345,6 +345,7 @@ static int Vsn(int A)
     * 12.7 添加了自定义样式窗口的函数
     * 12.71 修正了多文件支持的BUG
     * 12.72 将大部分ReleaseDC去除了,现在您需要自己管理您的设备上下文
+    * 12.73 去除了大部分完全无用的按钮函数
     */
     return A;
 }
@@ -941,75 +942,6 @@ static void Dight(HWND hwnd, HDC hdc, int x, int y, int dight, COLORREF color)
 
 //获取某一位置像素颜色
 static int GetColor(HWND hwnd, int x, int y) { return GetPixel(GetDC(hwnd), x, y); }
-
-//按钮函数
-static int Button(HWND hwnd, HDC hdc, int x, int y, int width, int height, int ON_OFF)
-{
-    int c = 0;
-    if (ON_OFF == ON)
-    {
-        if (x < MouseX(hwnd) && MouseX(hwnd) <= x + width && y < MouseY(hwnd) && MouseY(hwnd) <= y + height && GetAsyncKeyState(1) & 0x8000)
-        {
-            Line(hwnd, hdc, x, y, x + width, y, RGB(255, 0, 0));
-            Line(hwnd, hdc, x, y + height, x + width, y + height, RGB(255, 0, 0));
-            Line(hwnd, hdc, x, y, x, y + height, RGB(255, 0, 0));
-            Line(hwnd, hdc, x + width, y, x + width, y + height, RGB(255, 0, 0));
-            c = YES;
-        }
-        else
-        {
-            Line(hwnd, hdc, x, y, x + width, y, RGB(255, 255, 255));
-            Line(hwnd, hdc, x, y + height, x + width, y + height, RGB(255, 255, 255));
-            Line(hwnd, hdc, x, y, x, y + height, RGB(255, 255, 255));
-            Line(hwnd, hdc, x + width, y, x + width, y + height, RGB(255, 255, 255));
-            c = NO;
-        }
-    }
-    else
-        if (ON_OFF == OFF)
-        {
-            if (x < MouseX(hwnd) && MouseX(hwnd) <= x + width && y < MouseY(hwnd) && MouseY(hwnd) <= y + height && GetAsyncKeyState(1) & 0x8000) { c = YES; }
-            else { c = NO; }
-        }
-    return c;
-}
-
-static int ButtonA(HWND hwnd, HDC hdc, int x, int y, int width, int height, BOOL YESORNO)
-{
-    int button = 0; GetAsyncKeyState(1);
-    if (MouseX(hwnd) > x && MouseY(hwnd) > y && MouseX(hwnd) <= x + width && MouseY(hwnd) <= y + height && GetAsyncKeyState(1))button = 1;
-    else if (MouseX(hwnd) > x && MouseY(hwnd) > y && MouseX(hwnd) <= x + width && MouseY(hwnd) <= y + height && !GetAsyncKeyState(1))button = 2;
-    else button = 0;
-    if (YESORNO == TRUE)
-    {
-        switch (button)
-        {
-        case 1:
-        {
-            Line(hwnd, hdc, x, y, x + width, y, RGB(255, 0, 0));
-            Line(hwnd, hdc, x, y, x, y + height, RGB(255, 0, 0));
-            Line(hwnd, hdc, x + width, y, x + width, y + height, RGB(255, 0, 0));
-            Line(hwnd, hdc, x, y + height, x + width, y + height, RGB(255, 0, 0));
-        }
-        break;
-        case 0:
-        {
-            Line(hwnd, hdc, x, y, x + width, y, RGB(255, 255, 255));
-            Line(hwnd, hdc, x, y, x, y + height, RGB(255, 255, 255));
-            Line(hwnd, hdc, x + width, y, x + width, y + height, RGB(255, 255, 255));
-            Line(hwnd, hdc, x, y + height, x + width, y + height, RGB(255, 255, 255));
-        }
-        break;
-        case 2:
-            Line(hwnd, hdc, x, y, x + width, y, RGB(0, 255, 0));
-            Line(hwnd, hdc, x, y, x, y + height, RGB(0, 255, 0));
-            Line(hwnd, hdc, x + width, y, x + width, y + height, RGB(0, 255, 0));
-            Line(hwnd, hdc, x, y + height, x + width, y + height, RGB(0, 255, 0));
-            break;
-        }
-    }
-    return button;
-}
 
 //定时器模块
 typedef struct
