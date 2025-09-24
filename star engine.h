@@ -38,6 +38,7 @@
 1.7 对实体系统添加了Hash查找
 1.71 修复了被遗忘的隐藏BUG
 1.72 修正了多文件支持的BUG
+1.73 去除了部分全局数据,可能造成兼容问题
 */
 #pragma once
 #pragma warning(disable:4996)
@@ -104,15 +105,7 @@
 #define SETMOUSECOORD(x, y) SetCursorPos(x, y)
 #define HashFindEntityIndex(nameid) (Hash(nameid) % ENTITYNUMBER)//hash寻找实体
 
-static int GAMEDEAD = 0;				//游戏结束
-static int GAMEINPUT;					//游戏输入
-static int MOUSEX = 0, MOUSEY = 0;
-static int GAMEPOWER = 0;
-typedef POINT VELOCITY;			//速度分量结构体
-
-static TIMELOAD fps;
-static int fpsmax = 0,
-fpsmax2 = 0;
+typedef DOUBLEPOINT VELOCITY;			//速度分量结构体
 
 //--------------------------------------------------------------------------------------游戏结构体----------------------------------------------------------------------------------------------------------//
 
@@ -137,6 +130,12 @@ typedef struct
 	BOOL cuesor;				//鼠标光标
 	BOOL escswitch;				//是否启用esc
 	ENTITYINDEX entityindex[ENTITYNUMBER];//对象池注册表
+	int GAMEDEAD;				//游戏结束
+	int GAMEINPUT;				//游戏输入
+	int MOUSEX, MOUSEY;
+	int GAMEPOWER;
+	TIMELOAD fps;
+	int fpsmax, fpsmax2;
 }GAME;
 
 typedef struct
@@ -304,7 +303,7 @@ static void InitialisationButton(BUTTON* button,int x,int y,int width,int height
 static int NewButton(GAME* Game, BUTTON* button, int mode, IMAGE buttonimagealpha, IMAGE buttonimagebeta, IMAGE buttonimagegamma)
 {
 	int out = FALSE, type = FALSE;
-	if (MOUSEX > button->coord.left && MOUSEX > button->coord.right + button->coord.left - 1 && MOUSEY > button->coord.top && MOUSEY > button->coord.bottom + button->coord.top - 1)
+	if (Game->MOUSEX > button->coord.left && Game->MOUSEX > button->coord.right + button->coord.left - 1 && Game->MOUSEY > button->coord.top && Game->MOUSEY > button->coord.bottom + button->coord.top - 1)
 	{
 		type = TRUE;
 		out = KeyState(1);
@@ -578,14 +577,14 @@ static POINT2D Point3DDrawing(POINT3D point, CAMERA camera, float L, BOOL orthog
 
 #if STARTOpenCL || STARTGPU
 
-extern cl_platform_id platformid;
-extern cl_device_id deviceid;
-extern cl_context context;
-extern cl_command_queue commandqueue;
-extern cl_program program;
-extern cl_kernel kernel3D;
+static cl_platform_id platformid;
+static cl_device_id deviceid;
+static cl_context context;
+static cl_command_queue commandqueue;
+static cl_program program;
+static cl_kernel kernel3D;
 
-extern const char* STAROpenCL3D =
+static const char* STAROpenCL3D =
 /*
 "__kernel void Point3DDrawing(__global float* pointx, __global float* pointy, __global float* pointz, __global float* cameravectorx, __global float* cameravectory, __global float* camerapoint, __global float* cameramatrix, __global float* returnpointx, __global float* returnpointy, __global float* returnpointz,__global float* focalLength)"
 "{"
@@ -787,7 +786,7 @@ static void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width
 	SetTimeLoad(&(Game->timeload), 1000 / timeload);	//初始化定时器,用于帧率控制
 	Mouse(cursor);										//鼠标光标显示
 	Game->escswitch = 0;								//是否启用esc退出游戏
-	SetTimeLoad(&fps, 1000);							//控制帧率
+	SetTimeLoad(&Game->fps, 1000);						//控制帧率
 	for (int i = 0; i < ENTITYNUMBER; i++)
 	{
 		Game->entityindex[i].entityindex = NULL;
@@ -804,7 +803,9 @@ static void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width
 	clBuildProgram(program, 1, &deviceid, NULL, NULL, NULL);
 	kernel3D = clCreateKernel(program, "Point3DDrawing", NULL);
 #endif
-	}
+	Game->fpsmax = 0;
+	Game->fpsmax2 = 0;
+}
 
 //游戏画面绘制
 extern void GameDrawing(GAME* Game);
@@ -820,21 +821,24 @@ static GAME* GAMETHEARDLOGIC;
 static THREAD GameThreadLogic(LPARAM lparam)
 {
 	printf("[star engine logic进入成功!]\n");
-	while (!GAMEDEAD)
+	while (!GAMETHEARDLOGIC->GAMEDEAD)
 	{
 		GameLogic(GAMETHEARDLOGIC);												//游戏逻辑计算
-		GAMEINPUT = HardwareDetection();										//按键检测
-		MOUSEX = MouseX(GAMETHEARDLOGIC->Windowhwnd);
-		MOUSEY = MouseY(GAMETHEARDLOGIC->Windowhwnd);
-		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))GAMEDEAD = 1;	//是否启用esc退出游戏
-		if (!IsWindow(GAMETHEARDLOGIC->Windowhwnd))GAMEDEAD = 1;//检查窗口是否存活
+		GAMETHEARDLOGIC->GAMEINPUT = HardwareDetection();										//按键检测
+		GAMETHEARDLOGIC->MOUSEX = MouseX(GAMETHEARDLOGIC->Windowhwnd);
+		GAMETHEARDLOGIC->MOUSEY = MouseY(GAMETHEARDLOGIC->Windowhwnd);
+		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))GAMETHEARDLOGIC->GAMEDEAD = 1;	//是否启用esc退出游戏
+		if (!IsWindow(GAMETHEARDLOGIC->Windowhwnd))GAMETHEARDLOGIC->GAMEDEAD = 1;//检查窗口是否存活
 	}
 	return 0;
 }
 //游戏循环
 static void GameLoop(GAME* Game, BOOL esc, void(*GameSetting)(GAME* Game))
 {
-	GAMEDEAD = 0;
+	int GAMEDEAD = Game->GAMEDEAD;
+	TIMELOAD fps = Game->fps;
+	int fpsmax = Game->fpsmax, fpsmax2 = Game->fpsmax2,
+		GAMEPOWER = Game->GAMEPOWER;
 	GAMETHEARDLOGIC = Game;
 	Game->escswitch = esc;
 	srand((unsigned)time(NULL));
