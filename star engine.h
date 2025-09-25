@@ -835,10 +835,7 @@ static THREAD GameThreadLogic(LPARAM lparam)
 //游戏循环
 static void GameLoop(GAME* Game, BOOL esc, void(*GameSetting)(GAME* Game))
 {
-	int GAMEDEAD = Game->GAMEDEAD;
-	TIMELOAD fps = Game->fps;
-	int fpsmax = Game->fpsmax, fpsmax2 = Game->fpsmax2,
-		GAMEPOWER = Game->GAMEPOWER;
+	
 	GAMETHEARDLOGIC = Game;
 	Game->escswitch = esc;
 	srand((unsigned)time(NULL));
@@ -846,16 +843,15 @@ static void GameLoop(GAME* Game, BOOL esc, void(*GameSetting)(GAME* Game))
 	RunThread((THREAD*)GameThreadLogic, GAMELOGIC.ID);
 	HDC hdc = GetDC(Game->Windowhwnd);
 	GameSetting(Game);
-	while (!GAMEDEAD)
+	while (!Game->GAMEDEAD)
 	{
-		if (!TimeLoad(&fps, 1))fpsmax++;
-		else { fpsmax2 = fpsmax; fpsmax = 0; }
-		//if (!GAMEPOWER)Sleep(1);
-		if (!GAMEPOWER)if (!TimeLoad(&(Game->timeload), 1))Sleep(Game->timeload.timeload);
+		if (!TimeLoad(&Game->fps, 1))Game->fpsmax++;
+		else { Game->fpsmax2 = Game->fpsmax; Game->fpsmax = 0; }
+		if (!Game->GAMEPOWER)if (!TimeLoad(&(Game->timeload), 1))Sleep(Game->timeload.timeload);
 		BoxB(0, Game->doublebuffer.hdc, 0, 0, Game->Windowwidth, Game->Windowheight, RGB(0, 0, 0));		 //清除双缓冲屏幕画面
 		GameDrawing(Game);
 		Text(0, Game->doublebuffer.hdc, 0, 0, L"FPS:", RGB(0, 150, 0));
-		NewDIGHT(Game, fpsmax2, 30, 0, RGB(0, 150, 0));
+		NewDIGHT(Game, Game->fpsmax2, 30, 0, RGB(0, 150, 0));
 		BitBlt(hdc, 0, 0, Game->Windowwidth, Game->Windowheight, Game->doublebuffer.hdc, 0, 0, SRCCOPY); //通过双缓冲绘制到屏幕上
 		ClearWindow();								 //消息循环
 	}
