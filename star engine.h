@@ -662,7 +662,7 @@ static void SetOpenGL(HDC hdc, OPENGL* opengl, int width, int height)
 	{
 		sizeof(PIXELFORMATDESCRIPTOR),
 		1,
-		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
+		PFD_DRAW_TO_BITMAP | PFD_SUPPORT_OPENGL,
 		PFD_TYPE_RGBA,
 		32, // 颜色深度
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
