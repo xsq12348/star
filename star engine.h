@@ -39,6 +39,7 @@
 1.71 修复了被遗忘的隐藏BUG
 1.72 修正了多文件支持的BUG
 1.73 去除了部分全局数据,可能造成兼容问题
+1.74 修改了OpenGL
 */
 #pragma once
 #pragma warning(disable:4996)
@@ -654,7 +655,7 @@ static const char* STAROpenCL3D =
 
 //---------------------------------------------------------------------------------------------以下为OpenGL内容------------------------------------------------------------------------------------------------------//
 
-static void SetOpenGL(HWND hwnd, OPENGL* opengl, int width, int height)
+static void SetOpenGL(HDC hdc, OPENGL* opengl, int width, int height)
 {
 	HDC hdc;
 	HGLRC hrc;
@@ -672,8 +673,6 @@ static void SetOpenGL(HWND hwnd, OPENGL* opengl, int width, int height)
 		PFD_MAIN_PLANE, 
 		0, 0, 0
 	};
-
-	hdc = GetDC(hwnd);
 	int pixelformat = ChoosePixelFormat(hdc, &pfd);
 	SetPixelFormat(hdc, pixelformat, &pfd);
 	hrc = wglCreateContext(hdc);
