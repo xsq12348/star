@@ -657,7 +657,6 @@ static const char* STAROpenCL3D =
 
 static void SetOpenGL(HDC hdc, OPENGL* opengl, int width, int height)
 {
-	HDC hdc;
 	HGLRC hrc;
 	PIXELFORMATDESCRIPTOR pfd =
 	{
