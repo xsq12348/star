@@ -205,11 +205,7 @@ typedef struct
 typedef struct
 {
 	HDC hdc;
-	HWND hwnd;
 	HGLRC hrc;
-	int znear;
-	int zfar;
-	int* bitmap;
 	int width;
 	int height;
 }OPENGL;
@@ -658,8 +654,7 @@ static const char* STAROpenCL3D =
 
 //---------------------------------------------------------------------------------------------以下为OpenGL内容------------------------------------------------------------------------------------------------------//
 
-//初始化 OpenGL
-static void SetOpenGL(HWND hwnd, OPENGL* opengl,int*bitmap,int width,int height,int znear,int zfar)
+static void SetOpenGL(HWND hwnd, OPENGL* opengl, int width, int height)
 {
 	HDC hdc;
 	HGLRC hrc;
@@ -673,12 +668,14 @@ static void SetOpenGL(HWND hwnd, OPENGL* opengl,int*bitmap,int width,int height,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		24, // 深度缓冲区
 		8,  // 模板缓冲区
-		0, 0, 0, 0, 0
+		0, 
+		PFD_MAIN_PLANE, 
+		0, 0, 0
 	};
 
 	hdc = GetDC(hwnd);
-	int pixelFormat = ChoosePixelFormat(hdc, &pfd);
-	SetPixelFormat(hdc, pixelFormat, &pfd);
+	int pixelformat = ChoosePixelFormat(hdc, &pfd);
+	SetPixelFormat(hdc, pixelformat, &pfd);
 	hrc = wglCreateContext(hdc);
 	wglMakeCurrent(hdc, hrc);
 
@@ -686,14 +683,11 @@ static void SetOpenGL(HWND hwnd, OPENGL* opengl,int*bitmap,int width,int height,
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0, width/ height, znear, zfar);  // 3D透视投影
+	gluOrtho2D(0, width, height, 0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	opengl->hdc = hdc;
 	opengl->hrc = hrc;
-	opengl->znear = znear;
-	opengl->zfar = zfar;
-	opengl->bitmap = bitmap;
 	opengl->width = width;
 	opengl->height = height;
 }
@@ -709,8 +703,6 @@ static void DeletOPENGL(OPENGL opengl)
 {
 	wglMakeCurrent(NULL, NULL);
 	wglDeleteContext(opengl.hrc);
-	ReleaseDC(opengl.hwnd, opengl.hdc);
-	DestroyWindow(opengl.hwnd);
 }
 //---------------------------------------------------------------------------------------------以下为具体渲染内容------------------------------------------------------------------------------------------------------//
 
