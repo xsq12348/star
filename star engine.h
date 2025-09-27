@@ -41,6 +41,7 @@
 1.73 去除了部分全局数据,可能造成兼容问题
 1.74 修改了OpenGL
 1.75 消除了一个全局变量GAMETHEARDLOGIC
+1.76 为了防止某些顺序性BUG，现在初始化函数也可以用GameSetting
 */
 #pragma once
 #pragma warning(disable:4996)
@@ -749,7 +750,7 @@ static int CreateEntityIndex(GAME* Game, void* arrentity, char* nameid,int lengt
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
 
 //初始化游戏
-static void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int height, int timeload, int fullscreenmode, BOOL cmdswitch, BOOL cursor)
+static void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int height, int timeload, int fullscreenmode, BOOL cmdswitch, BOOL cursor, void(*GameSetting)(GAME* Game))
 {
 	//初始化结构体
 	if (y < 0) Game->Windowhwnd = Window((HWND)NULL, name, width, height, (nScreenWidth - width) / 2, (nScreenheight - height) / 2);		//创建窗口	
@@ -799,6 +800,7 @@ static void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width
 #endif
 	Game->fpsmax = 0;
 	Game->fpsmax2 = 0;
+	if (GameSetting != NULL)GameSetting(Game);
 }
 
 //游戏画面绘制
