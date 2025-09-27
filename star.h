@@ -1023,3 +1023,4 @@ static int Hash(char* text)
     for (int i = 0; i < length; i++)hash += text[i] * (i + 1);
     return hash / length * (length % hash);
 }
+
