@@ -40,6 +40,7 @@
 1.72 修正了多文件支持的BUG
 1.73 去除了部分全局数据,可能造成兼容问题
 1.74 修改了OpenGL
+1.75 消除了一个全局变量GAMETHEARDLOGIC
 */
 #pragma once
 #pragma warning(disable:4996)
@@ -49,6 +50,7 @@
 #include<CL/opencl.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
+#include <GL/gl.h>
 #pragma comment(lib,"OpenCL.lib")
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glu32.lib")
@@ -675,6 +677,8 @@ static void SetOpenGL(HDC hdc, OPENGL* opengl, int width, int height)
 	int pixelformat = ChoosePixelFormat(hdc, &pfd);
 	SetPixelFormat(hdc, pixelformat, &pfd);
 	hrc = wglCreateContext(hdc);
+	//HGLRC buffer = wglCreateContext(hdc);
+	//hrc = wglCreateContextAttribsARB(hdc, 0, buffer);
 	wglMakeCurrent(hdc, hrc);
 
 	// 设置视口和正交投影
@@ -805,34 +809,32 @@ extern void GameLogic(GAME* Game);
 
 //逻辑线程
 static CREATTHREAD GAMELOGIC;
-static GAME* GAMETHEARDLOGIC;
 
 //游戏逻辑线程
 static THREAD GameThreadLogic(LPARAM lparam)
 {
-	printf("[star engine logic进入成功!]\n");
+	printf("[star engine logic进入成功!]\n");	
+	GAME* GAMETHEARDLOGIC = (GAME*)lparam;
 	while (!GAMETHEARDLOGIC->GAMEDEAD)
 	{
-		GameLogic(GAMETHEARDLOGIC);												//游戏逻辑计算
-		GAMETHEARDLOGIC->GAMEINPUT = HardwareDetection();										//按键检测
+		GameLogic(GAMETHEARDLOGIC);													//游戏逻辑计算
+		GAMETHEARDLOGIC->GAMEINPUT = HardwareDetection();							//按键检测
 		GAMETHEARDLOGIC->MOUSEX = MouseX(GAMETHEARDLOGIC->Windowhwnd);
 		GAMETHEARDLOGIC->MOUSEY = MouseY(GAMETHEARDLOGIC->Windowhwnd);
 		if (GAMETHEARDLOGIC->escswitch && GetAsyncKeyState(VK_ESCAPE))GAMETHEARDLOGIC->GAMEDEAD = 1;	//是否启用esc退出游戏
-		if (!IsWindow(GAMETHEARDLOGIC->Windowhwnd))GAMETHEARDLOGIC->GAMEDEAD = 1;//检查窗口是否存活
+		if (!IsWindow(GAMETHEARDLOGIC->Windowhwnd))GAMETHEARDLOGIC->GAMEDEAD = 1;	//检查窗口是否存活
 	}
 	return 0;
 }
 //游戏循环
 static void GameLoop(GAME* Game, BOOL esc, void(*GameSetting)(GAME* Game))
 {
-	
-	GAMETHEARDLOGIC = Game;
 	Game->escswitch = esc;
 	srand((unsigned)time(NULL));
 	GetAsyncKeyState(VK_ESCAPE);
-	RunThread((THREAD*)GameThreadLogic, GAMELOGIC.ID);
+	RunThread((THREAD*)GameThreadLogic, Game, GAMELOGIC.ID);
 	HDC hdc = GetDC(Game->Windowhwnd);
-	GameSetting(Game);
+	if (GameSetting != NULL)GameSetting(Game);
 	while (!Game->GAMEDEAD)
 	{
 		if (!TimeLoad(&Game->fps, 1))Game->fpsmax++;
