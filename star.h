@@ -346,6 +346,7 @@ static int Vsn(int A)
     * 12.71 修正了多文件支持的BUG
     * 12.72 将大部分ReleaseDC去除了,现在您需要自己管理您的设备上下文
     * 12.73 去除了大部分完全无用的按钮函数
+    * 12.74 更新了RunThread函数,可能造成兼容问题
     */
     return A;
 }
@@ -420,7 +421,7 @@ typedef struct
 }CREATTHREAD;
 
 //运行线程
-static HANDLE RunThread(THREAD* function, THREAD* ID) { return CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)function, (LPVOID)2, 0, ID); }
+static HANDLE RunThread(THREAD* function,void* resource, THREAD* ID) { return CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)function, (LPVOID)resource, 0, ID); }
 
 //删除线程
 static void DeletThread(HANDLE Threadhwnd)
