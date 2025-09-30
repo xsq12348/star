@@ -347,6 +347,7 @@ static int Vsn(int A)
     * 12.72 将大部分ReleaseDC去除了,现在您需要自己管理您的设备上下文
     * 12.73 去除了大部分完全无用的按钮函数
     * 12.74 更新了RunThread函数,可能造成兼容问题
+    * 12.75 修改了Hash函数，去除了不必要的计算部分
     */
     return A;
 }
@@ -1021,6 +1022,5 @@ static int Hash(char* text)
     int length = strlen(text), hash = 0;
     if (length <= 0)return -1;
     for (int i = 0; i < length; i++)hash += text[i] * (i + 1);
-    return hash / length * (length % hash);
+    return hash;
 }
-
