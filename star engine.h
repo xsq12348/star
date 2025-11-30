@@ -42,11 +42,12 @@
 1.74 修改了OpenGL
 1.75 消除了一个全局变量GAMETHEARDLOGIC
 1.76 为了防止某些顺序性BUG，现在初始化函数也可以用GameSetting
+1.761 设计了启动图案
 */
 #pragma once
 #pragma warning(disable:4996)
 #undef STARDLC
-#include<star.h>
+#include"star.h"
 #if STARTOpenCL || STARTGPU
 #include<CL/opencl.h>
 #include <gl/GL.h>
@@ -622,7 +623,7 @@ static const char* STAROpenCL3D =
 //point			[x][y][z]
 //cameravector	[x.x][x.y][x.z][y.x][y.y][y.z][normal.x][normal.y][normal.z]
 //returnpoint	[x][y][Z]
-"__kernel void Point3DDrawing(float* point, float* cameravector, float* camerapoint, float* cameramatrix, __global float* returnpoint, float* focalLength)"
+"__kernel void Point3DDrawing(__global float* point, __global float* cameravector, __global float* camerapoint, __global float* cameramatrix, __global float* returnpoint, __global float* focalLength)"
 "{"
 "	int number = get_global_id(0);"
 "	float cameravectorZ[3];"
@@ -749,9 +750,21 @@ static int CreateEntityIndex(GAME* Game, void* arrentity, char* nameid,int lengt
 
 //--------------------------------------------------------------------------------------游戏流程----------------------------------------------------------------------------------------------------------//
 
+/*
+   __________________________
+  / ______   _____    .____  \
+ / /      | |    / /| |    \  |
+ \ \___.  | |   / /_! !____/  |
+__\.___ \ | |  /  _.  .____  /
+\ \    \ \| | / /   | |    \ \
+ \ \___/ /| |/ /    | |     \ \
+  \_____/ !___/     !_!      \_\
+*/
+
 //初始化游戏
 static void InitialisationGame(GAME* Game, LPCWSTR name, int x, int y, int width, int height, int timeload, int fullscreenmode, BOOL cmdswitch, BOOL cursor, void(*GameSetting)(GAME* Game))
 {
+	printf("   _________________________.\n  / ______   _____    .____  \\       \n / /      | |    / /| |    \\  |      \n \\ \\___.  | |   / /_! !____/  |     \n__\\.___ \\ | |  /  _.  .____  /      \n\\ \\    \\ \\| | / /   | |    \\ \\  \n \\ \\___/ /| |/ /    | |     \\ \\   \n  \\_____/ !___/     !_!      \\_\\   \n");
 	//初始化结构体
 	if (y < 0) Game->Windowhwnd = Window((HWND)NULL, name, width, height, (nScreenWidth - width) / 2, (nScreenheight - height) / 2);		//创建窗口	
 	else Game->Windowhwnd = Window((HWND)NULL, name, width, height, x, y);
